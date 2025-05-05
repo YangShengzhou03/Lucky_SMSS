@@ -14,6 +14,16 @@
 
 一个基于 Vue 3 和 Spring Boot 构建的学生信息管理系统，支持学生、教师及管理员三种角色操作。
 
+---
+![输入图片说明](PreviewPictures/1.png)
+![输入图片说明](PreviewPictures/2.png)
+![输入图片说明](PreviewPictures/3.png)
+![输入图片说明](PreviewPictures/4.png)
+![输入图片说明](PreviewPictures/5.png)
+![输入图片说明](PreviewPictures/6.png)
+![输入图片说明](PreviewPictures/7.png)
+---
+
 ## 目录
 
 - [项目简介](#项目简介)

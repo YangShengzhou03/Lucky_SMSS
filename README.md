@@ -1,6 +1,7 @@
 ![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)
 ![GitHub stars](https://img.shields.io/github/stars/Yangshengzhou/lucky-smss?style=social)
 ![GitHub release](https://img.shields.io/github/v/release/yangshengzhou/lucky-smss)
+---
 ![GitHub contributors](https://img.shields.io/github/contributors/yangshengzhou/lucky-smss)
 ![GitHub last commit](https://img.shields.io/github/last-commit/yangshengzhou/lucky-smss)
 ![GitHub issues](https://img.shields.io/github/issues/yangshengzhou/lucky-smss)

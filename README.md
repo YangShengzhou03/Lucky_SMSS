@@ -1,8 +1,6 @@
 # 🎓 Lucky_SMSS（来财学生信息管理系统）
 
 **免费可商用、适合毕业设计与课程设计等用途**
-
-一个基于 Vue 3 和 Spring Boot 构建的学生信息管理系统，支持学生、教师及管理员三种角色操作。
 ---
 ![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)
 ![GitHub stars](https://img.shields.io/github/stars/Yangshengzhou/lucky-smss?style=social)
@@ -11,6 +9,10 @@
 ![GitHub contributors](https://img.shields.io/github/contributors/yangshengzhou/lucky-smss)
 ![GitHub last commit](https://img.shields.io/github/last-commit/yangshengzhou/lucky-smss)
 ![GitHub issues](https://img.shields.io/github/issues/yangshengzhou/lucky-smss)
+
+---
+
+一个基于 Vue 3 和 Spring Boot 构建的学生信息管理系统，支持学生、教师及管理员三种角色操作。
 
 ---
 ![登录页面](PreviewPictures/1.png)

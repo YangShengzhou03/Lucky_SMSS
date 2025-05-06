@@ -1,3 +1,9 @@
+# 🎓 Lucky_SMSS（来财学生信息管理系统）
+
+**免费可商用、适合毕业设计与课程设计等用途**
+
+一个基于 Vue 3 和 Spring Boot 构建的学生信息管理系统，支持学生、教师及管理员三种角色操作。
+---
 ![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)
 ![GitHub stars](https://img.shields.io/github/stars/Yangshengzhou/lucky-smss?style=social)
 ![GitHub release](https://img.shields.io/github/v/release/yangshengzhou/lucky-smss)
@@ -7,21 +13,8 @@
 ![GitHub issues](https://img.shields.io/github/issues/yangshengzhou/lucky-smss)
 
 ---
-
-# 🎓 Lucky_SMSS（来财学生信息管理系统）
-
-**免费、可商用、可投标、适合毕业设计与课程设计等一切用途**
-
-一个基于 Vue 3 和 Spring Boot 构建的学生信息管理系统，支持学生、教师及管理员三种角色操作。
-
----
-![输入图片说明](PreviewPictures/1.png)
-![输入图片说明](PreviewPictures/2.png)
-![输入图片说明](PreviewPictures/3.png)
-![输入图片说明](PreviewPictures/4.png)
-![输入图片说明](PreviewPictures/5.png)
-![输入图片说明](PreviewPictures/6.png)
-![输入图片说明](PreviewPictures/7.png)
+![登录页面](PreviewPictures/1.png)
+![来财预览图](PreviewPictures/7.png)
 ---
 
 ## 目录
@@ -48,11 +41,19 @@
 - [参与贡献](#参与贡献)
 - [联系作者](#联系作者)
 
+---
+![来财预览图](PreviewPictures/2.png)
+---
+
 ## 项目简介
 
 Lucky_SMSS 是在2025年五一假期期间开发的一个开源项目，旨在为教学场景提供一个简单易用的学生信息管理系统。系统包括登录注册、权限控制、个人信息管理、课程管理等功能模块。
 
 本项目完全免费且可用于商业用途、投标项目、毕业设计、课程设计等一切用途。无论是新手还是有经验的开发者，都可以轻松上手并根据需要进行二次开发。
+
+---
+![来财预览图](PreviewPictures/3.png)
+---
 
 ## 功能特性
 
@@ -102,6 +103,12 @@ Lucky_SMSS 是在2025年五一假期期间开发的一个开源项目，旨在�
 2. **生成 JWT 并返回**：登录成功后，后端生成 JWT 并返回给前端，前端将该 Token 存储在本地存储中（Token 就像一张电子门票，包含了用户的ID和角色信息，有效期等数据）。
 3. **携带 Token 请求**：在后续请求中，前端会在请求头中携带该 Token，后端通过解析 Token 来确认用户身份并执行相应操作（每次访问都需要出示这张门票，以证明你是合法的观众）。
 4. **权限控制**：不同的角色（学生、教师、管理员）拥有不同的权限，后端根据用户角色返回不同的数据和操作选项（就像电影院的不同座位区，VIP 区只能 VIP 才能进入）。
+
+---
+![来财预览图](PreviewPictures/4.png)
+![来财预览图](PreviewPictures/5.png)
+![来财预览图](PreviewPictures/6.png)
+---
 
 ## 环境准备
 

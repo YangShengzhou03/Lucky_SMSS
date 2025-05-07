@@ -12,7 +12,7 @@
 
 ---
 
-[输入链接说明](https://www.bilibili.com/video/BV1byVsziErM/)
+[视频介绍](https://www.bilibili.com/video/BV1byVsziErM/)
 一个基于 Vue 3 和 Spring Boot 构建的学生信息管理系统，支持学生、教师及管理员三种角色操作。
 
 ---

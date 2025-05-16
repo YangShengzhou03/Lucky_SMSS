@@ -3,13 +3,12 @@
 **免费可商用、适合毕业设计与课程设计等用途**
 ---
 ![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)
-![GitHub stars](https://img.shields.io/github/stars/Yangshengzhou/lucky-smss?style=social)
+[![Gitee Stars](https://gitee.com/Yangshengzhou/lucky-smss-backend/badge/star.svg?theme=dark)](https://gitee.com/Yangshengzhou/lucky-smss-backend/) 
 ![GitHub release](https://img.shields.io/github/v/release/yangshengzhou/lucky-smss)
 ---
 ![GitHub contributors](https://img.shields.io/github/contributors/yangshengzhou/lucky-smss)
 ![GitHub last commit](https://img.shields.io/github/last-commit/yangshengzhou/lucky-smss)
 ![GitHub issues](https://img.shields.io/github/issues/yangshengzhou/lucky-smss)
-
 ---
 
 [视频介绍](https://www.bilibili.com/video/BV1byVsziErM/)

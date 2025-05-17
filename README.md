@@ -1,21 +1,15 @@
-# 🎓 Lucky_SMSS（来财学生信息管理系统）
+# 🎓 Lucky_SMSS 来财学生信息管理系统（后端）
 
-**免费可商用、适合毕业设计与课程设计等用途**
+**免费可用于商业、毕设与课设等**
 ---
 ![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)
-![GitHub release](https://img.shields.io/github/v/release/yangshengzhou/lucky-smss)
----
-![GitHub contributors](https://img.shields.io/github/contributors/yangshengzhou/lucky-smss)
-![GitHub last commit](https://img.shields.io/github/last-commit/yangshengzhou/lucky-smss)
-![GitHub issues](https://img.shields.io/github/issues/yangshengzhou/lucky-smss)
+[![Gitee Stars](https://gitee.com/Yangshengzhou/lucky-smss-backend/badge/star.svg?theme=dark)](https://gitee.com/Yangshengzhou/lucky-smss-backend) 
 ---
 
-[视频介绍](https://www.bilibili.com/video/BV1byVsziErM/)
-一个基于 Vue 3 和 Spring Boot 构建的学生信息管理系统，支持学生、教师及管理员三种角色操作。
+[系统视频介绍](https://www.bilibili.com/video/BV1byVsziErM/)
+基于 `Vue 3` 和 `Spring Boot` 构建的学生信息管理系统，支持学生、教师及管理员三种角色操作。
 
----
 ![登录页面](PreviewPictures/1.png)
-![来财预览图](PreviewPictures/7.png)
 ---
 
 ## 目录
@@ -43,14 +37,14 @@
 - [联系作者](#联系作者)
 
 ---
-![来财预览图](PreviewPictures/2.png)
+![来财前端预览图](PreviewPictures/2.png)
 ---
 
 ## 项目简介
 
-Lucky_SMSS 是在2025年五一假期期间开发的一个开源项目，旨在为教学场景提供一个简单易用的学生信息管理系统。系统包括登录注册、权限控制、个人信息管理、课程管理等功能模块。
+Lucky_SMSS 是我在2025年五一假期独立开发的一个开源项目，为教学场景提供一个简单易用的学生信息管理系统。系统包括登录注册、权限控制、个人信息管理、课程管理等功能模块。
 
-本项目完全免费且可用于商业用途、投标项目、毕业设计、课程设计等一切用途。无论是新手还是有经验的开发者，都可以轻松上手并根据需要进行二次开发。
+本项目完全手搓，无论是新手还是有经验的开发者，都可以轻松上手并根据需要进行二次开发。
 
 ---
 ![来财预览图](PreviewPictures/3.png)
@@ -67,20 +61,20 @@ Lucky_SMSS 是在2025年五一假期期间开发的一个开源项目，旨在�
 ## 技术栈
 
 ### 前端
-- **Vue 3**: 最新一代的 Vue.js 框架，支持 Composition API 和更好的性能（就像一辆全新的跑车，比旧款更快更稳定）。
-- **TypeScript**: 强类型语言，帮助减少错误，提高代码质量（想象一下给每个零件都贴上标签，这样组装时就不会出错）。
-- **Element Plus**: 基于 Vue 3 的 UI 组件库，提供了丰富的组件供快速开发使用（类似于乐高积木，可以快速搭建出漂亮的界面）。
-- **Axios**: HTTP 客户端，用于发送请求并与后端交互（就像快递员，负责从前端向后端传递信息）。
-- **Vue Router**: Vue.js 的官方路由管理器，用于实现单页应用（SPA）中的页面导航（就像是地图，告诉用户从哪里到哪里去）。
+- **Vue 3**: 最新一代的 Vue.js 框架，支持 Composition API 和更好的性能。
+- **TypeScript**: 强类型语言，帮助减少错误，提高代码质量。
+- **Element Plus**: 基于 Vue 3 的 UI 组件库，提供了丰富的组件供快速开发使用（类似乐高积木，可以快速搭建出漂亮的界面）。
+- **Axios**: HTTP 客户端，用于发送请求并与后端交互（快递员，负责从前端向后端传递信息）。
+- **Vue Router**: Vue.js 的官方路由管理器，用于实现单页应用（SPA）中的页面导航（地图，告诉用户从哪里到哪里去）。
 
 ### 后端
-- **Spring Boot**: 简化了新 Spring 应用的初始搭建以及开发过程，提供了多种开箱即用的功能（类似厨房里的多功能料理机，让烹饪变得简单）。
-- **JWT (JSON Web Token)**: 用于用户身份验证和授权，确保安全性（可以想象成电影票，只有持有有效电影票的人才能进入电影院）。
-- **MyBatis**: 一种持久层框架，简化了数据库访问代码的编写（就像一本字典，让你能够轻松查找单词的意思）。
-- **Swagger UI**: 提供了一套完整的接口文档工具，方便前后端联调（相当于说明书，告诉你每个按钮的作用是什么）。
+- **Spring Boot**: 简化了新 Spring 应用的初始搭建以及开发过程，提供了多种开箱即用的功能（厨房里的多功能料理机，让烹饪变得简单）。
+- **JWT (JSON Web Token)**: 用于用户身份验证和授权，确保安全性（电影票，只有持有有效电影票的人才能进入电影院）。
+- **MyBatis**: 一种持久层框架，简化了数据库访问代码的编写（字典，让你能够轻松查找单词的意思）。
+- **Swagger UI**: 提供了一套完整的接口文档工具，方便前后端联调（说明书，告诉你每个按钮的作用是什么）。
 
 ### 数据库
-- **MySQL**: 关系型数据库管理系统，适用于各种规模的应用程序（就像图书馆的书架，有序地存放着所有的书籍）。
+- **MySQL**: 关系型数据库管理系统，适用于各种规模的应用程序（图书馆的书架，有序地存放着所有的书籍）。
 
 ## 系统架构
 
@@ -89,7 +83,7 @@ Lucky_SMSS 是在2025年五一假期期间开发的一个开源项目，旨在�
 ```
 +------------------+        +-------------------+
 |    Frontend      | <----> |     Backend       |
-| (Vue 3, Element+)|        |(Spring Boot, JWT) |
+| (Vue 3, Element+)        | (Spring Boot, JWT) |
 +------------------+        +-------------------+
           |                          |
           v                          v
@@ -100,25 +94,23 @@ Lucky_SMSS 是在2025年五一假期期间开发的一个开源项目，旨在�
 
 ## 工作原理
 
-1. **用户登录或注册**：用户通过前端页面输入用户名和密码进行登录或注册操作（就像你走进一家商店，出示会员卡或者申请新的会员卡）。
-2. **生成 JWT 并返回**：登录成功后，后端生成 JWT 并返回给前端，前端将该 Token 存储在本地存储中（Token 就像一张电子门票，包含了用户的ID和角色信息，有效期等数据）。
-3. **携带 Token 请求**：在后续请求中，前端会在请求头中携带该 Token，后端通过解析 Token 来确认用户身份并执行相应操作（每次访问都需要出示这张门票，以证明你是合法的观众）。
-4. **权限控制**：不同的角色（学生、教师、管理员）拥有不同的权限，后端根据用户角色返回不同的数据和操作选项（就像电影院的不同座位区，VIP 区只能 VIP 才能进入）。
+1. **用户登录或注册**：用户通过前端页面输入用户名和密码进行登录或注册操作。
+2. **生成 JWT 并返回**：登录成功后，后端生成 JWT 并返回给前端，前端将该 Token 存储在本地存储中。
+3. **携带 Token 请求**：在后续请求中，前端会在请求头中携带该 Token，后端通过解析 Token 来确认用户身份并执行相应操作。
+4. **权限控制**：不同的角色（学生、教师、管理员）拥有不同的权限，后端根据用户角色返回不同的数据和操作选项。
 
 ---
 ![来财预览图](PreviewPictures/4.png)
-![来财预览图](PreviewPictures/5.png)
-![来财预览图](PreviewPictures/6.png)
 ---
 
 ## 环境准备
 
 为了顺利运行该项目，请确保您的计算机已安装以下软件：
 
-- **Node.js (v16+)**: 前端开发环境，建议使用 Node Version Manager (nvm) 进行版本管理（就像你家里的冰箱，用来保存食物，Node.js 用来保存你的 JavaScript 代码）。
-- **Java 17+**: 后端开发环境，推荐使用 JDK 17（想象成一台超级电脑，专门用来处理复杂的计算任务）。
-- **Maven (3.8.x+)**: Java 项目的构建工具，用于管理依赖关系（就像一个大型仓库，帮你整理和存放所有你需要的工具和材料）。
-- **MySQL (8.0+)**: 数据库管理系统，用于存储和管理应用程序的数据（就像一个巨大的档案柜，存放所有的文件和记录）。
+- **Node.js (v16+)**: 前端开发环境，建议使用 Node Version Manager (nvm) 进行版本管理。
+- **Java 17+**: 后端开发环境，推荐使用 JDK 17。
+- **Maven (3.8.x+)**: Java 项目的构建工具，用于管理依赖关系。
+- **MySQL (8.0+)**: 数据库管理系统，用于存储和管理应用程序的数据。
 
 如果您在中国，建议将 Maven 的中央仓库替换为阿里云镜像，以加快依赖下载速度。可以在 `~/.m2/settings.xml` 中添加如下配置：
 
@@ -141,10 +133,12 @@ Lucky_SMSS 是在2025年五一假期期间开发的一个开源项目，旨在�
 
 首先克隆仓库到本地：
 
-    git clone https://gitee.com/yangshengzhou/lucky-ssms.git
+    git clone https://gitee.com/Yangshengzhou/lucky-smss-backend.git
     cd lucky-ssms
 
 请注意，您需要分别下载前端和后端代码，并按照各自的说明进行部署。
+
+![来财预览图](PreviewPictures/5.png)
 
 ## 数据库初始化
 
@@ -156,11 +150,12 @@ Lucky_SMSS 是在2025年五一假期期间开发的一个开源项目，旨在�
 
 编辑 `back-end/src/main/resources/application.properties` 文件，修改以下配置项以匹配您的数据库设置：
 
-    spring.datasource.url=jdbc:mysql://localhost:3306/your_database_name?useSSL=false&serverTimezone=UTC
-    spring.datasource.username=your_db_username
-    spring.datasource.password=your_db_password
+    # mysql address and name and password
+    spring.datasource.url=jdbc:mysql://localhost:3306/lucky_smss?useSSL=false&serverTimezone=UTC
+    spring.datasource.username=root
+    spring.datasource.password=123456
 
-请将 `your_database_name` 替换为您创建的数据库名称，`your_db_username` 和 `your_db_password` 替换为您的数据库用户名和密码。
+请将 `3306` 替换为您实际数据库的端口号，请将 `lucky_smss` 替换为您创建的数据库名称，`root` 和 `123456` 替换为您的数据库用户名和密码。
 
 ### 数据库表结构
 
@@ -236,6 +231,8 @@ lucky-smss/
 
     server.port=自定义端口号
 
+![来财预览图](PreviewPictures/7.png)
+
 ### JWT 的使用
 
 在我们的项目中，JWT 用于用户身份验证和授权。每当用户登录成功后，后端会生成一个包含用户ID和角色信息的 Token，并将其返回给前端。这个 Token 类似于一张电子门票，包含以下数据：
@@ -245,25 +242,17 @@ lucky-smss/
 
 Token 的过期时间和密钥可以在 `application.properties` 文件中找到并修改：
 
-    jwt.secret=your_secret_key_here
-    jwt.expiration=3600
+    # This is key and it must be 512 Bit
+    jwt.secret=ZheGeShiXiYangShengZhouZai2025NianWuYiJiaQiXieDedeZheGe512WeiDeDeMiYueOWoZenJiaoFuLeBiuBiu
+    jwt.expiration=86400
 
-这里的 `jwt.secret` 是用来加密 Token 的密钥，而 `jwt.expiration` 则是 Token 的过期时间（秒）。你可以根据需要调整这些值。
+这里的 `jwt.secret` 是用来加密 Token 的密钥（要求长度大于512字节），而 `jwt.expiration` 则是 Token 的过期时间（秒）。
 
 ### CORS 问题解决
 
 CORS（跨域资源共享）问题是当你的前端和后端不在同一个域名下时遇到的问题（想象一下，你不能随意进出别人的家）。解决方法是在后端配置中允许特定域名访问（相当于主人邀请你进入他们的家）。在 Spring Boot 中，可以通过添加注解 `@CrossOrigin` 或者在配置类中进行全局配置。
 
 例如，在控制器类上添加 `@CrossOrigin(origins = "http://localhost:8080")`，这将允许来自 `http://localhost:8080` 的请求访问你的 API。
-
-### 修改 Token 过期时间和密钥
-
-在 `application.properties` 文件中，你可以找到并修改 JWT 的过期时间和密钥：
-
-    jwt.secret=your_secret_key_here
-    jwt.expiration=3600
-
-这里的 `jwt.secret` 是用来加密 Token 的密钥，而 `jwt.expiration` 则是 Token 的过期时间（秒）。
 
 ## 前端应用构建与部署
 
@@ -352,6 +341,8 @@ CORS（跨域资源共享）问题是当你的前端和后端不在同一个域�
 ### 目前后端哪些功能不完善等待你们完善
 
 目前后端的一些功能如忘记密码、邮件验证码发送等功能尚未实现，期待大家的贡献和完善！
+
+![来财预览图](PreviewPictures/6.png)
 
 ## 参与贡献
 

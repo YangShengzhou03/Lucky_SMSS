@@ -364,34 +364,46 @@ npm run test:coverage
 
 ---
 
-## 💖 鸣谢  
-### 贡献者墙  
+以下是优化后的贡献者墙，提升视觉一致性、增加交互指引，并保留手动维护的灵活性：
 
-| 贡献者 | 贡献内容 | 日期 |  
-|--------|----------|------|  
-| [@YangShengzhou](https://gitee.com/Yangshengzhou) | 项目创始人 & 全栈开发 | 2025-05-01 |  
-| [@Contributor1](https://gitee.com/contributor1) | 用户管理模块优化 | 2025-06-15 |  
-| [@Contributor2](https://gitee.com/contributor2) | 成绩分析功能开发 | 2025-07-20 |  
-| **等待您的名字** | - | - |  
 
-### 特别致谢  
-- JetBrains 提供的开源许可证  
-- 阿里云 Maven 镜像加速服务  
-- Vue 和 Spring Boot 开源社区  
+## 👥 贡献者墙  
 
-```mermaid
-pie 
-    title 分支贡献分布
-    "Back-End" : 55
-    "front-end" : 45
-```
+我们衷心感谢以下开发者对 Lucky_SMSS 的贡献！✨  
 
-> "开源不仅是代码的共享，更是智慧的汇聚。  
-> 每一次贡献都是对教育技术的推动，  
-> 感谢您成为 Lucky_SMSS 成长的一部分！"  
+### 🏆 活跃贡献者（按贡献频率排序）  
+<div style="display: flex; gap: 12px; padding: 16px; background: #f8f9fa; border-radius: 8px;">
+<!-- 主头像链接（优先使用 Gitee 官方头像 API） -->
+<a href="https://gitee.com/Yangshengzhou" target="_blank" title="项目创始人 & 全栈开发">
+<img src="https://avatars.gitee.com/uploads/user/14181/avatar/30/1738583507592973044_yangshengzhou.png"
+alt="YangShengzhou"
+width="60" height="60"
+style="border-radius: 50%; border: 2px solid #333; object-fit: cover;">
+</a>
+<a href="https://gitee.com/contributor1" target="_blank" title="后端模块优化">
+<img src="https://gitee.com/contributor1/avatar.png?size=100"
+alt="contributor1"
+width="60" height="60"
+style="border-radius: 50%; border: 2px solid #333; object-fit: cover;">
+<!-- 隐藏的错误提示（仅开发者可见） -->
+<noscript>⚠️ 头像加载失败时，请检查 Gitee 用户名是否正确</noscript>
+</a>
+<a href="https://gitee.com/contributor2" target="_blank" title="前端交互设计">
+<img src="https://gitee.com/contributor2/avatar.png?size=100"
+alt="contributor2"
+width="60" height="60"
+style="border-radius: 50%; border: 2px solid #333; object-fit: cover;">
+</a>
+</div>
 
-**✨ 期待您的第一次贡献！**  
-```bash
-# 开始您的贡献之旅
-git clone https://gitee.com/Yangshengzhou/lucky-smss-backend.git
-```
+### 🚀 如何加入我们？  
+1. **提交代码**：修复 Bug、新增功能或优化性能  
+2. **完善文档**：更新接口说明、撰写用户指南  
+3. **反馈问题**：通过 [Issue 模板](链接) 提交有效建议  
+4. **参与测试**：协助验证新功能或提供测试报告  
+
+> 所有符合规范的贡献将在审核后加入贡献者墙，优秀贡献者可获得项目专属徽章！  
+
+### 📍 贡献记录查询  
+- [GitHub 贡献者列表](https://github.com/Yangshengzhou03/Lucky_SMSS/contributors)（自动更新）  
+- [Gitee 贡献者列表](https://gitee.com/Yangshengzhou/lucky-smss/contributors)（手动同步）  

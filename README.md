@@ -325,7 +325,7 @@ const BASE_URL = 'http://your-new-api-address:port';
 - 📝 改进文档
 - 💻 提交代码PR
 
-请阅读 [CONTRIBUTING.md](CONTRIBUTING.md) 了解贡献指南
+请阅读 [ CONTRIBUTING.md](https://github.com/YangShengzhou03/Lucky_SMSS/blob/Back-End/%20CONTRIBUTING.md) 了解贡献指南
 
 ---
 

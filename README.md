@@ -334,6 +334,9 @@ const BASE_URL = 'http://your-new-api-address:port';
 - **Gitee**: [@yangshengzhou](https://gitee.com/Yangshengzhou)
 - **邮箱**: yangsz03@foxmail.com
 - **B站**: [@yangshengzhou](https://space.bilibili.com/652391792)
+- **社区交流**：  
+  ![WeChat Group](https://img.shields.io/badge/微信-YSZFortune-brightgreen?logo=wechat)  
+  ![QQ Group](https://img.shields.io/badge/QQ群-1021471813-blue?logo=tencentqq)  
 
 ---
 

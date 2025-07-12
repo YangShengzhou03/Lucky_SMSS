@@ -1,4 +1,4 @@
-# 🎓 Lucky_SMSS 来财学生信息管理系统（后端）
+# 🎓 Lucky_SMSS 来财学生信息管理系统
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0) 
 ![GitHub Stars](https://img.shields.io/github/stars/YangShengzhou03/Lucky_SMSS?style=social)

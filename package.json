@@ -1,0 +1,14 @@
+{
+  "name": "lucky-smss",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "frontend:install": "cd frontend && npm install",
+    "frontend:serve": "cd frontend && npm run serve",
+    "frontend:build": "cd frontend && npm run build",
+    "frontend:lint": "cd frontend && npm run lint"
+  },
+  "devDependencies": {
+    
+  }
+}

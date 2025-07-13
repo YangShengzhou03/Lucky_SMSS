@@ -1,0 +1,1 @@
+<template><div></div></template><script>export default {name: 'LoginModal'}</script>

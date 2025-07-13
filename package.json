@@ -8,7 +8,9 @@
     "frontend:build": "cd frontend && npm run build",
     "frontend:lint": "cd frontend && npm run lint"
   },
-  "devDependencies": {
-    
+  "dependencies": {
+    "@element-plus/icons-vue": "^2.3.1",
+    "element-plus": "^2.10.4",
+    "vue-router": "^4.5.1"
   }
 }

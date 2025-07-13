@@ -299,7 +299,7 @@ onUnmounted(() => {
     window.pJSDom[0].pJS.fn.vendors.destroypJS()
     window.pJSDom = []
   }
-})
+}) 
 </script>
 
 <style>

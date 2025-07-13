@@ -1,710 +1,1001 @@
 <template>
-  <div class="website-container">
-    <!-- 导航栏 -->
-    <el-menu ref="menuRef" default-active="1" class="el-menu-demo" mode="horizontal" background-color="#ffffff"
-      text-color="#333333" active-text-color="#409EFF">
-      <el-menu-item index="1" data-id="home" @click="scrollTo('home')">首页</el-menu-item>
-      <el-menu-item index="2" data-id="system" @click="scrollTo('system')">系统介绍</el-menu-item>
-      <el-menu-item index="3" data-id="solution" @click="scrollTo('solution')">解决方案</el-menu-item>
-      <el-menu-item index="4" data-id="about" @click="scrollTo('about')">关于我们</el-menu-item>
-    </el-menu>
-
-    <!-- 轮播图 -->
-    <div id="home" class="banner">
-      <el-carousel height="500px" indicator-position="bottom" autoplay arrow="always">
-        <el-carousel-item v-for="(item, index) in banners" :key="index">
-          <div class="banner-content">
-            <h1 class="banner-title animate-fade-in">{{ item.title }}</h1>
-            <p class="banner-desc animate-slide-up">{{ item.desc }}</p>
-            <el-button type="primary" class="banner-btn animate-scale" @click="scrollTo(item.btnTarget)">{{ item.btnText
-            }}</el-button>
+  <div class="app-container">
+    <!-- 顶部导航 -->
+    <div class="top-nav">
+      <div class="container">
+        <div class="nav-content">
+          <div class="nav-logo">
+            <span class="logo-text">Lucky SMS</span>
+            <span class="logo-badge">PRO</span>
           </div>
-          <div class="banner-bg" :style="{ backgroundImage: `url(${item.bgImage})` }"></div>
-          <div class="banner-overlay"></div>
-        </el-carousel-item>
-      </el-carousel>
-    </div>
-
-    <!-- 系统介绍 -->
-    <div id="system" class="system-section section-with-bg">
-      <h2 class="section-title animate-float">系统介绍</h2>
-      <div class="feature-list">
-        <div class="feature-item animate-on-scroll" v-for="(feature, index) in features" :key="index">
-          <el-icon class="feature-icon">
-            <component :is="feature.icon" />
-          </el-icon>
-          <h3 class="feature-title">{{ feature.title }}</h3>
-          <p class="feature-desc">{{ feature.desc }}</p>
+          <div class="nav-actions">
+            <el-button type="text" size="small" class="login-btn">
+              <span class="btn-text">登录</span>
+            </el-button>
+            <el-button type="primary" size="small" class="register-btn">
+              <span class="btn-text">注册</span>
+            </el-button>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- 解决方案 -->
-    <div id="solution" class="solution-section">
-      <h2 class="section-title animate-float">解决方案</h2>
-      <div class="solution-list">
-        <div class="solution-item animate-on-scroll" v-for="(solution, index) in solutions" :key="index">
-          <el-icon class="solution-icon">
-            <component :is="solution.icon" />
-          </el-icon>
-          <h3 class="solution-title">{{ solution.title }}</h3>
-          <p class="solution-desc">{{ solution.desc }}</p>
+    <!-- 主要内容 -->
+    <main>
+      <!-- 英雄区域 -->
+      <section id="home" class="hero">
+        <div class="particles" id="particles-js"></div>
+        <div class="hero-content">
+          <div class="hero-text">
+            <h1 class="hero-title">
+              <span class="title-line">智能短信管理系统</span>
+              <span class="hero-subtitle-accent">创新科技，引领未来</span>
+            </h1>
+            <p class="hero-subtitle">高效、安全、便捷的短信服务解决方案</p>
+            <div class="hero-actions">
+              <el-button type="primary" size="large" @click="scrollToSection('features')">
+                了解功能
+              </el-button>
+              <el-button type="default" size="large" @click="scrollToSection('pricing')">
+                查看价格
+              </el-button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 核心功能 -->
+      <section id="features" class="features">
+        <div class="container">
+          <h2 class="section-title">核心功能</h2>
+          <div class="features-grid">
+            <div class="feature-item" v-for="feature in features" :key="feature.id">
+              <div class="feature-content">
+                <div class="feature-icon">
+                  <el-icon><component :is="feature.icon" /></el-icon>
+                </div>
+                <h3 class="feature-title">{{ feature.title }}</h3>
+                <p class="feature-desc">{{ feature.description }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 价格方案 -->
+      <section id="pricing" class="pricing">
+        <div class="container">
+          <h2 class="section-title">价格方案</h2>
+          <div class="pricing-grid">
+            <div class="pricing-card-wrapper" :class="{ 'premium-card-wrapper': plan.id === 3 }" 
+                 v-for="plan in pricingPlans" :key="plan.id">
+              <div class="pricing-card" :class="{ 'premium-card': plan.id === 3 }">
+                <div class="pricing-header">
+                  <h3 class="plan-title">{{ plan.title }}</h3>
+                  <div class="plan-price">
+                    <span class="price-amount">{{ plan.price }}</span>
+                    <span class="price-period">{{ plan.period }}</span>
+                  </div>
+                </div>
+                <div class="plan-features">
+                  <ul>
+                    <li v-for="feature in plan.features" :key="feature">
+                      <el-icon><Check /></el-icon>
+                      {{ feature }}
+                    </li>
+                  </ul>
+                </div>
+                <div class="plan-cta">
+                  <el-button :type="plan.id === 3 ? 'success' : 'primary'" size="medium">
+                    选择方案
+                  </el-button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-section">
+            <h3>Lucky SMS</h3>
+            <p>高效、安全、便捷的短信服务解决方案</p>
+          </div>
+          <div class="footer-section">
+            <h3>快速链接</h3>
+            <ul>
+              <li @click="scrollToSection('home')">首页</li>
+              <li @click="scrollToSection('features')">功能</li>
+              <li @click="scrollToSection('pricing')">价格</li>
+            </ul>
+          </div>
+          <div class="footer-section">
+            <h3>联系信息</h3>
+            <ul>
+              <li>
+                <el-icon><Location /></el-icon>
+                <span>北京市朝阳区科技园区</span>
+              </li>
+              <li>
+                <el-icon><Phone /></el-icon>
+                <span>400-123-4567</span>
+              </li>
+              <li>
+                <el-icon><Message /></el-icon>
+                <span>contact@luckysms.com</span>
+              </li>
+            </ul>
+          </div>
+          <div class="footer-section">
+            <h3>关注我们</h3>
+            <div class="social-links">
+              <el-icon :size="24"><ChatDotRound /></el-icon>
+              <el-icon :size="24"><Opportunity /></el-icon>
+              <el-icon :size="24"><Link /></el-icon>
+              <el-icon :size="24"><User /></el-icon>
+            </div>
+            <div class="newsletter">
+              <el-input placeholder="您的邮箱地址" size="small">
+                <template #append>
+                  <el-button icon="ArrowRight" />
+                </template>
+              </el-input>
+            </div>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p>&copy; 2025 Lucky SMS. 版权所有</p>
         </div>
       </div>
-    </div>
+    </footer>
 
-    <!-- 关于我们 -->
-    <div id="about" class="about-section section-with-bg">
-      <h2 class="section-title animate-float">关于我们</h2>
-      <div class="about-content animate-on-scroll">
-        <p>我们是一家专注于企业数字化转型的技术服务提供商，致力于为客户提供全方位的信息化解决方案。</p>
-        <p>凭借专业的技术团队和丰富的行业经验，我们已成功服务超过100家企业客户，涵盖学生等多个领域。</p>
-      </div>
-    </div>
-
-    <!-- 联系我们 -->
-    <div class="footer">
-      <p><el-icon>
-          <Location />
-        </el-icon> 联系地址：北京市朝阳区XX大厦</p>
-      <p><el-icon>
-          <Phone />
-        </el-icon> 联系电话：010-12345678</p>
-      <p><el-icon>
-          <Mail />
-        </el-icon> 电子邮箱：contact@example.com</p>
-      <p class="footer-text">©2025 你的公司名称 版权所有</p>
-    </div>
-
-    <!-- 返回顶部按钮 -->
-    <el-button v-show="showBackToTop" type="primary" class="back-to-top" @click="scrollToTop">
-      <el-icon>
-        <ArrowUp />
-      </el-icon>
-    </el-button>
+    <!-- 返回顶部 -->
+    <transition name="fade">
+      <el-button
+        v-show="showBackToTop"
+        class="back-to-top"
+        type="primary"
+        :icon="ArrowUp"
+        circle
+        @click="scrollToTop"
+      />
+    </transition>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, nextTick } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue'
 import {
-  Monitor, Database, Shield,
-  Star, Clock, Wallet,
-  Location, Phone, Mail,
-  ArrowUp
-} from '@element-plus/icons-vue';
-import { ElCarousel, ElCarouselItem, ElButton } from 'element-plus';
+  Thunderbolt, Cloud, Lock, ArrowUp, Check,
+  Location, Phone, Message, ChatDotRound,
+  Opportunity, Link, User
+} from '@element-plus/icons-vue'
 
-// 数据
-const menuRef = ref(null);
-const showBackToTop = ref(false);
+// 响应式数据
+const showBackToTop = ref(false)
 
-const banners = [
-  {
-    title: "专注创新技术，引领行业未来",
-    desc: "为您提供专业、高效、定制化的解决方案",
-    btnText: "立即了解",
-    btnTarget: "system",
-    bgImage: "https://picsum.photos/id/1/1920/1080"
-  },
-  {
-    title: "智能系统解决方案",
-    desc: "集成前沿技术，打造全方位智能管理平台",
-    btnText: "查看方案",
-    btnTarget: "solution",
-    bgImage: "https://picsum.photos/id/20/1920/1080"
-  },
-  {
-    title: "7×24小时专业服务",
-    desc: "随时响应您的需求，保障业务持续运行",
-    btnText: "联系我们",
-    btnTarget: "contact",
-    bgImage: "https://picsum.photos/id/48/1920/1080"
-  }
-];
-
+// 核心功能数据
 const features = [
   {
-    icon: Monitor,
-    title: "智能监控",
-    desc: "实时监控系统运行状态，自动预警异常情况，保障业务稳定运行。"
+    id: 1,
+    icon: Thunderbolt,
+    title: '极速发送',
+    description: '百万级并发处理能力，短信秒级送达'
   },
   {
-    icon: Database,
-    title: "数据管理",
-    desc: "高效管理海量数据，提供快速查询和分析能力，助力业务决策。"
+    id: 2,
+    icon: Cloud,
+    title: '云端服务',
+    description: '分布式架构设计，99.99%系统可用性'
   },
   {
-    icon: Shield,
-    title: "安全防护",
-    desc: "多重安全防护机制，全方位保障数据安全，防止信息泄露。"
+    id: 3,
+    icon: Lock,
+    title: '安全可靠',
+    description: '金融级安全防护，数据加密传输'
   }
-];
+]
 
-const solutions = [
+// 价格方案数据
+const pricingPlans = [
   {
-    icon: Star,
-    title: "专业团队",
-    desc: "拥有多年行业经验的专业团队，提供一流的技术支持和服务。"
+    id: 1,
+    title: '基础版',
+    price: '¥99',
+    period: '/月',
+    features: [
+      '10万条短信额度',
+      '基础API接口',
+      '邮件技术支持',
+      '基础数据分析'
+    ]
   },
   {
-    icon: Clock,
-    title: "高效响应",
-    desc: "7×24小时快速响应机制，及时解决用户问题，保障业务连续性。"
+    id: 2,
+    title: '企业版',
+    price: '¥299',
+    period: '/月',
+    features: [
+      '50万条短信额度',
+      '高级API接口',
+      '24/7技术支持',
+      '高级数据分析',
+      '自定义模板'
+    ]
   },
   {
-    icon: Wallet,
-    title: "性价比高",
-    desc: "合理的价格体系，提供高性价比的产品和服务，降低企业成本。"
+    id: 3,
+    title: '旗舰版',
+    price: '¥899',
+    period: '/月',
+    features: [
+      '无限短信额度',
+      'VIP API接口',
+      '专属客户经理',
+      '高级安全保障',
+      '定制化解决方案'
+    ],
+    recommended: true
   }
-];
+]
 
 // 方法
-const scrollTo = (id) => {
-  const element = document.getElementById(id);
+const scrollToSection = (sectionId) => {
+  const element = document.getElementById(sectionId)
   if (element) {
-    // 平滑滚动到目标位置
-    element.scrollIntoView({
-      behavior: 'smooth',
-      block: 'start'
-    });
-
-    // 更新菜单激活状态
-    updateActiveMenuItem(id);
+    window.scrollTo({
+      top: element.offsetTop - 80,
+      behavior: 'smooth'
+    })
   }
-};
+}
 
 const scrollToTop = () => {
   window.scrollTo({
     top: 0,
     behavior: 'smooth'
-  });
-};
+  })
+}
 
-const updateActiveMenuItem = (id) => {
-  const menuItems = document.querySelectorAll('.el-menu-item[data-id]');
-  menuItems.forEach(item => item.classList.remove('is-active'));
-  const activeItem = document.querySelector(`.el-menu-item[data-id="${id}"]`);
-  if (activeItem) {
-    activeItem.classList.add('is-active');
-  }
-};
-
-// 监听滚动事件
 const handleScroll = () => {
-  // 显示/隐藏返回顶部按钮
-  showBackToTop.value = window.scrollY > 300;
+  const scrollTop = window.pageYOffset || document.documentElement.scrollTop
+  showBackToTop.value = scrollTop > 300
+}
 
-  // 根据滚动位置更新菜单激活状态
-  const sections = document.querySelectorAll('div[id^="home"], div[id^="system"], div[id^="solution"], div[id^="about"], div[id^="contact"]');
-  let currentSection = '';
-
-  sections.forEach(section => {
-    const sectionTop = section.offsetTop - 100;
-    const sectionHeight = section.clientHeight;
-    if (window.scrollY >= sectionTop && window.scrollY < sectionTop + sectionHeight) {
-      currentSection = section.getAttribute('id');
-    }
-  });
-
-  if (currentSection) {
-    updateActiveMenuItem(currentSection);
-  }
-
-  // 处理滚动动画
-  const animateElements = document.querySelectorAll('.animate-on-scroll');
-  animateElements.forEach(element => {
-    const elementTop = element.getBoundingClientRect().top;
-    const windowHeight = window.innerHeight;
-
-    if (elementTop < windowHeight * 0.85) {
-      element.classList.add('animated');
-    }
-  });
-};
-
-// 初始化
+// 生命周期
 onMounted(() => {
-  window.addEventListener('scroll', handleScroll);
-
-  // 初始检查可见元素
-  nextTick(() => {
-    handleScroll();
-  });
-});
+  window.addEventListener('scroll', handleScroll)
+  // 初始化粒子动画
+  if (window.particlesJS) {
+    window.particlesJS('particles-js', {
+      particles: {
+        number: { value: 80, density: { enable: true, value_area: 800 } },
+        color: { value: "#ffffff" },
+        shape: { type: "circle" },
+        opacity: { value: 0.5, random: true },
+        size: { value: 3, random: true },
+        line_linked: { enable: true, distance: 150, color: "#ffffff", opacity: 0.4, width: 1 },
+        move: { enable: true, speed: 2, direction: "none", random: true, straight: false, out_mode: "out" }
+      },
+      interactivity: {
+        detect_on: "canvas",
+        events: {
+          onhover: { enable: true, mode: "grab" },
+          onclick: { enable: true, mode: "push" }
+        }
+      }
+    })
+  }
+})
 
 onUnmounted(() => {
-  window.removeEventListener('scroll', handleScroll);
-});
+  window.removeEventListener('scroll', handleScroll)
+  // 清理粒子动画
+  if (window.pJSDom && window.pJSDom.length > 0) {
+    window.pJSDom[0].pJS.fn.vendors.destroypJS()
+    window.pJSDom = []
+  }
+})
 </script>
 
 <style scoped>
+/* CSS 变量 */
+:root {
+  --primary-color: #3b82f6;
+  --primary-dark: #2563eb;
+  --secondary-color: #64748b;
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --danger-color: #ef4444;
+  --gray-50: #f8fafc;
+  --gray-100: #f1f5f9;
+  --gray-200: #e2e8f0;
+  --gray-300: #cbd5e1;
+  --gray-400: #94a3b8;
+  --gray-500: #64748b;
+  --gray-600: #475569;
+  --gray-700: #334155;
+  --gray-800: #1e293b;
+  --gray-900: #0f172a;
+  --white: #ffffff;
+  --black: #000000;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --border-radius: 12px;
+  --transition: all 0.3s ease;
+}
+
 /* 基础样式 */
-.website-container {
-  width: 100%;
-  margin: 0 auto;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+.app-container {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.6;
+  color: var(--gray-800);
+  background-color: var(--white);
   overflow-x: hidden;
-}
-
-/* 导航栏样式 */
-.el-menu-demo {
-  border-bottom: 1px solid #e6e6e6;
-  padding: 0 20px;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  transition: all 0.3s ease;
-}
-
-.el-menu-demo.is-scrolled {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-}
-
-/* 轮播图样式 */
-.banner {
-  width: 100%;
-  height: 500px;
-  position: relative;
-}
-
-.el-carousel-item {
-  position: relative;
-  height: 100%;
-}
-
-.banner-bg {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  z-index: 1;
-  transition: transform 8s ease-in-out;
-}
-
-.banner-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(to right, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.4));
-  z-index: 2;
-}
-
-.banner-content {
-  position: relative;
-  max-width: 800px;
-  padding: 0 20px;
-  margin: 0 auto;
-  text-align: center;
-  color: #ffffff;
-  z-index: 3;
-  height: 100%;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
 }
 
-.banner-title {
-  font-size: 48px;
-  font-weight: bold;
-  margin-bottom: 20px;
-  line-height: 1.2;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-  opacity: 0;
-  transform: translateY(20px);
-  transition: all 0.8s ease;
-}
-
-.banner-desc {
-  font-size: 20px;
-  margin-bottom: 40px;
-  opacity: 0.9;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-  opacity: 0;
-  transform: translateY(20px);
-  transition: all 0.8s ease 0.3s;
-}
-
-.banner-btn {
-  font-size: 18px;
-  padding: 12px 30px;
-  opacity: 0;
-  transform: scale(0.9);
-  transition: all 0.8s ease 0.6s;
-}
-
-/* 轮播图动画 */
-.el-carousel-item.is-active .banner-bg {
-  transform: scale(1.05);
-}
-
-.el-carousel-item.is-active .banner-title {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.el-carousel-item.is-active .banner-desc {
-  opacity: 0.9;
-  transform: translateY(0);
-}
-
-.el-carousel-item.is-active .banner-btn {
-  opacity: 1;
-  transform: scale(1);
-}
-
-/* 通用部分样式 */
-.system-section,
-.solution-section,
-.about-section,
-.contact-section {
-  padding: 80px 20px;
-  text-align: center;
-}
-
-.section-with-bg {
-  background-color: #f8f9fa;
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
 }
 
 .section-title {
-  font-size: 36px;
-  font-weight: bold;
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  font-weight: 700;
+  color: var(--gray-900);
+  text-align: center;
   margin-bottom: 60px;
-  color: #333333;
   position: relative;
-  display: inline-block;
 }
 
 .section-title::after {
   content: '';
   position: absolute;
-  bottom: -10px;
+  bottom: -12px;
   left: 50%;
   transform: translateX(-50%);
-  width: 80px;
-  height: 4px;
-  background-color: #409EFF;
+  width: 60px;
+  height: 3px;
+  background: var(--primary-color);
   border-radius: 2px;
-  transition: all 0.5s ease;
 }
 
-.section-title:hover::after {
-  width: 120px;
+/* 顶部导航 */
+.top-nav {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 16px 0;
+  box-shadow: var(--shadow-md);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  transition: var(--transition);
 }
 
-/* 特性列表样式 */
-.feature-list,
-.solution-list {
+.nav-content {
   display: flex;
-  justify-content: center;
-  width: 90%;
-  margin: 0 auto;
-  gap: 30px;
-  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.feature-item,
-.solution-item {
-  flex: 1 1 300px;
-  max-width: 350px;
-  padding: 40px 30px;
-  background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
+.nav-logo {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.logo-text {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--primary-color);
+  letter-spacing: 0.5px;
+}
+
+.logo-badge {
+  position: absolute;
+  top: -8px;
+  right: -24px;
+  font-size: 10px;
+  background: var(--success-color);
+  color: var(--white);
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-weight: bold;
+}
+
+.nav-actions {
+  display: flex;
+  gap: 16px;
+}
+
+.login-btn {
+  color: var(--primary-color) !important;
+  font-weight: 500 !important;
+  transition: var(--transition) !important;
+}
+
+.login-btn:hover {
+  opacity: 0.8;
+  transform: translateY(-1px);
+}
+
+.register-btn {
   position: relative;
   overflow: hidden;
-  opacity: 0;
-  transform: translateY(20px);
+  z-index: 1;
+  font-weight: 500 !important;
 }
 
-.feature-item::before,
-.solution-item::before {
+.register-btn::before {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
-  height: 3px;
-  background-color: #409EFF;
-  transform: scaleX(0);
-  transition: transform 0.3s ease;
+  height: 100%;
+  background: linear-gradient(45deg, var(--primary-color), var(--primary-dark));
+  border-radius: 4px;
+  z-index: -1;
+  transition: var(--transition);
 }
 
-.feature-item:hover,
-.solution-item:hover {
-  transform: translateY(-10px);
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
+.register-btn:hover::before {
+  transform: scale(1.05);
+  opacity: 0.9;
 }
 
-.feature-item:hover::before,
-.solution-item:hover::before {
-  transform: scaleX(1);
+.btn-text {
+  position: relative;
+  z-index: 1;
 }
 
-.feature-item.animated,
-.solution-item.animated {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.feature-icon,
-.solution-icon {
-  font-size: 48px;
-  color: #409EFF;
-  margin-bottom: 20px;
-  transition: all 0.3s ease;
-}
-
-.feature-item:hover .feature-icon,
-.solution-item:hover .solution-icon {
-  transform: scale(1.1) rotate(5deg);
-}
-
-.feature-title,
-.solution-title {
-  font-size: 24px;
-  margin-bottom: 20px;
-  color: #333333;
-}
-
-.feature-desc,
-.solution-desc {
-  font-size: 16px;
-  color: #666666;
-  line-height: 1.6;
-}
-
-/* 关于我们部分 */
-.about-content {
-  max-width: 800px;
-  margin: 0 auto;
-  line-height: 1.8;
-  margin-bottom: 40px;
-  opacity: 0;
-  transform: translateY(20px);
-  transition: all 0.8s ease;
-}
-
-.about-content.animated {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* 联系我们部分 */
-.contact-info {
-  max-width: 600px;
-  margin: 0 auto;
-  line-height: 2;
-  font-size: 18px;
-  opacity: 0;
-  transform: translateY(20px);
-  transition: all 0.8s ease;
-}
-
-.contact-info.animated {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.contact-info p {
-  margin-bottom: 15px;
+/* 英雄区域 */
+.hero {
+  height: 90vh;
+  min-height: 600px;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+  text-align: center;
+  padding: 0 20px;
+  position: relative;
+  overflow: hidden;
 }
 
-.contact-info .el-icon {
-  margin-right: 10px;
-  color: #409EFF;
+.particles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
 }
 
-.social-media {
-  margin-top: 40px;
+.hero-content {
+  max-width: 800px;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-title {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 800;
+  color: var(--white);
+  margin-bottom: 24px;
+  line-height: 1.1;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.title-line {
+  display: inline-block;
+}
+
+.hero-subtitle-accent {
+  color: var(--success-color);
+  white-space: nowrap;
+}
+
+.hero-subtitle {
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  color: var(--white);
+  margin-bottom: 48px;
+  line-height: 1.6;
+  opacity: 0.9;
+}
+
+.hero-actions {
   display: flex;
   justify-content: center;
   gap: 20px;
-  opacity: 0;
-  transform: translateY(20px);
-  transition: all 0.8s ease 0.3s;
 }
 
-.social-media.animated {
-  opacity: 1;
-  transform: translateY(0);
+.hero-actions .el-button {
+  padding: 12px 32px;
+  font-size: 18px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-md);
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
 }
 
-.social-icon {
-  font-size: 24px;
-  color: #409EFF;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  background-color: #ffffff;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
+.hero-actions .el-button::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.1);
+  z-index: -1;
+  transition: var(--transition);
+}
+
+.hero-actions .el-button:hover::after {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.05);
+}
+
+.hero-actions .el-button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* 核心功能 */
+.features {
+  padding: 120px 0;
+  background: var(--gray-50);
+  position: relative;
+}
+
+.features::before {
+  content: '';
+  position: absolute;
+  top: -60px;
+  left: 0;
+  width: 100%;
+  height: 120px;
+  background: var(--white);
+  transform: skewY(-3deg);
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 40px;
+}
+
+.feature-item {
+  perspective: 1000px;
+  text-align: center;
+  padding: 40px 32px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-md);
+  background: linear-gradient(var(--white), var(--white)) padding-box,
+              linear-gradient(45deg, var(--primary-color), var(--success-color)) border-box;
+  border: 2px solid transparent;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.feature-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+}
+
+.feature-item:hover .feature-content {
+  transform: rotateY(10deg);
+}
+
+.feature-item:hover {
+  box-shadow: var(--shadow-xl);
+  transform: translateY(-5px);
+}
+
+.feature-icon {
+  font-size: 36px;
+  color: var(--primary-color);
+  margin-bottom: 24px;
+  width: 72px;
+  height: 72px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  margin: 0 auto 24px;
+  background: var(--gray-100);
+  border-radius: 50%;
+  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
 }
 
-.social-icon:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
-  background-color: #409EFF;
-  color: #ffffff;
+.feature-item:hover .feature-icon {
+  transform: scale(1.1) rotate(5deg);
+  background: var(--primary-color);
+  color: var(--white);
+}
+
+.feature-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--gray-900);
+  margin-bottom: 16px;
+}
+
+.feature-desc {
+  color: var(--gray-600);
+  line-height: 1.7;
+}
+
+/* 价格方案 */
+.pricing {
+  padding: 120px 0;
+  background: var(--white);
+  position: relative;
+}
+
+.pricing::before {
+  content: '';
+  position: absolute;
+  top: -60px;
+  left: 0;
+  width: 100%;
+  height: 120px;
+  background: var(--gray-50);
+  transform: skewY(-3deg);
+}
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 40px;
+  position: relative;
+  z-index: 1;
+}
+
+.pricing-card-wrapper {
+  position: relative;
+}
+
+.premium-card-wrapper::before {
+  content: '推荐';
+  position: absolute;
+  top: -10px;
+  right: 20px;
+  background: var(--success-color);
+  color: var(--white);
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  z-index: 2;
+  box-shadow: var(--shadow-md);
+}
+
+.pricing-card {
+  background: var(--gray-50);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-md);
+  border: 2px solid var(--gray-200);
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+  height: 100%;
+}
+
+.premium-card {
+  border-color: var(--success-color);
+  transform: scale(1.05);
+  z-index: 2;
+  box-shadow: var(--shadow-xl);
+}
+
+.pricing-card:hover {
+  box-shadow: var(--shadow-xl);
+  transform: translateY(-5px) scale(1.02);
+}
+
+.premium-card:hover {
+  transform: translateY(-5px) scale(1.07);
+}
+
+.pricing-header {
+  padding: 32px;
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+  color: var(--white);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.premium-card .pricing-header {
+  background: linear-gradient(135deg, var(--success-color) 0%, #0d9488 100%);
+}
+
+.pricing-header::before {
+  content: '';
+  position: absolute;
+  bottom: -20px;
+  left: 50%;
+  width: 40px;
+  height: 40px;
+  background: var(--gray-50);
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.pricing-header::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    to bottom right,
+    rgba(255,255,255,0) 0%,
+    rgba(255,255,255,0) 45%,
+    rgba(255,255,255,0.15) 48%,
+    rgba(255,255,255,0) 50%,
+    rgba(255,255,255,0) 100%
+  );
+  transform: rotate(30deg);
+  animation: shine 3s infinite;
+}
+
+@keyframes shine {
+  0% { transform: translateX(-100%) rotate(30deg); }
+  100% { transform: translateX(100%) rotate(30deg); }
+}
+
+.plan-title {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  position: relative;
+  z-index: 1;
+}
+
+.plan-price {
+  font-size: 36px;
+  font-weight: 700;
+  position: relative;
+  z-index: 1;
+}
+
+.price-amount {
+  display: block;
+}
+
+.price-period {
+  font-size: 16px;
+  font-weight: 400;
+  opacity: 0.8;
+}
+
+.plan-features {
+  padding: 32px;
+  padding-top: 52px;
+}
+
+.plan-features ul {
+  list-style: none;
+}
+
+.plan-features ul li {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+  color: var(--gray-600);
+}
+
+.plan-features ul li .el-icon {
+  color: var(--success-color);
+  margin-right: 12px;
+}
+
+.plan-cta {
+  padding: 0 32px 32px;
+  text-align: center;
+}
+
+.plan-cta .el-button {
+  width: 100%;
+  padding: 10px 0;
+  font-size: 16px;
+  border-radius: 8px;
+  transition: var(--transition);
+  box-shadow: var(--shadow-sm);
+}
+
+.plan-cta .el-button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 /* 页脚 */
 .footer {
-  background-color: #333;
-  text-align: center;
-  padding: 40px 20px;
-  color: #999999;
-  margin-top: 50px;
-}
-
-.footer-text {
-  margin: 10px 0;
-  line-height: 1.6;
-}
-
-/* 返回顶部按钮 */
-.back-to-top {
-  position: fixed;
-  bottom: 30px;
-  right: 30px;
-  z-index: 100;
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.3s ease;
-}
-
-.back-to-top.visible {
-  opacity: 1;
-  visibility: visible;
-}
-
-/* 按钮悬停效果 */
-.btn-hover-effect {
+  background: var(--gray-900);
+  color: var(--white);
+  padding: 120px 0 32px;
   position: relative;
-  overflow: hidden;
-  transition: all 0.3s ease;
+  margin-top: auto;
 }
 
-.btn-hover-effect::before {
+.footer::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: -100%;
+  top: -60px;
+  left: 0;
   width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: all 0.6s ease;
+  height: 120px;
+  background: var(--white);
+  transform: skewY(-3deg);
 }
 
-.btn-hover-effect:hover::before {
-  left: 100%;
+.footer-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 48px;
+  margin-bottom: 48px;
 }
 
-/* 动画类 */
-.animate-fade-in {
-  animation: fadeIn 1s ease forwards;
-}
-
-.animate-slide-up {
-  animation: slideUp 1s ease forwards;
-}
-
-.animate-scale {
-  animation: scale 1s ease forwards;
-}
-
-.animate-float {
+.footer-section h3 {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 24px;
+  color: var(--white);
   position: relative;
-  animation: float 3s ease-in-out infinite;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
+.footer-section h3::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 40px;
+  height: 2px;
+  background: var(--primary-color);
 }
 
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.footer-section ul {
+  list-style: none;
 }
 
-@keyframes scale {
-  from {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+.footer-section ul li {
+  margin-bottom: 12px;
+  color: var(--gray-400);
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: 16px;
+  display: flex;
+  align-items: center;
 }
 
-@keyframes float {
-  0% {
-    transform: translateY(0px);
-  }
+.footer-section ul li:hover {
+  color: var(--white);
+  transform: translateX(5px);
+}
 
-  50% {
-    transform: translateY(-10px);
-  }
+.footer-section ul li .el-icon {
+  margin-right: 10px;
+  width: 20px;
+  text-align: center;
+}
 
-  100% {
-    transform: translateY(0px);
-  }
+.social-links {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.social-links .el-icon {
+  cursor: pointer;
+  transition: var(--transition);
+  color: var(--gray-400);
+}
+
+.social-links .el-icon:hover {
+  color: var(--white);
+  transform: translateY(-3px);
+}
+
+.newsletter {
+  margin-top: 24px;
+}
+
+.footer-bottom {
+  text-align: center;
+  padding-top: 32px;
+  border-top: 1px solid var(--gray-800);
+  color: var(--gray-500);
+  font-size: 16px;
+}
+
+/* 返回顶部 */
+.back-to-top {
+  position: fixed;
+  bottom: 40px;
+  right: 40px;
+  z-index: 1000;
+  width: 56px;
+  height: 56px;
+  box-shadow: var(--shadow-xl);
+  opacity: 0.9;
+  transition: var(--transition);
+  background-color: var(--gray-900) !important;
+  border-color: var(--gray-800) !important;
+}
+
+.back-to-top:hover {
+  opacity: 1;
+  transform: translateY(-5px);
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
 }
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-  .banner-title {
-    font-size: 32px;
+  .hero-title {
+    font-size: clamp(1.8rem, 5vw, 2.5rem);
   }
-
-  .banner-desc {
-    font-size: 16px;
+  
+  .section-title {
+    font-size: clamp(1.5rem, 4vw, 2rem);
   }
-
-  .feature-list,
-  .solution-list {
+  
+  .features-grid, .pricing-grid, .footer-content {
+    grid-template-columns: 1fr;
+  }
+  
+  .premium-card-wrapper::before {
+    top: -10px;
+    right: 50%;
+    transform: translateX(50%);
+  }
+  
+  .premium-card {
+    transform: scale(1);
+  }
+  
+  .pricing-card:hover, .premium-card:hover {
+    transform: translateY(-5px) scale(1.02);
+  }
+  
+  .hero-actions {
     flex-direction: column;
-    align-items: center;
+    gap: 12px;
   }
-
-  .feature-item,
-  .solution-item {
-    width: 90%;
-    margin-bottom: 30px;
+  
+  .hero-actions .el-button {
+    width: 100%;
   }
-
-  .el-menu-demo {
-    padding: 0 10px;
+  
+  .nav-actions {
+    gap: 8px;
   }
 }
 </style>

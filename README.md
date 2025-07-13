@@ -1,16 +1,18 @@
-# Lucky_SMSS - 学生信息管理系统
+<div align="center">
+<h1>Lucky_SMSS - 学生信息管理系统</h1>
+</div>
 
 <div align="center">
   <a href="https://github.com/YangShengzhou03/Lucky_SMSS">
     <img src="https://img.shields.io/github/stars/YangShengzhou03/Lucky_SMSS?style=for-the-badge&logo=github" alt="GitHub Stars">
   </a>
 
-  <a href="https://spring.io/projects/spring-boot">
-    <img src="https://img.shields.io/badge/Spring%20Boot-3.x-green?style=for-the-badge&logo=spring-boot" alt="Spring Boot Version">
+  <a href="https://opensource.org/licenses/MIT">
+    <img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge&logo=open-source-initiative" alt="MIT License">
   </a>
 
-  <a href="https://www.apache.org/licenses/LICENSE-2.0">
-    <img src="https://img.shields.io/badge/License-Apache%202.0-blue?style=for-the-badge&logo=apache" alt="Apache 2.0 License">
+  <a href="https://spring.io/projects/spring-boot">
+    <img src="https://img.shields.io/badge/Spring%20Boot-3.x-green?style=for-the-badge&logo=spring-boot" alt="Spring Boot Version">
   </a>
 </div>
 
@@ -217,4 +219,4 @@ Lucky_SMSS/
 欢迎反馈使用过程中遇到的问题或功能建议，我们将持续优化系统体验。
 
 ## 📜 开源许可
-本项目采用 [Apache 2.0 许可证](https://www.apache.org/licenses/LICENSE-2.0) 授权，允许自由使用、修改和分发。使用时请遵守许可证条款，保留原作者信息与版权声明。
+本项目采用 [MIT License](https://opensource.org/licenses/MIT) 授权，允许自由使用、修改和分发。使用时请遵守许可证条款，保留原作者信息与版权声明。

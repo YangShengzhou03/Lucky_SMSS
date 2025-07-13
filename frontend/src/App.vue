@@ -302,13 +302,15 @@ onUnmounted(() => {
 })
 </script>
 
-<style scoped>
+<style>
 /* CSS 变量 */
 :root {
   --primary-color: #3b82f6;
+  --primary-light: #93c5fd;
   --primary-dark: #2563eb;
   --secondary-color: #64748b;
   --success-color: #10b981;
+  --success-light: #6ee7b7;
   --warning-color: #f59e0b;
   --danger-color: #ef4444;
   --gray-50: #f8fafc;
@@ -341,6 +343,8 @@ onUnmounted(() => {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background-image: radial-gradient(circle at 1px 1px, var(--gray-100) 1px, transparent 0);
+  background-size: 20px 20px;
 }
 
 .container {
@@ -356,6 +360,12 @@ onUnmounted(() => {
   text-align: center;
   margin-bottom: 60px;
   position: relative;
+  background: linear-gradient(90deg, var(--primary-color), var(--success-color));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  display: inline-block;
+  padding: 0 20px;
 }
 
 .section-title::after {
@@ -366,13 +376,13 @@ onUnmounted(() => {
   transform: translateX(-50%);
   width: 60px;
   height: 3px;
-  background: var(--primary-color);
+  background: linear-gradient(90deg, var(--primary-color), var(--success-color));
   border-radius: 2px;
 }
 
 /* 顶部导航 */
 .top-nav {
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   padding: 16px 0;
@@ -381,6 +391,7 @@ onUnmounted(() => {
   top: 0;
   z-index: 100;
   transition: var(--transition);
+  border-bottom: 1px solid var(--gray-100);
 }
 
 .nav-content {
@@ -400,6 +411,7 @@ onUnmounted(() => {
   font-weight: 700;
   color: var(--primary-color);
   letter-spacing: 0.5px;
+  text-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
 }
 
 .logo-badge {
@@ -423,10 +435,14 @@ onUnmounted(() => {
   color: var(--primary-color) !important;
   font-weight: 500 !important;
   transition: var(--transition) !important;
+  border: 1px solid var(--primary-light) !important;
+  padding: 6px 16px !important;
+  border-radius: 8px !important;
 }
 
 .login-btn:hover {
-  opacity: 0.8;
+  background-color: var(--primary-light) !important;
+  color: var(--primary-dark) !important;
   transform: translateY(-1px);
 }
 
@@ -435,6 +451,7 @@ onUnmounted(() => {
   overflow: hidden;
   z-index: 1;
   font-weight: 500 !important;
+  box-shadow: var(--shadow-md);
 }
 
 .register-btn::before {
@@ -445,7 +462,7 @@ onUnmounted(() => {
   width: 100%;
   height: 100%;
   background: linear-gradient(45deg, var(--primary-color), var(--primary-dark));
-  border-radius: 4px;
+  border-radius: 8px;
   z-index: -1;
   transition: var(--transition);
 }
@@ -472,6 +489,7 @@ onUnmounted(() => {
   padding: 0 20px;
   position: relative;
   overflow: hidden;
+  border-bottom: 1px solid var(--primary-light);
 }
 
 .particles {
@@ -487,6 +505,12 @@ onUnmounted(() => {
   max-width: 800px;
   position: relative;
   z-index: 1;
+  padding: 40px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: var(--border-radius);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
 .hero-title {
@@ -503,8 +527,9 @@ onUnmounted(() => {
 }
 
 .hero-subtitle-accent {
-  color: var(--success-color);
+  color: var(--success-light);
   white-space: nowrap;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .hero-subtitle {
@@ -530,6 +555,7 @@ onUnmounted(() => {
   position: relative;
   overflow: hidden;
   z-index: 1;
+  min-width: 160px;
 }
 
 .hero-actions .el-button::after {
@@ -557,8 +583,10 @@ onUnmounted(() => {
 /* 核心功能 */
 .features {
   padding: 120px 0;
-  background: var(--gray-50);
+  background: var(--white);
   position: relative;
+  border-top: 1px solid var(--gray-100);
+  border-bottom: 1px solid var(--gray-100);
 }
 
 .features::before {
@@ -584,12 +612,23 @@ onUnmounted(() => {
   padding: 40px 32px;
   border-radius: var(--border-radius);
   box-shadow: var(--shadow-md);
-  background: linear-gradient(var(--white), var(--white)) padding-box,
-              linear-gradient(45deg, var(--primary-color), var(--success-color)) border-box;
-  border: 2px solid transparent;
+  background: var(--white);
+  border: 1px solid var(--gray-200);
   transition: var(--transition);
   position: relative;
   overflow: hidden;
+}
+
+.feature-item:nth-child(1) {
+  border-top: 3px solid var(--primary-color);
+}
+
+.feature-item:nth-child(2) {
+  border-top: 3px solid var(--success-color);
+}
+
+.feature-item:nth-child(3) {
+  border-top: 3px solid var(--warning-color);
 }
 
 .feature-content {
@@ -607,6 +646,7 @@ onUnmounted(() => {
 .feature-item:hover {
   box-shadow: var(--shadow-xl);
   transform: translateY(-5px);
+  border-color: var(--gray-300);
 }
 
 .feature-icon {
@@ -622,12 +662,14 @@ onUnmounted(() => {
   background: var(--gray-100);
   border-radius: 50%;
   transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+  border: 1px solid var(--gray-200);
 }
 
 .feature-item:hover .feature-icon {
   transform: scale(1.1) rotate(5deg);
   background: var(--primary-color);
   color: var(--white);
+  border-color: transparent;
 }
 
 .feature-title {
@@ -645,8 +687,9 @@ onUnmounted(() => {
 /* 价格方案 */
 .pricing {
   padding: 120px 0;
-  background: var(--white);
+  background: var(--gray-50);
   position: relative;
+  border-bottom: 1px solid var(--gray-200);
 }
 
 .pricing::before {
@@ -656,7 +699,7 @@ onUnmounted(() => {
   left: 0;
   width: 100%;
   height: 120px;
-  background: var(--gray-50);
+  background: var(--white);
   transform: skewY(-3deg);
 }
 
@@ -688,7 +731,7 @@ onUnmounted(() => {
 }
 
 .pricing-card {
-  background: var(--gray-50);
+  background: var(--white);
   border-radius: var(--border-radius);
   box-shadow: var(--shadow-md);
   border: 2px solid var(--gray-200);
@@ -699,8 +742,16 @@ onUnmounted(() => {
   height: 100%;
 }
 
+.pricing-card-wrapper:nth-child(1) .pricing-card {
+  border-top: 4px solid var(--primary-color);
+}
+
+.pricing-card-wrapper:nth-child(2) .pricing-card {
+  border-top: 4px solid var(--warning-color);
+}
+
 .premium-card {
-  border-color: var(--success-color);
+  border-top: 4px solid var(--success-color) !important;
   transform: scale(1.05);
   z-index: 2;
   box-shadow: var(--shadow-xl);
@@ -709,6 +760,7 @@ onUnmounted(() => {
 .pricing-card:hover {
   box-shadow: var(--shadow-xl);
   transform: translateY(-5px) scale(1.02);
+  border-color: var(--gray-300);
 }
 
 .premium-card:hover {
@@ -724,6 +776,10 @@ onUnmounted(() => {
   overflow: hidden;
 }
 
+.pricing-card-wrapper:nth-child(2) .pricing-header {
+  background: linear-gradient(135deg, var(--warning-color) 0%, #d97706 100%);
+}
+
 .premium-card .pricing-header {
   background: linear-gradient(135deg, var(--success-color) 0%, #0d9488 100%);
 }
@@ -735,7 +791,7 @@ onUnmounted(() => {
   left: 50%;
   width: 40px;
   height: 40px;
-  background: var(--gray-50);
+  background: var(--white);
   transform: translateX(-50%) rotate(45deg);
 }
 
@@ -835,6 +891,7 @@ onUnmounted(() => {
   padding: 120px 0 32px;
   position: relative;
   margin-top: auto;
+  border-top: 1px solid var(--gray-800);
 }
 
 .footer::before {
@@ -996,6 +1053,10 @@ onUnmounted(() => {
   
   .nav-actions {
     gap: 8px;
+  }
+  
+  .hero-content {
+    padding: 20px;
   }
 }
 </style>

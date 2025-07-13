@@ -1,1 +1,0 @@
-<template><div></div></template><script>export default {name: 'RegisterModal'}</script>

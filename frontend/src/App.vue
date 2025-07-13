@@ -160,7 +160,6 @@
         class="back-to-top"
         type="primary"
         :icon="ArrowUp"
-        circle
         @click="scrollToTop"
       />
     </transition>
@@ -984,7 +983,7 @@ onUnmounted(() => {
   font-size: 16px;
 }
 
-/* 返回顶部 */
+/* 返回顶部 目前不圆*/
 .back-to-top {
   position: fixed;
   bottom: 40px;
@@ -992,6 +991,7 @@ onUnmounted(() => {
   z-index: 1000;
   width: 56px;
   height: 56px;
+  border-radius: 50%;
   box-shadow: var(--shadow-xl);
   opacity: 0.9;
   transition: var(--transition);

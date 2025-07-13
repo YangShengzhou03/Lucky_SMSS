@@ -28,10 +28,10 @@
         <div class="hero-content">
           <div class="hero-text">
             <h1 class="hero-title">
-              <span class="title-line">智能短信管理系统</span>
+              <span class="title-line">智能学生管理系统</span>
               <span class="hero-subtitle-accent">创新科技，引领未来</span>
             </h1>
-            <p class="hero-subtitle">高效、安全、便捷的短信服务解决方案</p>
+            <p class="hero-subtitle">高效、便捷的教育服务解决方案</p>
             <div class="hero-actions">
               <el-button type="primary" size="large" @click="scrollToSection('features')">
                 了解功能
@@ -103,7 +103,7 @@
         <div class="footer-content">
           <div class="footer-section">
             <h3>Lucky SMS</h3>
-            <p>高效、安全、便捷的短信服务解决方案</p>
+            <p>高效、便捷的教育服务解决方案</p>
           </div>
           <div class="footer-section">
             <h3>快速链接</h3>
@@ -118,15 +118,15 @@
             <ul>
               <li>
                 <el-icon><Location /></el-icon>
-                <span>北京市朝阳区科技园区</span>
+                <span>江西科技师范大学（红角洲校区）</span>
               </li>
               <li>
                 <el-icon><Phone /></el-icon>
-                <span>400-123-4567</span>
+                <span>123-456-7890</span>
               </li>
               <li>
                 <el-icon><Message /></el-icon>
-                <span>contact@luckysms.com</span>
+                <span>3555844679@qq.com</span>
               </li>
             </ul>
           </div>
@@ -170,7 +170,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import {
-  Thunderbolt, Cloud, Lock, ArrowUp, Check,
+  Position, MostlyCloudy, Lock, ArrowUp, Check,
   Location, Phone, Message, ChatDotRound,
   Opportunity, Link, User
 } from '@element-plus/icons-vue'
@@ -182,13 +182,13 @@ const showBackToTop = ref(false)
 const features = [
   {
     id: 1,
-    icon: Thunderbolt,
-    title: '极速发送',
-    description: '百万级并发处理能力，短信秒级送达'
+    icon: Position,
+    title: '秒级响应',
+    description: '百万级并发处理能力，信息数据秒级送达'
   },
   {
     id: 2,
-    icon: Cloud,
+    icon: MostlyCloudy,
     title: '云端服务',
     description: '分布式架构设计，99.99%系统可用性'
   },
@@ -208,7 +208,7 @@ const pricingPlans = [
     price: '¥99',
     period: '/月',
     features: [
-      '10万条短信额度',
+      '十万级学生容量',
       '基础API接口',
       '邮件技术支持',
       '基础数据分析'
@@ -220,7 +220,7 @@ const pricingPlans = [
     price: '¥299',
     period: '/月',
     features: [
-      '50万条短信额度',
+      '百万级学生容量',
       '高级API接口',
       '24/7技术支持',
       '高级数据分析',
@@ -233,7 +233,7 @@ const pricingPlans = [
     price: '¥899',
     period: '/月',
     features: [
-      '无限短信额度',
+      '千万级学生容量',
       'VIP API接口',
       '专属客户经理',
       '高级安全保障',

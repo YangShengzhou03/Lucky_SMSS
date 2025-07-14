@@ -9,10 +9,10 @@
             <span class="logo-badge">PRO</span>
           </div>
           <div class="nav-actions">
-            <el-button type="text" size="small" class="login-btn">
+            <el-button type="text" size="small" class="login-btn" @click="handleLogin">
               <span class="btn-text">登录</span>
             </el-button>
-            <el-button type="primary" size="small" class="register-btn">
+            <el-button type="primary" size="small" class="register-btn" @click="handleRegister">
               <span class="btn-text">注册</span>
             </el-button>
           </div>
@@ -20,82 +20,93 @@
       </div>
     </div>
 
-    <!-- 主要内容 -->
-    <main>
-      <!-- 英雄区域 -->
-      <section id="home" class="hero">
-        <div class="particles" id="particles-js"></div>
-        <div class="hero-content">
-          <div class="hero-text">
-            <h1 class="hero-title">
-              <span class="title-line">智能学生管理系统</span>
-              <span class="hero-subtitle-accent">创新科技，引领未来</span>
-            </h1>
-            <p class="hero-subtitle">高效、便捷的教育服务解决方案</p>
-            <div class="hero-actions">
-              <el-button type="primary" size="large" @click="scrollToSection('features')">
-                了解功能
-              </el-button>
-              <el-button type="default" size="large" @click="scrollToSection('pricing')">
-                查看价格
-              </el-button>
-            </div>
-          </div>
-        </div>
-      </section>
+    <div v-if="isHomePage">
 
-      <!-- 核心功能 -->
-      <section id="features" class="features">
-        <div class="container">
-          <h2 class="section-title">核心功能</h2>
-          <div class="features-grid">
-            <div class="feature-item" v-for="feature in features" :key="feature.id">
-              <div class="feature-content">
-                <div class="feature-icon">
-                  <el-icon><component :is="feature.icon" /></el-icon>
-                </div>
-                <h3 class="feature-title">{{ feature.title }}</h3>
-                <p class="feature-desc">{{ feature.description }}</p>
+      <!-- 主要内容 -->
+      <main>
+        <!-- 英雄区域 -->
+        <section id="home" class="hero">
+          <div class="particles" id="particles-js"></div>
+          <div class="hero-content">
+            <div class="hero-text">
+              <h1 class="hero-title">
+                <span class="title-line">智能学生管理系统</span>
+                <span class="hero-subtitle-accent">创新科技，引领未来</span>
+              </h1>
+              <p class="hero-subtitle">高效、便捷的教育服务解决方案</p>
+              <div class="hero-actions">
+                <el-button type="primary" size="large" @click="scrollToSection('features')">
+                  了解功能
+                </el-button>
+                <el-button type="default" size="large" @click="scrollToSection('pricing')">
+                  查看价格
+                </el-button>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <!-- 价格方案 -->
-      <section id="pricing" class="pricing">
-        <div class="container">
-          <h2 class="section-title">价格方案</h2>
-          <div class="pricing-grid">
-            <div class="pricing-card-wrapper" :class="{ 'premium-card-wrapper': plan.id === 3 }" 
-                 v-for="plan in pricingPlans" :key="plan.id">
-              <div class="pricing-card" :class="{ 'premium-card': plan.id === 3 }">
-                <div class="pricing-header">
-                  <h3 class="plan-title">{{ plan.title }}</h3>
-                  <div class="plan-price">
-                    <span class="price-amount">{{ plan.price }}</span>
-                    <span class="price-period">{{ plan.period }}</span>
+        <!-- 核心功能 -->
+        <section id="features" class="features">
+          <div class="container">
+            <h2 class="section-title">核心功能</h2>
+            <div class="features-grid">
+              <div class="feature-item" v-for="feature in features" :key="feature.id">
+                <div class="feature-content">
+                  <div class="feature-icon">
+                    <el-icon>
+                      <component :is="feature.icon" />
+                    </el-icon>
+                  </div>
+                  <h3 class="feature-title">{{ feature.title }}</h3>
+                  <p class="feature-desc">{{ feature.description }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 价格方案 -->
+        <section id="pricing" class="pricing">
+          <div class="container">
+            <h2 class="section-title">价格方案</h2>
+            <div class="pricing-grid">
+              <div class="pricing-card-wrapper" :class="{ 'premium-card-wrapper': plan.id === 3 }"
+                v-for="plan in pricingPlans" :key="plan.id">
+                <div class="pricing-card" :class="{ 'premium-card': plan.id === 3 }">
+                  <div class="pricing-header">
+                    <h3 class="plan-title">{{ plan.title }}</h3>
+                    <div class="plan-price">
+                      <span class="price-amount">{{ plan.price }}</span>
+                      <span class="price-period">{{ plan.period }}</span>
+                    </div>
+                  </div>
+                  <div class="plan-features">
+                    <ul>
+                      <li v-for="feature in plan.features" :key="feature">
+                        <el-icon>
+                          <Check />
+                        </el-icon>
+                        {{ feature }}
+                      </li>
+                    </ul>
+                  </div>
+                  <div class="plan-cta">
+                    <el-button :type="plan.id === 3 ? 'success' : 'primary'" size="medium">
+                      选择方案
+                    </el-button>
                   </div>
                 </div>
-                <div class="plan-features">
-                  <ul>
-                    <li v-for="feature in plan.features" :key="feature">
-                      <el-icon><Check /></el-icon>
-                      {{ feature }}
-                    </li>
-                  </ul>
-                </div>
-                <div class="plan-cta">
-                  <el-button :type="plan.id === 3 ? 'success' : 'primary'" size="medium">
-                    选择方案
-                  </el-button>
-                </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
-    </main>
+        </section>
+      </main>
+
+    </div>
+
+    <!-- 路由出口：登录/注册页面在这里显示 -->
+    <router-view v-else />
 
     <!-- 页脚 -->
     <footer class="footer">
@@ -117,15 +128,21 @@
             <h3>联系信息</h3>
             <ul>
               <li>
-                <el-icon><Location /></el-icon>
+                <el-icon>
+                  <Location />
+                </el-icon>
                 <span>江西科技师范大学（红角洲校区）</span>
               </li>
               <li>
-                <el-icon><Phone /></el-icon>
+                <el-icon>
+                  <Phone />
+                </el-icon>
                 <span>123-456-7890</span>
               </li>
               <li>
-                <el-icon><Message /></el-icon>
+                <el-icon>
+                  <Message />
+                </el-icon>
                 <span>3555844679@qq.com</span>
               </li>
             </ul>
@@ -133,10 +150,18 @@
           <div class="footer-section">
             <h3>关注我们</h3>
             <div class="social-links">
-              <el-icon :size="24"><ChatDotRound /></el-icon>
-              <el-icon :size="24"><Opportunity /></el-icon>
-              <el-icon :size="24"><Link /></el-icon>
-              <el-icon :size="24"><User /></el-icon>
+              <el-icon :size="24">
+                <ChatDotRound />
+              </el-icon>
+              <el-icon :size="24">
+                <Opportunity />
+              </el-icon>
+              <el-icon :size="24">
+                <Link />
+              </el-icon>
+              <el-icon :size="24">
+                <User />
+              </el-icon>
             </div>
             <div class="newsletter">
               <el-input placeholder="您的邮箱地址" size="small">
@@ -155,27 +180,37 @@
 
     <!-- 返回顶部 -->
     <transition name="fade">
-      <el-button
-        v-show="showBackToTop"
-        class="back-to-top"
-        type="primary"
-        :icon="ArrowUp"
-        @click="scrollToTop"
-      />
+      <el-button v-show="showBackToTop" class="back-to-top" type="primary" :icon="ArrowUp" @click="scrollToTop" />
     </transition>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import {
   Position, MostlyCloudy, Lock, ArrowUp, Check,
   Location, Phone, Message, ChatDotRound,
   Opportunity, Link, User
 } from '@element-plus/icons-vue'
+// 引入路由相关依赖
+import { useRoute, useRouter } from 'vue-router';
 
-// 响应式数据
+const router = useRouter()
+
 const showBackToTop = ref(false)
+
+const route = useRoute();
+
+// 控制首页内容是否显示：根路径时显示，其他路径隐藏
+const isHomePage = ref(true);
+
+// 监听路由变化，切换显示状态
+watch(
+  () => route.path,
+  (newPath) => {
+    isHomePage.value = newPath === '/'; // 只有根路径显示首页内容
+  }
+);
 
 // 核心功能数据
 const features = [
@@ -263,6 +298,14 @@ const scrollToTop = () => {
 const handleScroll = () => {
   const scrollTop = window.pageYOffset || document.documentElement.scrollTop
   showBackToTop.value = scrollTop > 300
+}
+
+const handleLogin = () => {
+  router.push('/login')
+}
+
+const handleRegister = () => {
+  router.push('/register')
 }
 
 // 生命周期
@@ -525,6 +568,7 @@ onUnmounted(() => {
   display: inline-block;
 }
 
+/* 英雄字体 */
 .hero-subtitle-accent {
   color: var(--success-light);
   white-space: nowrap;
@@ -801,21 +845,24 @@ onUnmounted(() => {
   left: -50%;
   width: 200%;
   height: 200%;
-  background: linear-gradient(
-    to bottom right,
-    rgba(255,255,255,0) 0%,
-    rgba(255,255,255,0) 45%,
-    rgba(255,255,255,0.15) 48%,
-    rgba(255,255,255,0) 50%,
-    rgba(255,255,255,0) 100%
-  );
+  background: linear-gradient(to bottom right,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0) 45%,
+      rgba(255, 255, 255, 0.15) 48%,
+      rgba(255, 255, 255, 0) 50%,
+      rgba(255, 255, 255, 0) 100%);
   transform: rotate(30deg);
   animation: shine 3s infinite;
 }
 
 @keyframes shine {
-  0% { transform: translateX(-100%) rotate(30deg); }
-  100% { transform: translateX(100%) rotate(30deg); }
+  0% {
+    transform: translateX(-100%) rotate(30deg);
+  }
+
+  100% {
+    transform: translateX(100%) rotate(30deg);
+  }
 }
 
 .plan-title {
@@ -983,7 +1030,7 @@ onUnmounted(() => {
   font-size: 16px;
 }
 
-/* 返回顶部 目前不圆*/
+/* 返回顶部*/
 .back-to-top {
   position: fixed;
   bottom: 40px;
@@ -995,22 +1042,24 @@ onUnmounted(() => {
   box-shadow: var(--shadow-xl);
   opacity: 0.9;
   transition: var(--transition);
-  background-color: var(--gray-900) !important;
-  border-color: var(--gray-800) !important;
+  background-color: var(--primary-color) !important;
+  /* border-color: var(--gray-800) !important; */
 }
 
 .back-to-top:hover {
   opacity: 1;
   transform: translateY(-5px);
-  background-color: var(--primary-color) !important;
-  border-color: var(--primary-color) !important;
+  background-color: var(--primary-light) !important;
+  /* border-color: var(--primary-light) !important; */
 }
 
-.fade-enter-active, .fade-leave-active {
+.fade-enter-active,
+.fade-leave-active {
   transition: opacity 0.3s ease;
 }
 
-.fade-enter-from, .fade-leave-to {
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
 }
 
@@ -1019,42 +1068,45 @@ onUnmounted(() => {
   .hero-title {
     font-size: clamp(1.8rem, 5vw, 2.5rem);
   }
-  
+
   .section-title {
     font-size: clamp(1.5rem, 4vw, 2rem);
   }
-  
-  .features-grid, .pricing-grid, .footer-content {
+
+  .features-grid,
+  .pricing-grid,
+  .footer-content {
     grid-template-columns: 1fr;
   }
-  
+
   .premium-card-wrapper::before {
     top: -10px;
     right: 50%;
     transform: translateX(50%);
   }
-  
+
   .premium-card {
     transform: scale(1);
   }
-  
-  .pricing-card:hover, .premium-card:hover {
+
+  .pricing-card:hover,
+  .premium-card:hover {
     transform: translateY(-5px) scale(1.02);
   }
-  
+
   .hero-actions {
     flex-direction: column;
     gap: 12px;
   }
-  
+
   .hero-actions .el-button {
     width: 100%;
   }
-  
+
   .nav-actions {
     gap: 8px;
   }
-  
+
   .hero-content {
     padding: 20px;
   }

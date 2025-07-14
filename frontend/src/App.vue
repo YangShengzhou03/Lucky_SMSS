@@ -9,10 +9,10 @@
             <span class="logo-badge">PRO</span>
           </div>
           <div class="nav-actions">
-            <el-button type="text" size="small" class="login-btn" @click="handleLogin">
+            <el-button type="text" size="small" class="main-login-btn" @click="handleLogin">
               <span class="btn-text">登录</span>
             </el-button>
-            <el-button type="primary" size="small" class="register-btn" @click="handleRegister">
+            <el-button type="primary" size="small" class="main-register-btn" @click="handleRegister">
               <span class="btn-text">注册</span>
             </el-button>
           </div>
@@ -473,7 +473,7 @@ onUnmounted(() => {
   gap: 16px;
 }
 
-.login-btn {
+.main-login-btn {
   color: var(--primary-color) !important;
   font-weight: 500 !important;
   transition: var(--transition) !important;
@@ -482,34 +482,22 @@ onUnmounted(() => {
   border-radius: 8px !important;
 }
 
-.login-btn:hover {
+.main-login-btn:hover {
   background-color: var(--primary-light) !important;
   color: var(--primary-dark) !important;
   transform: translateY(-1px);
 }
 
-.register-btn {
-  position: relative;
-  overflow: hidden;
-  z-index: 1;
+.main-register-btn {
+  color: var(--white) !important;
   font-weight: 500 !important;
-  box-shadow: var(--shadow-md);
+  transition: var(--transition) !important;
+  border: 1px solid var(--primary-light) !important;
+  padding: 6px 16px !important;
+  border-radius: 8px !important;
 }
 
-.register-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(45deg, var(--primary-color), var(--primary-dark));
-  border-radius: 8px;
-  z-index: -1;
-  transition: var(--transition);
-}
-
-.register-btn:hover::before {
+.main-register-btn:hover {
   transform: scale(1.05);
   opacity: 0.9;
 }
@@ -1043,14 +1031,12 @@ onUnmounted(() => {
   opacity: 0.9;
   transition: var(--transition);
   background-color: var(--primary-color) !important;
-  /* border-color: var(--gray-800) !important; */
 }
 
 .back-to-top:hover {
   opacity: 1;
   transform: translateY(-5px);
   background-color: var(--primary-light) !important;
-  /* border-color: var(--primary-light) !important; */
 }
 
 .fade-enter-active,

@@ -34,71 +34,17 @@
             />
           </el-form-item>
           
-          <!-- 邮箱输入 -->
-          <el-form-item prop="email" class="form-item">
+          <!-- 手机号输入 -->
+          <el-form-item prop="phone" class="form-item">
             <el-input 
-              v-model="registerForm.email" 
-              placeholder="输入邮箱地址" 
+              v-model="registerForm.phone" 
+              placeholder="输入手机号" 
               size="large"
-              :prefix-icon="Message"
+              :prefix-icon="Phone"
               clearable
               class="custom-input"
+              maxlength="11"
             />
-          </el-form-item>
-          
-          <!-- 密码输入 -->
-          <el-form-item prop="password" class="form-item">
-            <el-input 
-              v-model="registerForm.password" 
-              :type="showPassword ? 'text' : 'password'" 
-              placeholder="设置密码" 
-              size="large"
-              :prefix-icon="Lock"
-              clearable
-              class="custom-input"
-            >
-              <template #suffix>
-                <el-icon 
-                  @click="showPassword = !showPassword"
-                  class="password-toggle"
-                >
-                  <component :is="showPassword ? Eye : EyeOff" />
-                </el-icon>
-              </template>
-            </el-input>
-            <div class="password-strength">
-              <div 
-                class="strength-bar" 
-                :class="{
-                  'weak': passwordStrength === 1,
-                  'medium': passwordStrength === 2,
-                  'strong': passwordStrength === 3
-                }"
-              ></div>
-              <span class="strength-text">{{ passwordStrengthText }}</span>
-            </div>
-          </el-form-item>
-          
-          <!-- 确认密码 -->
-          <el-form-item prop="confirmPassword" class="form-item">
-            <el-input 
-              v-model="registerForm.confirmPassword" 
-              :type="showConfirmPassword ? 'text' : 'password'" 
-              placeholder="确认密码" 
-              size="large"
-              :prefix-icon="Lock"
-              clearable
-              class="custom-input"
-            >
-              <template #suffix>
-                <el-icon 
-                  @click="showConfirmPassword = !showConfirmPassword"
-                  class="password-toggle"
-                >
-                  <component :is="showConfirmPassword ? Eye : EyeOff" />
-                </el-icon>
-              </template>
-            </el-input>
           </el-form-item>
           
           <!-- 验证码 -->
@@ -110,6 +56,7 @@
                 size="large"
                 :prefix-icon="Key"
                 class="custom-input captcha-input"
+                maxlength="6"
               />
               <el-button 
                 type="primary" 
@@ -140,7 +87,6 @@
             class="register-btn" 
             @click="handleRegister"
             :loading="registerLoading"
-            round
           >
             <span v-if="!registerLoading">立即注册</span>
             <span v-else>注册中...</span>
@@ -165,26 +111,24 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted, onUnmounted } from 'vue';
 import { ElMessage } from 'element-plus';
 import { 
-  User, Message, Lock, Key, Eye, EyeOff 
+  User, Key, Phone  // 新增Phone图标，删除密码相关图标
 } from '@element-plus/icons-vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
 
-// 表单数据
+// 表单数据（仅保留用户名、手机号、验证码）
 const registerForm = reactive({
   username: '',
-  email: '',
-  password: '',
-  confirmPassword: '',
+  phone: '',  // 新增手机号字段
   captcha: '',
   agreement: false
 });
 
-// 表单验证规则
+// 表单验证规则（更新为手机号验证）
 const registerRules = reactive({
   username: [
     { required: true, message: '请输入用户名', trigger: 'blur' },
@@ -195,39 +139,12 @@ const registerRules = reactive({
       trigger: 'blur'
     }
   ],
-  email: [
-    { required: true, message: '请输入邮箱地址', trigger: 'blur' },
+  phone: [  // 新增手机号验证规则
+    { required: true, message: '请输入手机号', trigger: 'blur' },
     { 
-      type: 'email', 
-      message: '请输入正确的邮箱格式', 
-      trigger: ['blur', 'change'] 
-    }
-  ],
-  password: [
-    { required: true, message: '请输入密码', trigger: 'blur' },
-    { min: 8, message: '密码长度不能少于8个字符', trigger: 'blur' },
-    { 
-      validator: (rule, value, callback) => {
-        if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(value)) {
-          callback(new Error('密码需包含大小写字母和数字'));
-        } else {
-          callback();
-        }
-      },
-      trigger: 'blur'
-    }
-  ],
-  confirmPassword: [
-    { required: true, message: '请再次输入密码', trigger: 'blur' },
-    { 
-      validator: (rule, value, callback) => {
-        if (value !== registerForm.password) {
-          callback(new Error('两次输入的密码不一致'));
-        } else {
-          callback();
-        }
-      },
-      trigger: 'blur'
+      pattern: /^1[3-9]\d{9}$/,  // 手机号正则
+      message: '请输入正确的手机号格式', 
+      trigger: 'blur' 
     }
   ],
   captcha: [
@@ -248,31 +165,11 @@ const registerRules = reactive({
   ]
 });
 
-// 状态管理
+// 状态管理（删除密码相关状态）
 const registerFormRef = ref(null);
-const showPassword = ref(false);
-const showConfirmPassword = ref(false);
 const registerLoading = ref(false);
 const captchaCooldown = ref(0);
 let captchaTimer = null;
-
-// 密码强度计算
-const passwordStrength = computed(() => {
-  if (!registerForm.password) return 0;
-  
-  let strength = 0;
-  if (registerForm.password.length >= 8) strength++;
-  if (/[A-Z]/.test(registerForm.password)) strength++;
-  if (/[0-9]/.test(registerForm.password)) strength++;
-  if (/[^A-Za-z0-9]/.test(registerForm.password)) strength++;
-  
-  return Math.min(3, Math.floor(strength / 1.5));
-});
-
-const passwordStrengthText = computed(() => {
-  const texts = ['', '弱', '中', '强'];
-  return texts[passwordStrength.value];
-});
 
 // 验证码按钮文本
 const captchaBtnText = computed(() => {
@@ -281,14 +178,25 @@ const captchaBtnText = computed(() => {
     : '获取验证码';
 });
 
-// 发送验证码
+// 发送验证码（改为手机号验证）
 const sendCaptcha = () => {
-  if (!registerForm.email) {
-    ElMessage.warning('请输入邮箱地址');
-    return;
-  }
+  // 先验证手机号格式
+  const phoneValid = registerRules.phone.every(rule => {
+    const { required, pattern, message } = rule;
+    if (required && !registerForm.phone) {
+      ElMessage.warning(message);
+      return false;
+    }
+    if (pattern && !pattern.test(registerForm.phone)) {
+      ElMessage.warning(message);
+      return false;
+    }
+    return true;
+  });
+
+  if (!phoneValid) return;
   
-  // 模拟发送验证码
+  // 模拟发送验证码到手机号
   captchaCooldown.value = 60;
   captchaTimer = setInterval(() => {
     captchaCooldown.value--;
@@ -297,7 +205,7 @@ const sendCaptcha = () => {
     }
   }, 1000);
   
-  ElMessage.success(`验证码已发送至 ${registerForm.email}`);
+  ElMessage.success(`验证码已发送至 ${registerForm.phone}`);
 };
 
 // 注册处理
@@ -358,10 +266,10 @@ onMounted(() => {
   }
 });
 
-// // 清理定时器
-// onUnmounted(() => {
-//   if (captchaTimer) clearInterval(captchaTimer);
-// });
+// 清理定时器
+onUnmounted(() => {
+  if (captchaTimer) clearInterval(captchaTimer);
+});
 </script>
 
 <style scoped>
@@ -388,7 +296,7 @@ onMounted(() => {
 
 .register-container {
   width: 100%;
-  max-width: 480px;
+  max-width: 420px;
   position: relative;
   z-index: 1;
 }
@@ -410,7 +318,7 @@ onMounted(() => {
 
 .card-header {
   text-align: center;
-  margin-bottom: 32px;
+  margin-bottom: 28px;
 }
 
 .welcome-text {
@@ -434,7 +342,7 @@ onMounted(() => {
 }
 
 .form-item {
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .custom-input {
@@ -454,64 +362,6 @@ onMounted(() => {
 
 .custom-input :deep(.el-input__wrapper.is-focus) {
   box-shadow: 0 0 0 1px #10b981 inset, 0 4px 8px rgba(16, 185, 129, 0.2);
-}
-
-.password-toggle {
-  color: #94a3b8;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.password-toggle:hover {
-  color: #10b981;
-  transform: scale(1.1);
-}
-
-.password-strength {
-  display: flex;
-  align-items: center;
-  margin-top: 8px;
-  height: 6px;
-}
-
-.strength-bar {
-  flex: 1;
-  height: 100%;
-  background: #e2e8f0;
-  border-radius: 3px;
-  overflow: hidden;
-  position: relative;
-}
-
-.strength-bar::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 100%;
-  width: 0;
-  transition: width 0.3s ease;
-}
-
-.strength-bar.weak::after {
-  width: 33%;
-  background: #ef4444;
-}
-
-.strength-bar.medium::after {
-  width: 66%;
-  background: #f59e0b;
-}
-
-.strength-bar.strong::after {
-  width: 100%;
-  background: #10b981;
-}
-
-.strength-text {
-  font-size: 12px;
-  color: #64748b;
-  margin-left: 8px;
 }
 
 .captcha-container {
@@ -583,6 +433,7 @@ onMounted(() => {
 @media (max-width: 480px) {
   .register-card {
     padding: 30px 20px;
+    border-radius: 12px;
   }
   
   .register-container {
@@ -595,10 +446,21 @@ onMounted(() => {
   
   .captcha-container {
     flex-direction: column;
+    gap: 12px;
   }
   
   .captcha-btn {
     width: 100%;
+    padding: 12px 0;
+  }
+  
+  .form-item {
+    margin-bottom: 18px;
+  }
+  
+  .register-btn {
+    padding: 12px 0;
+    font-size: 15px;
   }
 }
 </style>

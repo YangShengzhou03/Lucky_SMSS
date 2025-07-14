@@ -8,15 +8,18 @@
       
       <!-- 登录卡片 -->
       <div class="login-card">
-        <!-- 直角切角二维码入口 -->
+        <!-- 右上角二维码图标 - 仅在非二维码模式下显示 -->
         <div 
+          v-if="!showQRCode"
           class="qr-corner"
           @click="toggleQRCode"
           :class="{ active: showQRCode }"
         >
-          <svg viewBox="0 0 1024 1024" width="24" height="24">
-            <path d="M999.131429 930.03581V999.619048h-174.031239v-69.583238h174.05562z m-313.295239-208.944762v208.944762h-28.769523l-40.813715-40.716191v-168.228571h69.558858z m139.264 139.264v69.680762h-69.583238v-69.680762h69.583238z m174.05562-139.166477v69.583239h-34.79162v69.583238H894.780952v-69.583238h34.791619V721.188571h69.583239z m-452.608 69.583239v29.110857l-29.086477-29.110857h29.086477z m278.55238-69.680762v69.558857h-69.583238v-69.558857h69.583238zM546.54781 616.594286v104.496762h-69.583239V616.594286h69.583239z m208.944761 0v69.583238H685.83619V616.594286h69.705143z m243.663239 0v69.583238h-174.08V616.594286h174.08z m-696.246858-40.17981l-29.159619-29.379047h29.159619v-69.583239h174.08v-104.496761h69.558858v104.496761h139.264v139.142096h-69.558858v-69.558857H302.908952v29.379047z m696.246858-98.986666v69.607619h-69.583239v-69.583239h69.583239z m-104.350477 0v69.607619h-139.288381v-69.583239H894.780952z m-661.455238 0v28.281904l-28.842666-28.281904H233.325714zM407.28381 24.868571v383.024762H163.523048v29.622857L24.380952 297.447619V24.868571h382.902858z m591.969523 0v383.024762h-383.024762V24.868571h383.024762zM337.700571 94.427429H93.96419v243.760761h243.736381V94.427429z m591.872 0h-243.760761v243.760761h243.760761V94.427429z m-383.024761 139.264v69.583238h-69.583239V233.691429h69.583239z m-278.430477-69.680762v104.472381H163.669333V164.010667h104.496762z m591.872 0v104.472381h-104.472381V164.010667h104.472381z m-313.441523-104.350477v104.472381h-69.583239V59.63581h69.583239z" fill="currentColor"></path>
-          </svg>
+          <img 
+            src="@/assets/images/login-qr-code.png" 
+            alt="扫码登录" 
+            class="qr-icon"
+          >
         </div>
 
         <!-- 表单内容 -->
@@ -103,12 +106,18 @@
         <transition name="fade">
           <div class="qr-content" v-if="showQRCode">
             <div class="qr-card">
-              <div class="qr-code-placeholder">
-                <!-- 这里放实际二维码图片 -->
-                <img src="@/assets/images/login-qr-code.png" alt="扫码登录" class="qr-image">
+              <!-- 二维码容器 -->
+              <div class="qr-code-container">
+                <img src="@/assets/images/login-qr-code.svg" alt="扫码登录" class="qr-image">
               </div>
-              <h3>扫码登录</h3>
-              <p>使用Lucky SMS APP扫描二维码</p>
+              
+              <!-- 标题和说明文字 -->
+              <div class="qr-text-container">
+                <h3>扫码登录</h3>
+                <p>使用Lucky SMS APP扫描二维码</p>
+              </div>
+              
+              <!-- 返回按钮 -->
               <el-button 
                 type="text" 
                 class="back-btn"
@@ -245,7 +254,7 @@ onMounted(() => {
   border: 1px solid rgba(255, 255, 255, 0.3);
   position: relative;
   overflow: hidden;
-  min-height: 400px; /* 新增：设置最小高度防止收缩 */
+  min-height: 400px;
 }
 
 .login-card:hover {
@@ -253,30 +262,35 @@ onMounted(() => {
   transform: translateY(-2px);
 }
 
-/* 直角切角二维码入口 */
+/* 右上角二维码图标样式 */
 .qr-corner {
   position: absolute;
   top: 0;
   right: 0;
-  width: 50px;
-  height: 50px;
-  background: linear-gradient(135deg, transparent 0%, transparent 50%, #3b82f6 50%, #3b82f6 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 36px;
+  height: 36px;
   cursor: pointer;
   transition: all 0.3s ease;
+  z-index: 20;
+  background-color: white;
+  border-radius: 0 0 0 8px;
+  padding: 4px;
+  box-shadow: -2px 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.qr-corner svg {
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  color: white;
+.qr-icon {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: transform 0.3s ease;
 }
 
-.qr-corner.active {
-  background: linear-gradient(135deg, transparent 0%, transparent 50%, #10b981 50%, #10b981 100%);
+.qr-corner:hover .qr-icon {
+  transform: scale(1.1);
+}
+
+.qr-corner.active .qr-icon {
+  filter: hue-rotate(90deg);
 }
 
 .card-header {
@@ -338,7 +352,6 @@ onMounted(() => {
   font-size: 14px;
 }
 
-/* 登录按钮文字颜色修改为白色 */
 .login-btn {
   width: 100%;
   padding: 14px 0;
@@ -350,7 +363,7 @@ onMounted(() => {
   transition: all 0.3s ease;
   margin-top: 10px;
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-  color: white; /* 新增：设置按钮文字颜色为白色 */
+  color: white;
 }
 
 .login-btn:hover {
@@ -397,35 +410,48 @@ onMounted(() => {
 .qr-card {
   text-align: center;
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* 确保子元素水平居中 */
+  height: 100%;
+  justify-content: center; /* 垂直居中整个内容 */
 }
 
-.qr-code-placeholder {
+/* 二维码容器 */
+.qr-code-container {
   width: 200px;
-  height: 200px; /* 修复：设置正确的高度 */
-  margin: 0 auto 20px;
+  height: 200px;
+  display: flex; /* 添加flex布局 */
+  align-items: center; /* 垂直居中 */
+  justify-content: center; /* 水平居中 */
   background: #f8fafc;
   border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   padding: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  margin-bottom: 20px; /* 简化外边距 */
 }
 
 .qr-image {
+  width: 100%; /* 确保图片填充容器 */
+  height: 100%; /* 确保图片填充容器 */
+  object-fit: contain; /* 保持比例同时填充容器 */
+}
+
+/* 二维码文字容器 */
+.qr-text-container {
   width: 100%;
-  height: 100%;
-  object-fit: contain;
+  margin-bottom: 25px;
 }
 
 .qr-card h3 {
   font-size: 18px;
   margin-bottom: 8px;
   color: #1e293b;
+  font-weight: 600;
 }
 
 .qr-card p {
   color: #64748b;
-  margin-bottom: 25px;
   font-size: 14px;
 }
 
@@ -454,14 +480,14 @@ onMounted(() => {
     border-radius: 12px;
   }
   
-  .qr-code-placeholder {
+  .qr-code-container {
     width: 180px;
     height: 180px;
   }
   
   .qr-corner {
-    width: 40px;
-    height: 40px;
+    width: 32px;
+    height: 32px;
   }
 }
 </style>

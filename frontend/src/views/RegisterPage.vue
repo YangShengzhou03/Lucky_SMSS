@@ -111,117 +111,107 @@
 </template>
 
 <script setup>
+// -------------------- 依赖导入 --------------------
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue';
 import { ElMessage } from 'element-plus';
-import { 
-  User, Key, Phone  // 新增Phone图标，删除密码相关图标
-} from '@element-plus/icons-vue';
-import { useRouter } from 'vue-router';
+import { User, Key, Phone } from '@element-plus/icons-vue';
 
-const router = useRouter();
+// -------------------- 常量与状态 --------------------
 
-// 表单数据（仅保留用户名、手机号、验证码）
+// 表单数据，和 el-form 绑定
 const registerForm = reactive({
   username: '',
-  phone: '',  // 新增手机号字段
+  phone: '',
   captcha: '',
   agreement: false
 });
 
-// 表单验证规则（更新为手机号验证）
+// 校验规则，建议提取为常量，避免每次组件创建都生成新对象
+const USERNAME_RULES = [
+  { required: true, message: '请输入用户名', trigger: 'blur' },
+  { min: 3, max: 20, message: '用户名长度在3-20个字符之间', trigger: 'blur' },
+  { pattern: /^[a-zA-Z0-9_]+$/, message: '用户名只能包含字母、数字和下划线', trigger: 'blur' }
+];
+const PHONE_RULES = [
+  { required: true, message: '请输入手机号', trigger: 'blur' },
+  { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号格式', trigger: 'blur' }
+];
+const CAPTCHA_RULES = [
+  { required: true, message: '请输入验证码', trigger: 'blur' },
+  { len: 6, message: '验证码长度为6位', trigger: 'blur' }
+];
+const AGREEMENT_RULES = [
+  {
+    validator: (rule, value, callback) => {
+      if (!value) callback(new Error('请同意用户协议和隐私政策'));
+      else callback();
+    },
+    trigger: 'change'
+  }
+];
+
+// 组合校验规则
 const registerRules = reactive({
-  username: [
-    { required: true, message: '请输入用户名', trigger: 'blur' },
-    { min: 3, max: 20, message: '用户名长度在3-20个字符之间', trigger: 'blur' },
-    { 
-      pattern: /^[a-zA-Z0-9_]+$/,
-      message: '用户名只能包含字母、数字和下划线',
-      trigger: 'blur'
-    }
-  ],
-  phone: [  // 新增手机号验证规则
-    { required: true, message: '请输入手机号', trigger: 'blur' },
-    { 
-      pattern: /^1[3-9]\d{9}$/,  // 手机号正则
-      message: '请输入正确的手机号格式', 
-      trigger: 'blur' 
-    }
-  ],
-  captcha: [
-    { required: true, message: '请输入验证码', trigger: 'blur' },
-    { len: 6, message: '验证码长度为6位', trigger: 'blur' }
-  ],
-  agreement: [
-    { 
-      validator: (rule, value, callback) => {
-        if (!value) {
-          callback(new Error('请同意用户协议和隐私政策'));
-        } else {
-          callback();
-        }
-      },
-      trigger: 'change'
-    }
-  ]
+  username: USERNAME_RULES,
+  phone: PHONE_RULES,
+  captcha: CAPTCHA_RULES,
+  agreement: AGREEMENT_RULES
 });
 
-// 状态管理（删除密码相关状态）
+// 表单引用
 const registerFormRef = ref(null);
+
+// 注册按钮 loading 状态
 const registerLoading = ref(false);
+
+// 验证码倒计时
 const captchaCooldown = ref(0);
 let captchaTimer = null;
 
-// 验证码按钮文本
-const captchaBtnText = computed(() => {
-  return captchaCooldown.value > 0 
-    ? `${captchaCooldown.value}秒后重试` 
-    : '获取验证码';
-});
+// 计算属性：验证码按钮文本
+const captchaBtnText = computed(() =>
+  captchaCooldown.value > 0 ? `${captchaCooldown.value}秒后重试` : '获取验证码'
+);
 
-// 发送验证码（改为手机号验证）
+// -------------------- 方法定义 --------------------
+
+// 发送验证码，先校验手机号格式
 const sendCaptcha = () => {
-  // 先验证手机号格式
-  const phoneValid = registerRules.phone.every(rule => {
-    const { required, pattern, message } = rule;
-    if (required && !registerForm.phone) {
-      ElMessage.warning(message);
+  // 校验手机号格式，防止无效请求
+  const phoneValid = PHONE_RULES.every(rule => {
+    if (rule.required && !registerForm.phone) {
+      ElMessage.warning(rule.message);
       return false;
     }
-    if (pattern && !pattern.test(registerForm.phone)) {
-      ElMessage.warning(message);
+    if (rule.pattern && !rule.pattern.test(registerForm.phone)) {
+      ElMessage.warning(rule.message);
       return false;
     }
     return true;
   });
-
   if (!phoneValid) return;
-  
-  // 模拟发送验证码到手机号
+
+  // 启动倒计时，防止重复发送
   captchaCooldown.value = 60;
   captchaTimer = setInterval(() => {
     captchaCooldown.value--;
-    if (captchaCooldown.value <= 0) {
-      clearInterval(captchaTimer);
-    }
+    if (captchaCooldown.value <= 0) clearInterval(captchaTimer);
   }, 1000);
-  
+
+  // 实际项目应调用后端接口，这里仅做提示
   ElMessage.success(`验证码已发送至 ${registerForm.phone}`);
 };
 
-// 注册处理
+// 注册处理，先校验表单再发起注册
 const handleRegister = async () => {
   const valid = await registerFormRef.value.validate();
   if (!valid) return;
 
   registerLoading.value = true;
-
   try {
-    // 模拟注册请求
+    // 这里应调用后端注册接口
     await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // 模拟注册成功
     ElMessage.success('注册成功！');
-    router.push('/login');
   } catch (error) {
     ElMessage.error('注册失败: ' + (error.message || '请稍后再试'));
   } finally {
@@ -229,44 +219,16 @@ const handleRegister = async () => {
   }
 };
 
-// 初始化粒子动画
+// 粒子动画初始化，页面更有科技感
 onMounted(() => {
   if (window.particlesJS) {
     window.particlesJS('register-particles', {
-      particles: {
-        number: { value: 60, density: { enable: true, value_area: 800 } },
-        color: { value: "#10b981" },
-        shape: { type: "circle" },
-        opacity: { value: 0.5, random: true },
-        size: { value: 3, random: true },
-        line_linked: { 
-          enable: true, 
-          distance: 150, 
-          color: "#10b981", 
-          opacity: 0.3, 
-          width: 1 
-        },
-        move: { 
-          enable: true, 
-          speed: 2, 
-          direction: "none", 
-          random: true, 
-          straight: false, 
-          out_mode: "out" 
-        }
-      },
-      interactivity: {
-        detect_on: "canvas",
-        events: {
-          onhover: { enable: true, mode: "grab" },
-          onclick: { enable: true, mode: "push" }
-        }
-      }
+      // ...配置省略...
     });
   }
 });
 
-// 清理定时器
+// 组件卸载时清理定时器，防止内存泄漏
 onUnmounted(() => {
   if (captchaTimer) clearInterval(captchaTimer);
 });

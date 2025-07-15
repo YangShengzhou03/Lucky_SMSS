@@ -2,24 +2,15 @@
   <div class="login-page">
     <!-- 背景粒子动画 -->
     <div class="particles" id="login-particles"></div>
-    
+
     <!-- 登录容器 -->
     <div class="login-container">
-      
+
       <!-- 登录卡片 -->
       <div class="login-card">
         <!-- 右上角二维码图标 - 仅在非二维码模式下显示 -->
-        <div 
-          v-if="!showQRCode"
-          class="qr-corner"
-          @click="toggleQRCode"
-          :class="{ active: showQRCode }"
-        >
-          <img 
-            src="@/assets/images/login-qr-code.png" 
-            alt="扫码登录" 
-            class="qr-icon"
-          >
+        <div v-if="!showQRCode" class="qr-corner" @click="toggleQRCode" :class="{ active: showQRCode }">
+          <img src="@/assets/images/login-qr-code.png" alt="扫码登录" class="qr-icon">
         </div>
 
         <!-- 表单内容 -->
@@ -29,72 +20,39 @@
               <h2 class="welcome-text">欢迎回来</h2>
               <p class="login-subtitle">登录Lucky SMS学生管理系统</p>
             </div>
-            
-            <el-form 
-              ref="loginFormRef" 
-              :model="loginForm" 
-              :rules="loginRules" 
-              class="login-form"
-              @keyup.enter="handleLogin"
-            >
+
+            <el-form ref="loginFormRef" :model="loginForm" :rules="loginRules" class="login-form"
+              @keyup.enter="handleLogin">
               <!-- 用户名输入 -->
               <el-form-item prop="username" class="form-item">
-                <el-input 
-                  v-model="loginForm.username" 
-                  placeholder="输入用户名" 
-                  size="large"
-                  :prefix-icon="User"
-                  clearable
-                  class="custom-input"
-                />
+                <el-input v-model="loginForm.username" placeholder="输入用户名" size="large" :prefix-icon="User" clearable
+                  class="custom-input" />
               </el-form-item>
-              
+
               <!-- 密码输入 -->
               <el-form-item prop="password" class="form-item">
-                <el-input 
-                  v-model="loginForm.password" 
-                  placeholder="输入密码" 
-                  size="large"
-                  :prefix-icon="Lock"
-                  clearable
-                  show-password
-                  class="custom-input"
-                />
+                <el-input v-model="loginForm.password" placeholder="输入密码" size="large" :prefix-icon="Lock" clearable
+                  show-password class="custom-input" />
               </el-form-item>
-              
+
               <!-- 记住我 & 忘记密码 -->
               <div class="login-options">
                 <el-checkbox v-model="loginForm.remember">记住我</el-checkbox>
-                <el-link 
-                  type="primary" 
-                  :underline="false"
-                  class="forgot-password"
-                >
+                <el-link type="primary" :underline="false" class="forgot-password">
                   忘记密码?
                 </el-link>
               </div>
-              
+
               <!-- 登录按钮 -->
-              <el-button 
-                type="primary" 
-                size="large" 
-                class="login-btn" 
-                @click="handleLogin"
-                :loading="loginLoading"
-              >
+              <el-button type="primary" size="large" class="login-btn" @click="handleLogin" :loading="loginLoading">
                 <span v-if="!loginLoading">登录</span>
                 <span v-else>登录中...</span>
               </el-button>
-              
+
               <!-- 没有账号 -->
               <div class="register-link">
                 没有账号?
-                <el-link 
-                  type="primary" 
-                  @click="$router.push('/register')"
-                  :underline="false"
-                  class="register-text"
-                >
+                <el-link type="primary" @click="$router.push('/register')" :underline="false" class="register-text">
                   立即注册
                 </el-link>
               </div>
@@ -110,20 +68,18 @@
               <div class="qr-code-container">
                 <img src="@/assets/images/login-qr-code.svg" alt="扫码登录" class="qr-image">
               </div>
-              
+
               <!-- 标题和说明文字 -->
               <div class="qr-text-container">
                 <h3>扫码登录</h3>
                 <p>使用Lucky SMS APP扫描二维码</p>
               </div>
-              
+
               <!-- 返回按钮 -->
-              <el-button 
-                type="text" 
-                class="back-btn"
-                @click="toggleQRCode"
-              >
-                <el-icon><ArrowLeft /></el-icon>
+              <el-button type="text" class="back-btn" @click="toggleQRCode">
+                <el-icon>
+                  <ArrowLeft />
+                </el-icon>
                 返回账号登录
               </el-button>
             </div>
@@ -137,8 +93,8 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
-import { 
-  User, Lock, ArrowLeft 
+import {
+  User, Lock, ArrowLeft
 } from '@element-plus/icons-vue';
 
 const showQRCode = ref(false);
@@ -187,20 +143,20 @@ onMounted(() => {
         shape: { type: "circle" },
         opacity: { value: 0.5, random: true },
         size: { value: 3, random: true },
-        line_linked: { 
-          enable: true, 
-          distance: 150, 
-          color: "#3b82f6", 
-          opacity: 0.3, 
-          width: 1 
+        line_linked: {
+          enable: true,
+          distance: 150,
+          color: "#3b82f6",
+          opacity: 0.3,
+          width: 1
         },
-        move: { 
-          enable: true, 
-          speed: 2, 
-          direction: "none", 
-          random: true, 
-          straight: false, 
-          out_mode: "out" 
+        move: {
+          enable: true,
+          speed: 2,
+          direction: "none",
+          random: true,
+          straight: false,
+          out_mode: "out"
         }
       },
       interactivity: {
@@ -405,6 +361,7 @@ onMounted(() => {
   justify-content: center;
   background: white;
   padding: 40px;
+  box-sizing: border-box;
 }
 
 .qr-card {
@@ -412,29 +369,38 @@ onMounted(() => {
   width: 100%;
   display: flex;
   flex-direction: column;
-  align-items: center; /* 确保子元素水平居中 */
+  align-items: center;
+  /* 确保子元素水平居中 */
   height: 100%;
-  justify-content: center; /* 垂直居中整个内容 */
+  justify-content: center;
+  /* 垂直居中整个内容 */
 }
 
 /* 二维码容器 */
 .qr-code-container {
   width: 200px;
   height: 200px;
-  display: flex; /* 添加flex布局 */
-  align-items: center; /* 垂直居中 */
-  justify-content: center; /* 水平居中 */
+  display: flex;
+  /* 添加flex布局 */
+  align-items: center;
+  /* 垂直居中 */
+  justify-content: center;
+  /* 水平居中 */
   background: #f8fafc;
   border-radius: 12px;
   padding: 10px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  margin-bottom: 20px; /* 简化外边距 */
+  margin-bottom: 20px;
+  /* 简化外边距 */
 }
 
 .qr-image {
-  width: 100%; /* 确保图片填充容器 */
-  height: 100%; /* 确保图片填充容器 */
-  object-fit: contain; /* 保持比例同时填充容器 */
+  width: 100%;
+  /* 确保图片填充容器 */
+  height: 100%;
+  /* 确保图片填充容器 */
+  object-fit: contain;
+  /* 保持比例同时填充容器 */
 }
 
 /* 二维码文字容器 */
@@ -479,12 +445,12 @@ onMounted(() => {
     padding: 30px 20px;
     border-radius: 12px;
   }
-  
+
   .qr-code-container {
     width: 180px;
     height: 180px;
   }
-  
+
   .qr-corner {
     width: 32px;
     height: 32px;

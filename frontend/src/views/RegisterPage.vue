@@ -2,10 +2,10 @@
   <div class="register-page">
     <!-- 背景粒子动画 -->
     <div class="particles" id="register-particles"></div>
-    
+
     <!-- 注册容器 -->
     <div class="register-container">
-      
+
       <!-- 注册卡片 -->
       <div class="register-card">
         <!-- 卡片头部 -->
@@ -13,63 +13,34 @@
           <h2 class="welcome-text">创建账户</h2>
           <p class="register-subtitle">加入Lucky SMS学生管理系统</p>
         </div>
-        
+
         <!-- 注册表单 -->
-        <el-form 
-          ref="registerFormRef" 
-          :model="registerForm" 
-          :rules="registerRules" 
-          class="register-form"
-          @keyup.enter="handleRegister"
-        >
+        <el-form ref="registerFormRef" :model="registerForm" :rules="registerRules" class="register-form"
+          @keyup.enter="handleRegister">
           <!-- 用户名输入 -->
           <el-form-item prop="username" class="form-item">
-            <el-input 
-              v-model="registerForm.username" 
-              placeholder="设置用户名" 
-              size="large"
-              :prefix-icon="User"
-              clearable
-              class="custom-input"
-            />
+            <el-input v-model="registerForm.username" placeholder="设置用户名" size="large" :prefix-icon="User" clearable
+              class="custom-input" />
           </el-form-item>
-          
+
           <!-- 手机号输入 -->
           <el-form-item prop="phone" class="form-item">
-            <el-input 
-              v-model="registerForm.phone" 
-              placeholder="输入手机号" 
-              size="large"
-              :prefix-icon="Phone"
-              clearable
-              class="custom-input"
-              maxlength="11"
-            />
+            <el-input v-model="registerForm.phone" placeholder="输入手机号" size="large" :prefix-icon="Phone" clearable
+              class="custom-input" maxlength="11" />
           </el-form-item>
-          
+
           <!-- 验证码 -->
           <el-form-item prop="captcha" class="form-item">
             <div class="captcha-container">
-              <el-input 
-                v-model="registerForm.captcha" 
-                placeholder="输入验证码" 
-                size="large"
-                :prefix-icon="Key"
-                class="custom-input captcha-input"
-                maxlength="6"
-              />
-              <el-button 
-                type="primary" 
-                size="large" 
-                class="captcha-btn"
-                :disabled="captchaCooldown > 0"
-                @click="sendCaptcha"
-              >
+              <el-input v-model="registerForm.captcha" placeholder="输入验证码" size="large" :prefix-icon="Key"
+                class="custom-input captcha-input" maxlength="6" />
+              <el-button type="primary" size="large" class="captcha-btn" :disabled="captchaCooldown > 0"
+                @click="sendCaptcha">
                 {{ captchaBtnText }}
               </el-button>
             </div>
           </el-form-item>
-          
+
           <!-- 用户协议 -->
           <el-form-item prop="agreement" class="form-item agreement-item">
             <el-checkbox v-model="registerForm.agreement">
@@ -79,28 +50,18 @@
               <el-link type="primary" :underline="false">《隐私政策》</el-link>
             </el-checkbox>
           </el-form-item>
-          
+
           <!-- 注册按钮 -->
-          <el-button 
-            type="primary" 
-            size="large" 
-            class="register-btn" 
-            @click="handleRegister"
-            :loading="registerLoading"
-          >
+          <el-button type="primary" size="large" class="register-btn" @click="handleRegister"
+            :loading="registerLoading">
             <span v-if="!registerLoading">立即注册</span>
             <span v-else>注册中...</span>
           </el-button>
-          
+
           <!-- 已有账号 -->
           <div class="login-link">
             已有账号?
-            <el-link 
-              type="primary" 
-              @click="$router.push('/login')"
-              :underline="false"
-              class="login-text"
-            >
+            <el-link type="primary" @click="$router.push('/login')" :underline="false" class="login-text">
               立即登录
             </el-link>
           </div>
@@ -223,7 +184,35 @@ const handleRegister = async () => {
 onMounted(() => {
   if (window.particlesJS) {
     window.particlesJS('register-particles', {
-      // ...配置省略...
+      particles: {
+        number: { value: 60, density: { enable: true, value_area: 800 } },
+        color: { value: "#3b82f6" },
+        shape: { type: "circle" },
+        opacity: { value: 0.5, random: true },
+        size: { value: 3, random: true },
+        line_linked: {
+          enable: true,
+          distance: 150,
+          color: "#3b82f6",
+          opacity: 0.3,
+          width: 1
+        },
+        move: {
+          enable: true,
+          speed: 2,
+          direction: "none",
+          random: true,
+          straight: false,
+          out_mode: "out"
+        }
+      },
+      interactivity: {
+        detect_on: "canvas",
+        events: {
+          onhover: { enable: true, mode: "grab" },
+          onclick: { enable: true, mode: "push" }
+        }
+      }
     });
   }
 });
@@ -397,29 +386,29 @@ onUnmounted(() => {
     padding: 30px 20px;
     border-radius: 12px;
   }
-  
+
   .register-container {
     padding: 0 15px;
   }
-  
+
   .welcome-text {
     font-size: 22px;
   }
-  
+
   .captcha-container {
     flex-direction: column;
     gap: 12px;
   }
-  
+
   .captcha-btn {
     width: 100%;
     padding: 12px 0;
   }
-  
+
   .form-item {
     margin-bottom: 18px;
   }
-  
+
   .register-btn {
     padding: 12px 0;
     font-size: 15px;

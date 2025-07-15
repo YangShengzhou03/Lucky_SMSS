@@ -83,21 +83,21 @@ Lucky_SMSS 是一款基于 **Vue 3** 和 **Spring Boot 3** 构建的**开源学�
 
 ## 📸 系统截图
 
-### 登录页面
-![登录页面](https://picsum.photos/800/450?random=1)
-*图1：系统登录界面，支持多角色登录入口*
+### 首页页面
+![首页页面](preview/index.png)
+*图1：系统首页界面*
 
-### 管理后台首页
-![管理后台首页](https://picsum.photos/800/450?random=2)
+### 系统功能
+![系统功能界面](preview/index-function.png)
 *图2：管理员后台界面，展示系统数据概览与功能入口*
 
-### 学生信息管理
-![学生信息管理](https://picsum.photos/800/450?random=3)
-*图3：学生信息管理界面，支持批量操作与高级搜索*
+### 登录界面
+![登录界面](preview/login.png)
+*图3：登录界面*
 
-### 成绩统计分析
-![成绩统计分析](https://picsum.photos/800/450?random=4)
-*图4：成绩统计分析界面，包含多维度数据图表与趋势展示*
+### 注册页面
+![注册页面](preview/register.png)
+*图4：注册界面*
 
 ## 💻 安装部署
 

@@ -96,7 +96,9 @@ import { ElMessage } from 'element-plus';
 import {
   User, Lock, ArrowLeft
 } from '@element-plus/icons-vue';
+import { useRouter } from 'vue-router';
 
+const router = useRouter();
 const showQRCode = ref(false);
 const loginLoading = ref(false);
 
@@ -123,9 +125,10 @@ const toggleQRCode = () => {
 const handleLogin = async () => {
   loginLoading.value = true;
   try {
-    // 模拟登录请求
+    // 登录请求
     await new Promise(resolve => setTimeout(resolve, 1000));
     ElMessage.success('登录成功！');
+    router.push('/stulayout');
   } catch (error) {
     ElMessage.error('登录失败: ' + (error.message || '用户名或密码错误'));
   } finally {
@@ -370,10 +373,8 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  /* 确保子元素水平居中 */
   height: 100%;
   justify-content: center;
-  /* 垂直居中整个内容 */
 }
 
 /* 二维码容器 */
@@ -381,29 +382,21 @@ onMounted(() => {
   width: 200px;
   height: 200px;
   display: flex;
-  /* 添加flex布局 */
   align-items: center;
-  /* 垂直居中 */
   justify-content: center;
-  /* 水平居中 */
   background: #f8fafc;
   border-radius: 12px;
   padding: 10px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   margin-bottom: 20px;
-  /* 简化外边距 */
 }
 
 .qr-image {
   width: 100%;
-  /* 确保图片填充容器 */
   height: 100%;
-  /* 确保图片填充容器 */
   object-fit: contain;
-  /* 保持比例同时填充容器 */
 }
 
-/* 二维码文字容器 */
 .qr-text-container {
   width: 100%;
   margin-bottom: 25px;

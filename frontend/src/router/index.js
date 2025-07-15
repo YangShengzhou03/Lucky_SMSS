@@ -1,45 +1,44 @@
-// src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router';
-import LoginPage from '../views/LoginPage.vue';
-import RegisterPage from '../views/RegisterPage.vue';
-
-// 新增：创建一个空组件作为首页占位符（无需实际内容）
-const HomePlaceholder = { template: '<div></div>' };
+import IndexLayout from '@/components/IndexLayout.vue';
+import StudentLayout from '@/components/StudentLayout.vue';
+import LoginPage from '@/views/LoginPage.vue';
+import RegisterPage from '@/views/RegisterPage.vue';
+import HomePage from '@/views/Student/HomePage.vue';
 
 const routes = [
+  // 未登录布局（首页 + 登录/注册）
   {
     path: '/',
-    name: 'home',
-    component: HomePlaceholder, // 根路径对应空组件（实际内容在 App.vue 中）
-    meta: { title: '首页' }
+    component: IndexLayout,
+    children: [
+      { path: '', name: 'Home', meta: { title: '首页' } },
+      { path: 'login', name: 'Login', component: LoginPage, meta: { title: '登录' } },
+      { path: 'register', name: 'Register', component: RegisterPage, meta: { title: '注册' } }
+    ]
   },
+
+  // 登录后布局（学生系统）
   {
-    path: '/login',
-    name: 'login',
-    component: LoginPage,
-    meta: { title: '登录' }
+    path: '/stulayout',
+    component: StudentLayout,
+    children: [
+      { path: '', name: 'StudentHome', component: HomePage, meta: { title: '学生首页' } }
+    ]
   },
-  {
-    path: '/register',
-    name: 'register',
-    component: RegisterPage,
-    meta: { title: '注册' }
-  }
+
+  // 错误路径重定向（仅保留这一条）
+  { path: '/:pathMatch(.*)*', redirect: '/' }
 ];
 
 const router = createRouter({
-  history: createWebHistory(process.env.BASE_URL),
+  history: createWebHistory(),
   routes
 });
 
-// 恢复导航守卫（用于设置页面标题）
+// 路由守卫
 router.beforeEach((to) => {
-  if (to.meta.title) {
-    document.title = to.meta.title;
-  } else {
-    document.title = 'Lucky_SMS';
-  }
-  return true;
+  // 设置页面标题
+  document.title = to.meta.title || 'Lucky SMS';
 });
 
 export default router;

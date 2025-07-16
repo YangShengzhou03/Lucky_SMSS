@@ -76,6 +76,7 @@
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue';
 import { ElMessage } from 'element-plus';
 import { User, Key, Phone } from '@element-plus/icons-vue';
+import router from '@/router';
 
 // -------------------- 常量与状态 --------------------
 
@@ -163,16 +164,15 @@ const sendCaptcha = () => {
   ElMessage.success(`验证码已发送至 ${registerForm.phone}`);
 };
 
-// 注册处理，先校验表单再发起注册
+// 注册处理
 const handleRegister = async () => {
-  const valid = await registerFormRef.value.validate();
-  if (!valid) return;
-
   registerLoading.value = true;
+
   try {
     // 这里应调用后端注册接口
     await new Promise(resolve => setTimeout(resolve, 1000));
     ElMessage.success('注册成功！');
+    router.push('/teacher')
   } catch (error) {
     ElMessage.error('注册失败: ' + (error.message || '请稍后再试'));
   } finally {

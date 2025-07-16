@@ -3,7 +3,9 @@ import IndexLayout from '@/components/IndexLayout.vue';
 import StudentLayout from '@/components/StudentLayout.vue';
 import LoginPage from '@/views/LoginPage.vue';
 import RegisterPage from '@/views/RegisterPage.vue';
-import HomePage from '@/views/Student/HomePage.vue';
+import StudentHome from '@/views/Student/HomePage.vue';
+import TeacherLayout from '@/components/TeacherLayout.vue';
+import TeacherHome from '@/views/Teacher/HomePage.vue'
 
 const routes = [
   // 未登录布局（首页 + 登录/注册）
@@ -22,7 +24,16 @@ const routes = [
     path: '/student',
     component: StudentLayout,
     children: [
-      { path: '', name: 'StudentHome', component: HomePage, meta: { title: '学生首页' } }
+      { path: '', name: 'StudentHome', component: StudentHome, meta: { title: '学生首页' } }
+    ]
+  },
+
+  // 登录后布局（教师页面）
+  {
+    path: '/teacher',
+    component: TeacherLayout,
+    children: [
+      { path: '', name: 'TeacherHome', component: TeacherHome, meta: { title: '教师首页' } }
     ]
   },
 

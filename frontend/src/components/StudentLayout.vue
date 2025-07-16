@@ -35,12 +35,12 @@
 
           <!-- 右侧功能区 -->
           <div class="nav-right">
-            <!-- 暗色模式切换 -->
+            <!-- 日夜主题切换 -->
             <button 
               class="dark-mode-toggle action-btn" 
               @click="toggleDarkMode" 
               aria-label="切换暗色模式"
-              :title="isDarkMode ? '切换至亮色模式' : '切换至暗色模式'"
+              :title="isDarkMode ? '切换至日间主题' : '切换至夜间主题'"
             >
               <el-icon :size="20" :class="isDarkMode ? 'icon-moon' : 'icon-sun'">
                 <Sunny v-if="!isDarkMode" />
@@ -62,117 +62,9 @@
                   </el-icon>
                 </button>
               </el-badge>
-
-              <el-popover 
-                v-model:visible="notificationVisible" 
-                trigger="click" 
-                placement="bottom-end" 
-                width="320"
-                title="通知中心"
-                :close-on-click-outside="true"
-              >
-                <template #content>
-                  <div class="notification-list">
-                    <div 
-                      v-for="(item, index) in notifications" 
-                      :key="item.id" 
-                      class="notification-item"
-                      :class="{ 'unread': item.unread }" 
-                      @click="readNotification(index)"
-                    >
-                      <el-icon :size="16" class="notification-icon" :class="`type-${item.type}`">
-                        <CheckCircle v-if="item.type === 'success'" />
-                        <InfoFilled v-else-if="item.type === 'info'" />
-                        <WarningFilled v-else />
-                      </el-icon>
-                      <div class="notification-content">
-                        <p class="notification-title">{{ item.title }}</p>
-                        <p class="notification-time">{{ item.time }}</p>
-                      </div>
-                      <el-icon 
-                        class="notification-close" 
-                        @click.stop="removeNotification(index)"
-                        title="删除通知"
-                      >
-                        <Close />
-                      </el-icon>
-                    </div>
-                    <div 
-                      class="notification-footer" 
-                      @click="markAllAsRead"
-                      v-if="notifications.length > 0"
-                    >
-                      全部标为已读
-                    </div>
-                    <div class="notification-empty" v-else>
-                      暂无通知
-                    </div>
-                  </div>
-                </template>
-              </el-popover>
             </div>
 
             <!-- 用户区域 -->
-            <div class="user-area">
-              <el-popover 
-                v-model:visible="userMenuVisible" 
-                trigger="click" 
-                placement="bottom-end" 
-                width="200"
-                :close-on-click-outside="true"
-              >
-                <template #content>
-                  <div class="user-menu">
-                    <div class="user-info">
-                      <el-avatar :size="48" class="user-avatar-big">
-                        <User />
-                      </el-avatar>
-                      <div class="user-details">
-                        <p class="username">{{ userInfo.name }}</p>
-                        <p class="user-email">{{ userInfo.studentId }}</p>
-                        <p class="user-role">{{ userInfo.college }}</p>
-                      </div>
-                    </div>
-                    <el-divider />
-                    <el-menu 
-                      class="user-dropdown-menu" 
-                      mode="vertical" 
-                      @select="handleUserMenuSelect"
-                      background-color="transparent"
-                    >
-                      <el-menu-item index="profile">
-                        <el-icon>
-                          <User />
-                        </el-icon>
-                        <span>个人中心</span>
-                      </el-menu-item>
-                      <el-menu-item index="settings">
-                        <el-icon>
-                          <Setting />
-                        </el-icon>
-                        <span>账户设置</span>
-                      </el-menu-item>
-                      <el-menu-item index="help">
-                        <el-icon>
-                          <Question />
-                        </el-icon>
-                        <span>帮助中心</span>
-                      </el-menu-item>
-                      <el-divider />
-                      <el-menu-item index="logout" class="logout-item">
-                        <el-icon>
-                          <Logout />
-                        </el-icon>
-                        <span>退出登录</span>
-                      </el-menu-item>
-                    </el-menu>
-                  </div>
-                </template>
-                <el-avatar :size="36" class="user-avatar" @click.stop="userMenuVisible = true">
-                  <User />
-                </el-avatar>
-              </el-popover>
-            </div>
 
             <!-- 移动端菜单按钮 -->
             <button 
@@ -306,20 +198,6 @@
       </main>
     </div>
 
-    <!-- 返回顶部按钮 -->
-    <el-backtop 
-      v-show="showBackToTop" 
-      class="back-to-top" 
-      :right="24" 
-      :bottom="24" 
-      :visibility-height="300"
-      :transition-duration="300"
-    >
-      <el-icon :size="20">
-        <Top />
-      </el-icon>
-    </el-backtop>
-
     <!-- 移动端底部导航 -->
     <nav class="mobile-bottom-nav" v-if="isMobile && showSidebar">
       <button 
@@ -342,22 +220,13 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router';
 import {
-  User, Notebook, Histogram, Setting, Calendar, Reading, EditPen,
-  Menu, Search, Bell, CheckCircle, InfoFilled, WarningFilled,
-  Moon, Sunny, Logout, Question, Warning, Plus, Top, Close, House
+  Notebook, Histogram, Setting, Calendar, Reading, EditPen,
+  Menu, Search, Bell, Moon, Sunny, Warning, Plus, House
 } from '@element-plus/icons-vue'
-import { ElMessageBox } from 'element-plus';
 
 // 路由和路由实例
 const router = useRouter()
 const route = useRoute()
-
-// 用户信息状态
-const userInfo = ref({
-  name: '张三',
-  studentId: '20230001',
-  college: '计算机学院'
-})
 
 // 移动端导航项配置
 const mobileNavItems = [
@@ -382,31 +251,6 @@ const hasError = ref(false)
 const errorMessage = ref('')
 const unreadCount = ref(3)
 const isCourseLoading = ref(false)
-
-// 通知数据
-const notifications = ref([
-  {
-    id: 1,
-    title: '您有新的成绩发布',
-    time: '10分钟前',
-    type: 'info',
-    unread: true
-  },
-  {
-    id: 2,
-    title: '系统维护通知',
-    time: '2小时前',
-    type: 'warning',
-    unread: true
-  },
-  {
-    id: 3,
-    title: '选课成功',
-    time: '昨天',
-    type: 'success',
-    unread: false
-  }
-])
 
 // 页面加载状态控制
 const setPageLoading = (loading, errorMsg = '') => {
@@ -518,25 +362,6 @@ const closeDropdowns = (e) => {
   }
 }
 
-// 用户菜单选择处理
-const handleUserMenuSelect = (index) => {
-  userMenuVisible.value = false
-  switch (index) {
-    case 'profile':
-      router.push('/profile')
-      break
-    case 'settings':
-      router.push('/settings')
-      break
-    case 'help':
-      router.push('/help')
-      break
-    case 'logout':
-      handleLogout()
-      break
-  }
-}
-
 // 搜索处理
 const handleSearch = () => {
   if (searchQuery.value.trim()) {
@@ -560,79 +385,6 @@ const toggleDarkMode = () => {
 // 通知中心切换
 const toggleNotification = () => {
   notificationVisible.value = !notificationVisible.value
-}
-
-// 阅读通知
-const readNotification = (index) => {
-  if (notifications.value[index].unread) {
-    notifications.value[index].unread = false
-    unreadCount.value--
-  }
-}
-
-// 删除通知
-const removeNotification = (index) => {
-  if (notifications.value[index].unread) {
-    unreadCount.value--
-  }
-  notifications.value.splice(index, 1)
-}
-
-// 全部标为已读
-const markAllAsRead = () => {
-  notifications.value.forEach(item => {
-    if (item.unread) {
-      item.unread = false
-    }
-  })
-  unreadCount.value = 0
-  notificationVisible.value = false
-}
-
-// 选课处理
-const handleCourseSelect = () => {
-  isCourseLoading.value = true
-  // 模拟选课请求延迟
-  setTimeout(() => {
-    isCourseLoading.value = false
-    ElMessageBox.confirm('确定要选择该课程吗？', '选课确认', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    }).then(() => {
-      // 添加选课成功通知
-      notifications.value.unshift({
-        id: Date.now(),
-        title: '选课成功',
-        time: '刚刚',
-        type: 'success',
-        unread: true
-      })
-      unreadCount.value++
-      ElMessageBox({
-        message: '选课成功！',
-        type: 'success',
-        title: '提示'
-      })
-    }).catch(() => {})
-  }, 800)
-}
-
-// 退出登录处理
-const handleLogout = () => {
-  ElMessageBox.confirm('确定要退出登录吗？', '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning'
-  }).then(() => {
-    // 清空用户信息
-    userInfo.value = {
-      name: '',
-      studentId: '',
-      college: ''
-    }
-    router.push('/login')
-  }).catch(() => {})
 }
 
 // 重试加载
@@ -704,6 +456,7 @@ onUnmounted(() => {
   --gray-700: #374151;
   --gray-800: #1f2937;
   --gray-900: #111827;
+  --student-color: #10b981;
   --white: #ffffff;
   --sidebar-bg: var(--white);
   --sidebar-text: var(--gray-600);
@@ -818,7 +571,7 @@ onUnmounted(() => {
   top: -12px;
   right: -24px;
   font-size: 10px;
-  background: var(--success-color);
+  background: var(--student-color);
   color: var(--white);
   padding: 2px 6px;
   border-radius: 10px;
@@ -942,215 +695,6 @@ onUnmounted(() => {
 
 .notification-center {
   position: relative;
-}
-
-.notification-list {
-  max-height: 400px;
-  overflow-y: auto;
-  padding: 8px 0;
-}
-
-.notification-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 12px 16px;
-  cursor: pointer;
-  transition: var(--transition);
-  position: relative;
-  border-bottom: 1px solid var(--gray-100);
-}
-
-.notification-item:hover {
-  background-color: var(--gray-50);
-}
-
-.dark-mode .notification-item {
-  border-bottom: 1px solid var(--gray-800);
-}
-
-.dark-mode .notification-item:hover {
-  background-color: var(--gray-200);
-}
-
-.notification-item.unread {
-  background-color: var(--primary-light);
-}
-
-.dark-mode .notification-item.unread {
-  background-color: rgba(67, 56, 202, 0.2);
-}
-
-.notification-icon {
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-
-.notification-icon.type-success {
-  color: var(--success-color);
-}
-
-.notification-icon.type-info {
-  color: var(--info-color);
-}
-
-.notification-icon.type-warning {
-  color: var(--warning-color);
-}
-
-.notification-content {
-  flex: 1;
-  min-width: 0;
-}
-
-.notification-title {
-  font-size: 0.875rem;
-  color: var(--gray-800);
-  margin-bottom: 4px;
-  line-height: 1.4;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.notification-time {
-  font-size: 0.75rem;
-  color: var(--gray-500);
-}
-
-.notification-close {
-  color: var(--gray-400);
-  opacity: 0;
-  transition: var(--transition-fast);
-  flex-shrink: 0;
-  margin-left: 8px;
-}
-
-.notification-item:hover .notification-close {
-  opacity: 1;
-}
-
-.notification-footer {
-  padding: 12px 16px;
-  text-align: center;
-  font-size: 0.875rem;
-  color: var(--primary-color);
-  cursor: pointer;
-  transition: var(--transition);
-  font-weight: 500;
-}
-
-.notification-footer:hover {
-  background-color: var(--gray-50);
-}
-
-.dark-mode .notification-footer:hover {
-  background-color: var(--gray-200);
-}
-
-.user-area {
-  position: relative;
-  margin-left: 8px;
-}
-
-.user-avatar {
-  cursor: pointer;
-  background-color: var(--primary-light);
-  color: var(--primary-color);
-  transition: var(--transition);
-  border: 2px solid transparent;
-  box-shadow: 0 2px 5px rgba(67, 97, 238, 0.1);
-  font-weight: 600;
-}
-
-.user-avatar:hover {
-  transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 4px 12px rgba(67, 97, 238, 0.2);
-  border-color: var(--primary-color);
-}
-
-.user-avatar-big {
-  background-color: var(--primary-light);
-  color: var(--primary-color);
-  font-weight: 600;
-}
-
-.user-menu {
-  padding: 16px;
-}
-
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.user-details {
-  flex: 1;
-}
-
-.username {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--gray-800);
-  margin-bottom: 2px;
-}
-
-.user-email {
-  font-size: 0.75rem;
-  color: var(--gray-500);
-  margin-bottom: 4px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.user-role {
-  font-size: 0.75rem;
-  color: var(--gray-500);
-  background-color: var(--gray-100);
-  padding: 2px 8px;
-  border-radius: 4px;
-  display: inline-block;
-}
-
-.dark-mode .user-role {
-  background-color: var(--gray-800);
-}
-
-.user-dropdown-menu {
-  border: none !important;
-  background: transparent !important;
-}
-
-:deep(.user-dropdown-menu .el-menu-item) {
-  height: 40px !important;
-  line-height: 40px !important;
-  border-radius: var(--border-radius) !important;
-  margin: 2px 0 !important;
-  transition: var(--transition) !important;
-}
-
-:deep(.user-dropdown-menu .el-menu-item:hover) {
-  background-color: var(--gray-100) !important;
-}
-
-.dark-mode :deep(.user-dropdown-menu .el-menu-item:hover) {
-  background-color: var(--gray-200) !important;
-}
-
-.logout-item {
-  color: var(--danger-color) !important;
-}
-
-.logout-item:hover {
-  background-color: rgba(239, 68, 68, 0.1) !important;
 }
 
 .body-container {
@@ -1351,23 +895,14 @@ onUnmounted(() => {
   max-width: 400px;
 }
 
-.back-to-top {
-  background: var(--primary-color) !important;
-  color: white !important;
-  width: 44px !important;
-  height: 44px !important;
-  box-shadow: var(--shadow-md) !important;
-  transition: var(--transition) !important;
-  border-radius: 50% !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
 }
 
-.back-to-top:hover {
-  background: var(--primary-dark) !important;
-  transform: translateY(-3px) scale(1.05) !important;
-  box-shadow: var(--shadow-lg) !important;
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 
 .mobile-bottom-nav {

@@ -128,7 +128,7 @@ const handleLogin = async () => {
     // 登录请求
     await new Promise(resolve => setTimeout(resolve, 1000));
     ElMessage.success('登录成功！');
-    router.push('/stulayout');
+    router.push('/student');
   } catch (error) {
     ElMessage.error('登录失败: ' + (error.message || '用户名或密码错误'));
   } finally {

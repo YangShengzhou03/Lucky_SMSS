@@ -12,8 +12,8 @@
 
 <style scoped>
 .home-page {
-  height: 100vh;
-  width: 100vw;
-  background-color: aqua;
+  height: 100%;
+  width: 100%;
+  background: transparent;
 }
 </style>

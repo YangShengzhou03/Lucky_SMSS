@@ -11,7 +11,7 @@ const routes = [
     path: '/',
     component: IndexLayout,
     children: [
-      { path: '', name: 'Home', meta: { title: '首页' } },
+      { path: '', name: 'Home', meta: { title: 'Lucky-SMS' } },
       { path: 'login', name: 'Login', component: LoginPage, meta: { title: '登录' } },
       { path: 'register', name: 'Register', component: RegisterPage, meta: { title: '注册' } }
     ]
@@ -19,7 +19,7 @@ const routes = [
 
   // 登录后布局（学生系统）
   {
-    path: '/stulayout',
+    path: '/student',
     component: StudentLayout,
     children: [
       { path: '', name: 'StudentHome', component: HomePage, meta: { title: '学生首页' } }

@@ -382,7 +382,7 @@ onUnmounted(() => {
   line-height: 1.6;
   color: var(--gray-800);
   background-color: var(--white);
-  overflow-x: hidden;
+  /* overflow-x: hidden; */
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -427,14 +427,21 @@ onUnmounted(() => {
 .top-nav {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
   padding: 16px 0;
   box-shadow: var(--shadow-md);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  transition: var(--transition);
   border-bottom: 1px solid var(--gray-100);
+
+  /* 强化粘性定位 */
+  position: sticky;
+  /* 核心：粘性定位 */
+  top: 0;
+  /* 必须设置 top 值，否则 sticky 不生效 */
+  z-index: 9999;
+  /* 提高层级，避免被其他元素覆盖 */
+  width: 100%;
+  /* 确保宽度占满屏幕 */
+  left: 0;
+  /* 固定左侧位置 */
 }
 
 .nav-content {

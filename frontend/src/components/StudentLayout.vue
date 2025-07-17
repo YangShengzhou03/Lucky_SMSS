@@ -130,7 +130,7 @@
           <!-- 加载状态 -->
           <div class="content-loading" v-if="isLoading">
             <el-spinner size="40" type="ball-clip-rotate" />
-            <p class="loading-text">加载中...</p>
+            <div v-loading="isLoading"></div>
           </div>
 
           <!-- 错误状态 -->
@@ -807,11 +807,6 @@ onUnmounted(() => {
   gap: 16px;
   z-index: 10;
   border-radius: var(--border-radius-lg);
-}
-
-.loading-text {
-  color: var(--gray-600);
-  font-size: 0.875rem;
 }
 
 .dark-mode .content-loading {

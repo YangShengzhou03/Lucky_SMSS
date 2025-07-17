@@ -585,7 +585,7 @@ onUnmounted(() => {
 
 .logo-badge {
   position: absolute;
-  top: -12px;
+  top: -11px;
   right: -24px;
   font-size: 10px;
   background: var(--teacher-color);

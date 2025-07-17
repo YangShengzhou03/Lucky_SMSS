@@ -20,8 +20,8 @@ const routes = [
     component: IndexLayout,
     children: [
       { path: '', name: 'Home', meta: { title: 'Lucky-SMS' } },
-      { path: 'login', name: 'Login', component: LoginPage, meta: { title: '登录' } },
-      { path: 'register', name: 'Register', component: RegisterPage, meta: { title: '注册' } }
+      { path: '/login', name: 'Login', component: LoginPage, meta: { title: '登录' } },
+      { path: '/register', name: 'Register', component: RegisterPage, meta: { title: '注册' } }
     ]
   },
 

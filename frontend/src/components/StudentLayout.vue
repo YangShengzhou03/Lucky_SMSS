@@ -217,14 +217,15 @@ const showSidebar = computed(() => {
 // 计算当前激活的菜单索引
 const activeMenuIndex = computed(() => {
   const routeMap = {
-    '1': '/student',          // 首页
-    '2': '/student/status',   // 学籍信息
-    '3': '/student/grades',   // 成绩查询
-    '4': '/student/schedule', // 课表查询
-    '5': '/student/library',  // 图书借阅
-    '6': '/student/course',   // 选课系统
-    '7': '/student/settings'  // 系统设置
+    '/student': '1',          // 首页
+    '/student/status': '2',   // 学籍信息
+    '/student/grades': '3',   // 成绩查询
+    '/student/schedule': '4', // 课表查询
+    '/student/library': '5',  // 图书借阅
+    '/student/course': '6',   // 选课系统
+    '/student/settings': '7'  // 系统设置
   }
+  // 使用当前路径查找对应的菜单索引，找不到则返回首页'1'
   return routeMap[route.path] || '1'
 })
 

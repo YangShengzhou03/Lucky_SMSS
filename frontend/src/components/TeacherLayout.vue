@@ -153,32 +153,6 @@
             <el-breadcrumb-item :to="{ path: '/' }">Lucky-SMS</el-breadcrumb-item>
             <el-breadcrumb-item>{{ currentPageName }}</el-breadcrumb-item>
           </el-breadcrumb>
-          <div class="page-actions">
-            <el-button 
-              v-if="currentPageName === '成绩管理'" 
-              type="primary" 
-              size="small" 
-              @click="handleGradeInput"
-              :loading="isGradeLoading"
-            >
-              <el-icon>
-                <Edit />
-              </el-icon>
-              <span>录入成绩</span>
-            </el-button>
-            <el-button 
-              v-if="currentPageName === '课程管理'" 
-              type="primary" 
-              size="small" 
-              @click="handleCourseManage"
-              :loading="isCourseLoading"
-            >
-              <el-icon>
-                <Plus />
-              </el-icon>
-              <span>新建课程</span>
-            </el-button>
-          </div>
         </div>
 
         <!-- 路由视图容器 -->
@@ -247,8 +221,8 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router';
 import {
   Notebook, Setting, Calendar, EditPen,
-  Menu, Search, Bell, Moon, Sunny, Warning, Plus, Top, House,
-  UserFilled, ChatLineRound, Edit
+  Menu, Search, Bell, Moon, Sunny, Warning, Top, House,
+  UserFilled, ChatLineRound
 } from '@element-plus/icons-vue'
 
 // 路由和路由实例
@@ -257,10 +231,11 @@ const route = useRoute()
 
 // 移动端导航项配置
 const mobileNavItems = [
-  { index: '1', icon: House, text: '首页', path: '/' },
-  { index: '2', icon: Notebook, text: '课程', path: '/courses' },
-  { index: '3', icon: EditPen, text: '成绩', path: '/grades' },
-  { index: '4', icon: UserFilled, text: '学生', path: '/students' }
+  { index: '1', icon: House, text: '首页', path: '/teacher' },
+  { index: '2', icon: Notebook, text: '课程', path: '/teacher/courses' },
+  { index: '3', icon: EditPen, text: '成绩', path: '/teacher/grades' },
+  { index: '4', icon: UserFilled, text: '学生', path: '/teacher/students' },
+  { index: '5', icon: ChatLineRound, text: '沟通', path: '/teacher/communication' }
 ]
 
 // 状态管理
@@ -276,8 +251,6 @@ const isLoading = ref(false)
 const hasError = ref(false)
 const errorMessage = ref('')
 const unreadCount = ref(3)
-const isGradeLoading = ref(false)
-const isCourseLoading = ref(false)
 
 // 页面加载状态控制
 const setPageLoading = (loading, errorMsg = '') => {
@@ -294,13 +267,13 @@ const showSidebar = computed(() => {
 // 计算当前激活的菜单索引
 const activeMenuIndex = computed(() => {
   const routeMap = {
-    '/': '1',
-    '/courses': '2',
-    '/grades': '3',
-    '/students': '4',
-    '/schedule': '5',
-    '/communication': '6',
-    '/settings': '7'
+    '/teacher': '1',
+    '/teacher/courses': '2',
+    '/teacher/grades': '3',
+    '/teacher/students': '4',
+    '/teacher/schedule': '5',
+    '/teacher/communication': '6',
+    '/teacher/settings': '7'
   }
   return routeMap[route.path] || '1'
 })
@@ -311,17 +284,15 @@ watch(route, (newRoute) => {
   // 模拟加载延迟
   const timer = setTimeout(() => {
     const pageTitles = {
-      '/': '首页',
-      '/courses': '课程管理',
-      '/grades': '成绩管理',
-      '/students': '学生管理',
-      '/schedule': '教学计划',
-      '/communication': '师生交流',
-      '/settings': '系统设置',
-      '/login': '登录',
-      '/register': '注册'
+      '/teacher': '教师首页',
+      '/teacher/courses': '课程管理',
+      '/teacher/grades': '成绩管理',
+      '/teacher/students': '学生管理',
+      '/teacher/schedule': '个人课表',
+      '/teacher/communication': '师生沟通',
+      '/teacher/settings': '系统设置'
     }
-    currentPageName.value = pageTitles[newRoute.path] || '首页'
+    currentPageName.value = pageTitles[newRoute.path] || '教师中心'
     setPageLoading(false)
     clearTimeout(timer)
   }, 500)
@@ -347,13 +318,13 @@ const toggleMobileSidebar = () => {
 // 侧边栏菜单选择处理
 const handleMenuSelect = (index) => {
   const routeMap = {
-    '1': '/',
-    '2': '/courses',
-    '3': '/grades',
-    '4': '/students',
-    '5': '/schedule',
-    '6': '/communication',
-    '7': '/settings'
+    '1': '/teacher',
+    '2': '/teacher/courses',
+    '3': '/teacher/grades',
+    '4': '/teacher/students',
+    '5': '/teacher/schedule',
+    '6': '/teacher/communication',
+    '7': '/teacher/settings'
   }
   if (routeMap[index]) {
     router.push(routeMap[index])

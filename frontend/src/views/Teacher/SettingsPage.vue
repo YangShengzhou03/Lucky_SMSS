@@ -1,7 +1,6 @@
-<!-- frontend\src\views\Student\StatusPage.vue -->
 <template>
     <div>
-        <a>学籍系统</a>
+        <h1>设置</h1>
     </div>
 </template>
 

@@ -1,9 +1,9 @@
 <template>
-  <div class="status-dashboard" :class="{ 'dark': isDarkMode }">
+  <div class="status-dashboard" :class="{ 'dark': isDarkMode }" @mousemove="handleMouseMove">
     <!-- 主要内容区域 -->
     <main class="dashboard-content">
       <!-- 学籍状态卡片 -->
-      <div class="status-card modern-card">
+      <div class="status-card modern-card" ref="statusCard">
         <div class="card-header">
           <h2>学籍状态概览</h2>
         </div>
@@ -16,17 +16,15 @@
               </el-tag>
             </div>
             <div class="status-meta">
-              <!-- 移除了 <br> 标签 -->
               <p class="meta-item">
                 <el-icon class="meta-icon">
                   <Calendar />
                 </el-icon>
                 <span>入学时间: {{ formatDate(effectiveDate) }}</span>
               </p>
-              <!-- 添加预计毕业信息 -->
               <p class="meta-item">
                 <el-icon class="meta-icon">
-                  <Graduation />
+                  <School />
                 </el-icon>
                 <span>预计毕业: {{ formatDate(graduationDate) }}</span>
               </p>
@@ -52,7 +50,6 @@
               <div class="stat-value">{{ performanceLevel }}</div>
               <div class="stat-label">学业等级</div>
               <div class="stat-rating">
-                <!-- 修改后的评分组件 -->
                 <el-rate :value="levelToRating(performanceLevel)" disabled :show-text="false" :allow-half="true"
                   :colors="ratingColors" />
               </div>
@@ -64,7 +61,7 @@
       <!-- 图表与数据区域 -->
       <div class="charts-container">
         <!-- 学分进度图表 -->
-        <div class="chart-card modern-card">
+        <div class="chart-card modern-card" ref="creditChartCard">
           <div class="card-header">
             <h3>学分完成进度</h3>
             <div class="progress-indicator">
@@ -91,7 +88,7 @@
         </div>
 
         <!-- 学籍状态趋势图 -->
-        <div class="chart-card modern-card">
+        <div class="chart-card modern-card" ref="trendChartCard">
           <div class="card-header">
             <h3>学业表现趋势</h3>
           </div>
@@ -108,9 +105,12 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick, watch, inject } from 'vue'
-import { Calendar, Graduation } from '@element-plus/icons-vue'
+import { Calendar, School } from '@element-plus/icons-vue'
 import Chart from 'chart.js/auto'
 
+const statusCard = ref(null)
+const creditChartCard = ref(null)
+const trendChartCard = ref(null)
 const creditDoughnutCanvas = ref(null)
 const performanceTrendCanvas = ref(null)
 
@@ -129,13 +129,20 @@ const statusConfig = {
 // 响应式数据
 const status = ref('normal')
 const effectiveDate = ref('2023-09-01')
-const graduationDate = ref('2027-06-30') // 添加毕业日期
+const graduationDate = ref('2027-06-30')
 const credits = ref(68)
 const totalCredits = ref(140)
 const attendanceRate = ref(96)
 const performanceLevel = ref('良好')
 let creditChart = null
 let trendChart = null
+
+// 鼠标移动事件处理
+const handleMouseMove = (e) => {
+  // 直接更新CSS变量，避免响应式变量更新导致的重渲染
+  document.documentElement.style.setProperty('--mouse-x', `${e.clientX}px`)
+  document.documentElement.style.setProperty('--mouse-y', `${e.clientY}px`)
+}
 
 // 计算属性
 const creditProgress = computed(() => {
@@ -165,14 +172,15 @@ const levelToRating = (level) => {
     '及格': 2,
     '不及格': 1
   }
+  console.log(`转换后的评分: ${levelMap[level]}`)
   return levelMap[level] || 3
 }
 
 // 计算属性：根据暗色模式动态调整评分颜色
 const ratingColors = computed(() => {
   return isDarkMode.value
-    ? ['#999', '#f7ba1e', '#f7ba1e', '#f7ba1e', '#10b981'] // 暗色模式保持原配置
-    : ['#999', '#3b82f6', '#3b82f6', '#10b981', '#10b981']; // 亮色模式使用更鲜明的颜色
+    ? ['rgba(255, 255, 255, 0.3)', '#f7ba1e', '#f7ba1e', '#f7ba1e', '#10b981']
+    : ['rgba(0, 0, 0, 0.2)', '#3b82f6', '#3b82f6', '#10b981', '#10b981']
 })
 
 // 方法
@@ -319,11 +327,9 @@ watch(isDarkMode, (newVal) => {
 
 // 初始化数据
 onMounted(() => {
-  // 不再强制使用暗色模式，而是依赖注入的暗色模式状态
-  // 初始化图表
   initCharts()
 
-  // 初始化数字计数器动画
+  // 数字计数器动画
   const counters = document.querySelectorAll('.counter')
   counters.forEach(counter => {
     const target = parseInt(counter.innerText)
@@ -360,6 +366,8 @@ onUnmounted(() => {
   flex-direction: column;
   transition: background-color 0.3s ease;
   padding: 0 15px;
+  --mouse-x: 0;
+  --mouse-y: 0;
 }
 
 // 主内容区域
@@ -383,6 +391,12 @@ onUnmounted(() => {
   overflow: hidden;
   z-index: 1;
 
+  // 卡片内部相对定位
+  .card-content {
+    position: relative;
+    z-index: 2;
+  }
+
   // 浅色模式
   background: white;
   border: 1px solid rgba(0, 0, 0, 0.1);
@@ -396,10 +410,31 @@ onUnmounted(() => {
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
   }
 
+  // 卡片光影效果
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y),
+        rgba(64, 158, 255, 0.08) 0%,
+        transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: -1;
+    pointer-events: none;
+  }
+
   // 卡片悬停效果
   &:hover {
     transform: translateY(-4px);
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+
+    &::before {
+      opacity: 1;
+    }
   }
 
   // 卡片头部
@@ -454,13 +489,11 @@ onUnmounted(() => {
     }
 
     .status-meta {
-      // 设置为 flex 布局，允许换行
       display: flex;
       flex-wrap: wrap;
-      gap: 16px; // 调整项间距
+      gap: 16px;
 
       .meta-item {
-        // 保持 flex 布局
         display: flex;
         align-items: center;
         gap: 10px;
@@ -468,7 +501,6 @@ onUnmounted(() => {
         color: var(--text-secondary);
         font-size: 16px;
 
-        // 防止内容换行
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;

@@ -1,21 +1,16 @@
 <template>
-  <div class="course-page">
+  <div class="course-page" :class="{ 'dark': isDarkMode }">
     <!-- 课程概览卡片 -->
-    <div class="course-overview-card">
+    <div class="course-overview-card modern-card">
       <div class="card-header">
         <h2>课程概览</h2>
         <div class="semester-selector">
           <el-select v-model="currentSemester" placeholder="选择学期" size="small">
-            <el-option
-              v-for="item in semesters"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
+            <el-option v-for="item in semesters" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </div>
       </div>
-      
+
       <div class="overview-stats">
         <div class="stat-item">
           <div class="stat-value">{{ currentCourses.length }}</div>
@@ -39,28 +34,27 @@
     <!-- 课程表与课程进度 -->
     <div class="course-content">
       <!-- 课程表 -->
-      <div class="course-schedule">
+      <div class="course-schedule modern-card">
         <h3 class="section-title">
-          <el-icon><Calendar /></el-icon> 本周课程表
+          <el-icon>
+            <Calendar />
+          </el-icon> 本周课程表
         </h3>
-        
+
         <div class="schedule-grid">
           <div class="grid-header">
             <div class="time-column"></div>
             <div class="day-column" v-for="day in weekdays" :key="day">{{ day }}</div>
           </div>
-          
+
           <div class="grid-body">
             <div class="time-slot" v-for="time in timeSlots" :key="time">
               <div class="time-label">{{ time }}</div>
               <div class="day-slot" v-for="day in weekdays" :key="day">
                 <!-- 课程卡片 -->
-                <div 
-                  class="course-card" 
-                  v-for="course in getCoursesByDayAndTime(day, time)" 
-                  :key="course.id"
-                  :style="{ backgroundColor: course.color }"
-                >
+                <div class="course-card" v-for="course in getCoursesByDayAndTime(day, time)" :key="course.id"
+                  :style="{ backgroundColor: course.color, opacity: courseOpacity }"
+                  @mouseenter="handleCourseHover(course)" @mouseleave="handleCourseLeave">
                   <div class="course-name">{{ course.name }}</div>
                   <div class="course-teacher">{{ course.teacher }}</div>
                   <div class="course-location">{{ course.location }}</div>
@@ -70,34 +64,28 @@
           </div>
         </div>
       </div>
-      
+
       <!-- 课程进度 -->
-      <div class="course-progress">
+      <div class="course-progress modern-card">
         <h3 class="section-title">
-          <el-icon><Notebook /></el-icon> 课程进度
+          <el-icon>
+            <Notebook />
+          </el-icon> 课程进度
         </h3>
-        
+
         <div class="progress-list">
-          <el-card 
-            class="progress-card" 
-            v-for="course in currentCourses" 
-            :key="course.id"
-            shadow="hover"
-          >
+          <el-card class="progress-card" v-for="course in currentCourses" :key="course.id" shadow="hover">
             <div class="card-content">
               <div class="course-info">
                 <div class="course-name">{{ course.name }}</div>
                 <div class="course-code">{{ course.code }}</div>
               </div>
-              
+
               <div class="progress-bar">
-                <el-progress 
-                  :percentage="course.progress" 
-                  :color="courseProgressColor(course.progress)" 
-                  :stroke-width="10"
-                />
+                <el-progress :percentage="course.progress" :color="courseProgressColor(course.progress)"
+                  :stroke-width="10" />
               </div>
-              
+
               <div class="course-details">
                 <div class="detail-item">
                   <span class="label">授课教师:</span>
@@ -113,14 +101,12 @@
                 </div>
               </div>
             </div>
-            
+
             <div class="card-actions">
-              <el-button 
-                type="text" 
-                size="small" 
-                @click="viewCourseDetails(course)"
-              >
-                查看详情 <el-icon><ArrowRight /></el-icon>
+              <el-button type="text" size="small" @click="viewCourseDetails(course)">
+                查看详情 <el-icon>
+                  <ArrowRight />
+                </el-icon>
               </el-button>
             </div>
           </el-card>
@@ -129,38 +115,27 @@
     </div>
 
     <!-- 历史课程记录 -->
-    <div class="history-courses">
+    <div class="history-courses modern-card">
       <h3 class="section-title">
-        <el-icon><History /></el-icon> 历史课程记录
+        <el-icon>
+          <History />
+        </el-icon> 历史课程记录
       </h3>
-      
-      <el-table 
-        :data="historyCourses" 
-        border 
-        stripe
-        class="history-table"
-      >
+
+      <el-table :data="historyCourses" border stripe class="history-table">
         <el-table-column prop="semester" label="学期" width="120" />
         <el-table-column prop="name" label="课程名称" min-width="180" />
         <el-table-column prop="code" label="课程代码" width="120" />
         <el-table-column prop="teacher" label="授课教师" width="120" />
         <el-table-column prop="credits" label="学分" width="80" />
         <el-table-column prop="score" label="成绩" width="80" />
-        <el-table-column prop="status" label="状态" width="100" 
-          :formatter="formatCourseStatus" />
+        <el-table-column prop="status" label="状态" width="100" :formatter="formatCourseStatus" />
       </el-table>
-      
+
       <div class="pagination" v-if="historyCourses.length > 0">
-        <el-pagination
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-          :current-page="currentPage"
-          :page-sizes="[5, 10, 20]"
-          :page-size="pageSize"
-          :total="historyCourses.length"
-          layout="total, sizes, prev, pager, next"
-          small
-        />
+        <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="currentPage"
+          :page-sizes="[5, 10, 20]" :page-size="pageSize" :total="historyCourses.length"
+          layout="total, sizes, prev, pager, next" small />
       </div>
     </div>
   </div>
@@ -170,6 +145,9 @@
 import { ref, computed, onMounted } from 'vue'
 import { Calendar, Notebook, History, ArrowRight } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
+
+// 暗色模式
+const isDarkMode = ref(false)
 
 // 课程状态配置
 const courseStatusConfig = {
@@ -265,6 +243,8 @@ const historyCourses = ref([
 
 const currentPage = ref(1)
 const pageSize = ref(10)
+const courseOpacity = ref(0.9)
+const hoveredCourse = ref(null)
 
 // 计算属性
 const completedCoursesCount = computed(() => {
@@ -284,7 +264,7 @@ const avgScore = computed(() => {
 
 // 方法
 const getCoursesByDayAndTime = (day, time) => {
-  return currentCourses.value.filter(course => 
+  return currentCourses.value.filter(course =>
     course.schedule.some(s => s.day === day && s.time === time)
   )
 }
@@ -312,6 +292,15 @@ const handleCurrentChange = (page) => {
   currentPage.value = page
 }
 
+const handleCourseHover = (course) => {
+  hoveredCourse.value = course
+  // 可以添加更多的交互效果
+}
+
+const handleCourseLeave = () => {
+  hoveredCourse.value = null
+}
+
 // 初始化数据
 onMounted(() => {
   // 模拟从API获取课程数据
@@ -321,59 +310,93 @@ onMounted(() => {
 <style scoped lang="scss">
 .course-page {
   padding: 20px;
-  background-color: #f5f7fa;
   min-height: calc(100vh - 60px);
+  transition: background-color 0.3s ease;
+
+  .dark & {
+    background-color: #1e293b;
+  }
 }
 
-// 课程概览卡片样式
-.course-overview-card {
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(12px);
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 24px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  
+// 现代化卡片样式 - 与成绩系统保持一致
+.modern-card {
+  position: relative;
+  border-radius: 16px;
+  padding: 30px;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  z-index: 1;
+
+  // 浅色模式
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+
+  // 深色模式样式
+  .dark & {
+    background: rgba(30, 41, 59, 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  }
+
+  // 卡片悬停效果
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+  }
+
+  // 卡片头部
   .card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
-    
+
     h2 {
       margin: 0;
-      font-size: 18px;
+      font-size: 20px;
       font-weight: 600;
-      color: #333;
-    }
-    
-    .semester-selector {
-      width: 220px;
+      color: var(--text-primary);
     }
   }
-  
+}
+
+// 课程概览卡片样式
+.course-overview-card {
+  margin-bottom: 24px;
+
   .overview-stats {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 16px;
-    
+
     .stat-item {
       text-align: center;
       padding: 16px;
-      background: rgba(245, 247, 250, 0.7);
+      background: rgba(0, 0, 0, 0.03);
       border-radius: 8px;
-      
+      transition: all 0.3s ease;
+
+      .dark & {
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      }
+
       .stat-value {
         font-size: 24px;
         font-weight: 700;
         color: #409eff;
         margin-bottom: 4px;
       }
-      
+
       .stat-label {
         font-size: 14px;
-        color: #666;
+        color: var(--text-secondary);
       }
     }
   }
@@ -385,7 +408,7 @@ onMounted(() => {
   grid-template-columns: 1.5fr 1fr;
   gap: 24px;
   margin-bottom: 24px;
-  
+
   @media (max-width: 1024px) {
     grid-template-columns: 1fr;
   }
@@ -393,72 +416,68 @@ onMounted(() => {
 
 // 课程表样式
 .course-schedule {
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(12px);
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  
   .section-title {
     display: flex;
     align-items: center;
     font-size: 16px;
     font-weight: 600;
-    color: #333;
+    color: var(--text-primary);
     margin-bottom: 16px;
-    
+
     .el-icon {
       margin-right: 8px;
     }
   }
-  
+
   .schedule-grid {
     width: 100%;
-    border-collapse: collapse;
-    
+
     .grid-header {
       display: grid;
       grid-template-columns: 80px repeat(7, 1fr);
       margin-bottom: 8px;
-      
+
       .time-column {
         width: 80px;
         text-align: center;
         font-weight: 500;
-        color: #666;
+        color: var(--text-secondary);
       }
-      
+
       .day-column {
         text-align: center;
         font-weight: 500;
-        color: #666;
+        color: var(--text-secondary);
         padding: 8px 0;
       }
     }
-    
+
     .grid-body {
       .time-slot {
         display: grid;
         grid-template-columns: 80px repeat(7, 1fr);
         margin-bottom: 8px;
-        
+
         .time-label {
           width: 80px;
           text-align: center;
           font-size: 14px;
-          color: #666;
+          color: var(--text-secondary);
           padding-top: 8px;
         }
-        
+
         .day-slot {
           position: relative;
           min-height: 80px;
-          border: 1px solid #ebeef5;
+          border: 1px solid rgba(0, 0, 0, 0.05);
           border-radius: 4px;
           margin: 0 4px;
+
+          .dark & {
+            border: 1px solid rgba(255, 255, 255, 0.05);
+          }
         }
-        
+
         .course-card {
           position: absolute;
           width: calc(100% - 8px);
@@ -468,13 +487,22 @@ onMounted(() => {
           color: white;
           font-size: 12px;
           box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-          
+          transition: all 0.3s ease;
+          cursor: pointer;
+
+          &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            opacity: 1 !important;
+          }
+
           .course-name {
             font-weight: 500;
             margin-bottom: 2px;
           }
-          
-          .course-teacher, .course-location {
+
+          .course-teacher,
+          .course-location {
             font-size: 11px;
             opacity: 0.8;
           }
@@ -486,69 +514,62 @@ onMounted(() => {
 
 // 课程进度样式
 .course-progress {
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(12px);
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  
   .section-title {
     display: flex;
     align-items: center;
     font-size: 16px;
     font-weight: 600;
-    color: #333;
+    color: var(--text-primary);
     margin-bottom: 16px;
-    
+
     .el-icon {
       margin-right: 8px;
     }
   }
-  
+
   .progress-list {
     .progress-card {
       margin-bottom: 16px;
-      
+
       .card-content {
         .course-info {
           display: flex;
           justify-content: space-between;
           margin-bottom: 12px;
-          
+
           .course-name {
             font-size: 16px;
             font-weight: 500;
-            color: #333;
+            color: var(--text-primary);
           }
-          
+
           .course-code {
             font-size: 14px;
-            color: #909399;
+            color: var(--text-secondary);
           }
         }
-        
+
         .progress-bar {
           margin-bottom: 12px;
         }
-        
+
         .course-details {
           display: flex;
           justify-content: space-between;
           font-size: 14px;
-          
+
           .detail-item {
             .label {
-              color: #909399;
+              color: var(--text-secondary);
             }
-            
+
             .value {
-              color: #333;
+              color: var(--text-primary);
             }
           }
         }
       }
-      
+
       .card-actions {
         text-align: right;
       }
@@ -558,33 +579,37 @@ onMounted(() => {
 
 // 历史课程记录样式
 .history-courses {
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(12px);
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  
   .section-title {
     display: flex;
     align-items: center;
     font-size: 16px;
     font-weight: 600;
-    color: #333;
+    color: var(--text-primary);
     margin-bottom: 16px;
-    
+
     .el-icon {
       margin-right: 8px;
     }
   }
-  
+
   .history-table {
     width: 100%;
     margin-bottom: 16px;
   }
-  
+
   .pagination {
     text-align: right;
   }
+}
+
+// 颜色变量
+:root {
+  --text-primary: #303133;
+  --text-secondary: #606266;
+}
+
+.dark {
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.7);
 }
 </style>

@@ -174,10 +174,14 @@ import {
   Notebook, Histogram, Setting, Calendar, Reading, EditPen,
   Menu, Search, Bell, Moon, Sunny, Warning, House
 } from '@element-plus/icons-vue'
+import { provideDarkMode } from '@/composables/useDarkMode'
 
 // 路由和路由实例
 const router = useRouter()
 const route = useRoute()
+
+// 主题状态
+const { isDarkMode, toggleDarkMode } = provideDarkMode()
 
 // 移动端导航项配置
 const mobileNavItems = [
@@ -192,7 +196,6 @@ const showBackToTop = ref(false)
 const currentPageName = ref('')
 const searchQuery = ref('')
 const isSearchFocused = ref(false)
-const isDarkMode = ref(false)
 const notificationVisible = ref(false)
 const userMenuVisible = ref(false)
 const mobileSidebarOpen = ref(false)
@@ -321,22 +324,12 @@ const handleSearch = () => {
   }
 }
 
-// 暗色模式切换
-const toggleDarkMode = () => {
-  isDarkMode.value = !isDarkMode.value
-  localStorage.setItem('isDarkMode', isDarkMode.value)
-  // 添加暗色模式切换动画效果
-  const appContainer = document.querySelector('.app-container')
-  appContainer.classList.add('dark-mode-transition')
-  setTimeout(() => {
-    appContainer.classList.remove('dark-mode-transition')
-  }, 300)
-}
-
 // 通知中心切换
 const toggleNotification = () => {
   notificationVisible.value = !notificationVisible.value
 }
+
+// 用户菜单切换
 
 // 重试加载
 const retry = () => {
@@ -357,12 +350,6 @@ const checkScreenSize = () => {
 
 // 生命周期钩子
 onMounted(() => {
-  // 从本地存储获取暗色模式设置
-  const savedDarkMode = localStorage.getItem('isDarkMode')
-  if (savedDarkMode !== null) {
-    isDarkMode.value = savedDarkMode === 'true'
-  }
-
   // 添加事件监听器
   document.addEventListener('click', closeDropdowns)
   window.addEventListener('scroll', handleScroll)
@@ -646,6 +633,84 @@ onUnmounted(() => {
 
 .notification-center {
   position: relative;
+}
+
+.user-area {
+  position: relative;
+}
+
+.user-btn {
+  width: 40px;
+  height: 40px;
+}
+
+.user-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--primary-color);
+}
+
+.user-avatar-big {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--primary-color);
+}
+
+.user-info {
+  padding: 16px;
+}
+
+.user-detail {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.user-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--gray-800);
+}
+
+.user-id {
+  font-size: 12px;
+  color: var(--gray-500);
+}
+
+.user-role {
+  font-size: 12px;
+  color: var(--gray-600);
+}
+
+.user-menu {
+  border: none;
+}
+
+:deep(.user-menu .el-menu-item) {
+  height: 40px;
+  line-height: 40px;
+  font-size: 14px;
+  color: var(--gray-600);
+  transition: var(--transition);
+
+  &:hover {
+    color: var(--primary-color);
+    background-color: var(--gray-50);
+  }
+}
+
+:deep(.user-menu .el-menu-item.is-active) {
+  color: var(--primary-color);
+  background-color: var(--primary-light);
+}
+
+.logout-item {
+  color: var(--danger-color) !important;
 }
 
 .body-container {

@@ -1,385 +1,454 @@
 <template>
-  <div class="library-page">
+  <div class="library-page" :class="{ 'dark': isDarkMode }">
     <!-- 借阅概览卡片 -->
-    <div class="borrow-overview">
+    <div class="borrow-overview modern-card mb-6">
       <div class="overview-header">
         <h2>借阅概览</h2>
         <div class="status-indicator">
-          <el-tag 
-            type="success" 
-            size="small"
-          >
+          <el-tag type="success" size="small" effect="dark">
+            <el-icon>
+              <SuccessFilled />
+            </el-icon>
             借阅状态良好
           </el-tag>
         </div>
       </div>
-      
+
       <div class="stats-container">
-        <div class="stats-card">
-          <div class="card-icon">
-            <el-icon><Book /></el-icon>
+        <div class="stats-card" v-for="stat in stats" :key="stat.label">
+          <div class="card-icon" :style="{ backgroundColor: stat.bgColor }">
+            <el-icon :size="24">
+              <component :is="stat.icon" />
+            </el-icon>
           </div>
           <div class="card-content">
-            <div class="stat-value">{{ currentBorrows.length }}</div>
-            <div class="stat-label">当前借阅</div>
+            <div class="stat-value">{{ stat.value }}</div>
+            <div class="stat-label">{{ stat.label }}</div>
           </div>
-        </div>
-        
-        <div class="stats-card">
-          <div class="card-icon">
-            <el-icon><History /></el-icon>
-          </div>
-          <div class="card-content">
-            <div class="stat-value">{{ totalBorrows }}</div>
-            <div class="stat-label">累计借阅</div>
-          </div>
-        </div>
-        
-        <div class="stats-card">
-          <div class="card-icon">
-            <el-icon><Time /></el-icon>
-          </div>
-          <div class="card-content">
-            <div class="stat-value">{{ overdueCount }}</div>
-            <div class="stat-label">逾期数量</div>
-          </div>
-        </div>
-        
-        <div class="stats-card">
-          <div class="card-icon">
-            <el-icon><Star /></el-icon>
-          </div>
-          <div class="card-content">
-            <div class="stat-value">{{ availableBooks }}</div>
-            <div class="stat-label">可借数量</div>
+          <div class="trend-indicator" :class="stat.trend">
+            <el-icon v-if="stat.trend === 'up'">
+              <Top />
+            </el-icon>
+            <el-icon v-else>
+              <Bottom />
+            </el-icon>
+            <span>{{ stat.change }}%</span>
           </div>
         </div>
       </div>
     </div>
 
     <!-- 当前借阅列表 -->
-    <div class="current-borrows">
+    <div class="current-borrows modern-card mb-6">
       <div class="section-header">
         <h3>当前借阅</h3>
-        <div class="renew-all">
-          <el-button 
-            type="primary" 
-            size="small" 
-            @click="renewAllBooks"
-          >
+        <div class="actions">
+          <el-button type="primary" size="small" @click="renewAllBooks" :disabled="!hasRenewableBooks">
+            <el-icon>
+              <Refresh />
+            </el-icon>
             一键续借
+          </el-button>
+          <el-button type="info" size="small" @click="exportBorrowList">
+            <el-icon>
+              <Download />
+            </el-icon>
+            导出列表
           </el-button>
         </div>
       </div>
-      
-      <el-table 
-        :data="currentBorrows" 
-        border 
-        stripe
-        class="borrow-table"
-      >
-        <el-table-column prop="cover" label="封面" width="100">
+
+      <el-table :data="paginatedCurrentBorrows" border stripe class="borrow-table" style="width: 100%"
+        v-loading="loading">
+        <el-table-column prop="cover" label="封面" width="100" align="center">
           <template #default="scope">
-            <img 
-              :src="scope.row.cover || defaultBookCover" 
-              alt="图书封面" 
-              class="book-cover"
-            />
+            <el-image :src="scope.row.cover || defaultBookCover"
+              :preview-src-list="[scope.row.cover || defaultBookCover]" fit="cover" class="book-cover"
+              hide-on-click-modal>
+              <template #error>
+                <div class="image-error">
+                  <el-icon>
+                    <Picture />
+                  </el-icon>
+                </div>
+              </template>
+            </el-image>
           </template>
         </el-table-column>
-        <el-table-column prop="title" label="书名" min-width="200" />
+        <el-table-column prop="title" label="书名" min-width="180" />
         <el-table-column prop="author" label="作者" width="120" />
         <el-table-column prop="callNumber" label="索书号" width="120" />
-        <el-table-column prop="borrowDate" label="借阅日期" width="120" 
-          :formatter="formatDate" />
-        <el-table-column prop="dueDate" label="应还日期" width="120" 
-          :formatter="formatDate" />
-        <el-table-column prop="renewTimes" label="续借次数" width="100" />
-        <el-table-column label="操作" width="120">
+        <el-table-column prop="borrowDate" label="借阅日期" width="120" :formatter="formatDate" sortable />
+        <el-table-column prop="dueDate" label="应还日期" width="120" :formatter="formatDate" sortable>
           <template #default="scope">
-            <el-button 
-              type="primary" 
-              size="small" 
-              @click="renewBook(scope.row)"
-              :disabled="scope.row.renewTimes >= 2 || isOverdue(scope.row.dueDate)"
-            >
+            <span :class="{ 'text-danger': isOverdue(scope.row.dueDate) }">
+              {{ formatDate(scope.row.dueDate) }}
+            </span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="renewTimes" label="续借次数" width="100" align="center">
+          <template #default="scope">
+            <el-tag :type="scope.row.renewTimes >= 2 ? 'danger' : 'info'" size="small">
+              {{ scope.row.renewTimes }}/2
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="状态" width="120" align="center">
+          <template #default="scope">
+            <el-tag :type="getBookStatusType(scope.row)" size="small" effect="light">
+              {{ getBookStatusText(scope.row) }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="150" fixed="right" align="center">
+          <template #default="scope">
+            <el-button type="primary" size="small" @click="renewBook(scope.row)" :disabled="!canRenew(scope.row)" plain>
               续借
             </el-button>
           </template>
         </el-table-column>
       </el-table>
-      
-      <div class="pagination" v-if="currentBorrows.length > 0">
-        <el-pagination
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-          :current-page="currentPage"
-          :page-sizes="[5, 10, 20]"
-          :page-size="pageSize"
-          :total="currentBorrows.length"
-          layout="total, sizes, prev, pager, next"
-          small
-        />
+
+      <div class="pagination-wrapper">
+        <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :page-sizes="[5, 10, 20]"
+          :total="currentBorrows.length" layout="total, sizes, prev, pager, next, jumper" background />
       </div>
     </div>
 
     <!-- 借阅历史 -->
-    <div class="borrow-history">
+    <div class="borrow-history modern-card mb-6">
       <div class="section-header">
         <h3>借阅历史</h3>
         <div class="history-filter">
-          <el-select 
-            v-model="historyFilter" 
-            placeholder="筛选类型" 
-            size="small"
-          >
+          <el-select v-model="historyFilter" placeholder="筛选类型" size="small">
             <el-option label="全部" value="all" />
             <el-option label="已归还" value="returned" />
             <el-option label="逾期" value="overdue" />
           </el-select>
         </div>
       </div>
-      
-      <el-table 
-        :data="filteredHistory" 
-        border 
-        stripe
-        class="history-table"
-      >
+
+      <el-table :data="filteredHistory" border stripe class="history-table">
         <el-table-column prop="title" label="书名" min-width="200" />
         <el-table-column prop="author" label="作者" width="120" />
-        <el-table-column prop="borrowDate" label="借阅日期" width="120" 
-          :formatter="formatDate" />
-        <el-table-column prop="returnDate" label="归还日期" width="120" 
-          :formatter="formatDate" />
-        <el-table-column prop="status" label="状态" width="100" 
-          :formatter="formatStatus" />
+        <el-table-column prop="borrowDate" label="借阅日期" width="120" :formatter="formatDate" />
+        <el-table-column prop="returnDate" label="归还日期" width="120" :formatter="formatDate" />
+        <el-table-column prop="status" label="状态" width="100" :formatter="formatStatus" />
       </el-table>
-      
+
       <div class="pagination" v-if="filteredHistory.length > 0">
-        <el-pagination
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-          :current-page="currentPage"
-          :page-sizes="[5, 10, 20]"
-          :page-size="pageSize"
-          :total="filteredHistory.length"
-          layout="total, sizes, prev, pager, next"
-          small
-        />
+        <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="currentPage"
+          :page-sizes="[5, 10, 20]" :page-size="pageSize" :total="filteredHistory.length"
+          layout="total, sizes, prev, pager, next" small />
       </div>
     </div>
 
     <!-- 图书搜索 -->
-    <div class="book-search">
+    <div class="book-search modern-card mb-6">
       <div class="search-header">
         <h3>图书搜索</h3>
         <div class="search-box">
-          <el-input
-            v-model="searchKeyword"
-            placeholder="输入书名、作者或ISBN"
-            prefix-icon="Search"
-            size="small"
-            class="search-input"
-          />
-          <el-button 
-            type="primary" 
-            size="small" 
-            @click="searchBooks"
-          >
-            搜索
-          </el-button>
+          <el-input v-model="searchKeyword" placeholder="输入书名、作者或ISBN" clearable @clear="clearSearch"
+            @keyup.enter="searchBooks">
+            <template #prefix>
+              <el-icon>
+                <Search />
+              </el-icon>
+            </template>
+            <template #append>
+              <el-button @click="searchBooks">
+                <el-icon>
+                  <Search />
+                </el-icon>
+              </el-button>
+            </template>
+          </el-input>
         </div>
       </div>
-      
+
       <div class="search-filters">
-        <el-radio-group v-model="searchType">
-          <el-radio-button label="title">书名</el-radio-button>
-          <el-radio-button label="author">作者</el-radio-button>
-          <el-radio-button label="isbn">ISBN</el-radio-button>
-        </el-radio-group>
-        
-        <el-select 
-          v-model="categoryFilter" 
-          placeholder="图书分类" 
-          size="small"
-        >
-          <el-option label="全部类别" value="" />
-          <el-option label="计算机科学" value="computer" />
-          <el-option label="文学" value="literature" />
-          <el-option label="历史" value="history" />
-          <el-option label="数学" value="mathematics" />
-          <el-option label="物理学" value="physics" />
-        </el-select>
-        
-        <el-select 
-          v-model="locationFilter" 
-          placeholder="馆藏位置" 
-          size="small"
-        >
-          <el-option label="全部位置" value="" />
-          <el-option label="主馆" value="main" />
-          <el-option label="分馆1" value="branch1" />
-          <el-option label="分馆2" value="branch2" />
-          <el-option label="电子资源" value="digital" />
-        </el-select>
+        <div class="filter-group">
+          <label>搜索类型</label>
+          <el-radio-group v-model="searchType" size="small">
+            <el-radio-button label="title">书名</el-radio-button>
+            <el-radio-button label="author">作者</el-radio-button>
+            <el-radio-button label="isbn">ISBN</el-radio-button>
+          </el-radio-group>
+        </div>
+
+        <div class="filter-group">
+          <label>图书分类</label>
+          <el-select v-model="categoryFilter" placeholder="全部类别" size="small" clearable>
+            <el-option v-for="category in bookCategories" :key="category.value" :label="category.label"
+              :value="category.value" />
+          </el-select>
+        </div>
+
+        <div class="filter-group">
+          <label>馆藏位置</label>
+          <el-select v-model="locationFilter" placeholder="全部位置" size="small" clearable>
+            <el-option v-for="location in libraryLocations" :key="location.value" :label="location.label"
+              :value="location.value" />
+          </el-select>
+        </div>
       </div>
-      
+
       <div class="search-results" v-if="searchResults.length > 0">
-        <h4 class="result-count">搜索结果: 共找到 {{ searchResults.length }} 本图书</h4>
-        
-        <el-card 
-          class="book-card" 
-          v-for="book in searchResults" 
-          :key="book.id"
-          shadow="hover"
-        >
-          <template #header>
-            <div class="card-header">
-              <div class="book-title">{{ book.title }}</div>
-              <div class="book-status">
-                <el-tag 
-                  :type="book.available ? 'success' : 'danger'" 
-                  size="small"
-                >
-                  {{ book.available ? '可借阅' : '已借出' }}
-                </el-tag>
-              </div>
-            </div>
-          </template>
-          
-          <div class="card-content">
-            <div class="book-info">
-              <img 
-                :src="book.cover || defaultBookCover" 
-                alt="图书封面" 
-                class="book-cover-small"
-              />
-              
-              <div class="book-details">
-                <div class="detail-row">
-                  <span class="label">作者:</span>
-                  <span class="value">{{ book.author }}</span>
-                </div>
-                <div class="detail-row">
-                  <span class="label">出版社:</span>
-                  <span class="value">{{ book.publisher }}</span>
-                </div>
-                <div class="detail-row">
-                  <span class="label">出版年份:</span>
-                  <span class="value">{{ book.year }}</span>
-                </div>
-                <div class="detail-row">
-                  <span class="label">ISBN:</span>
-                  <span class="value">{{ book.isbn }}</span>
-                </div>
-                <div class="detail-row">
-                  <span class="label">馆藏位置:</span>
-                  <span class="value">{{ getLocationName(book.location) }}</span>
-                </div>
-              </div>
-            </div>
-            
-            <div class="book-actions">
-              <el-button 
-                type="primary" 
-                size="small" 
-                @click="borrowBook(book)"
-                :disabled="!book.available"
-              >
-                {{ book.available ? '借阅' : '已借出' }}
-              </el-button>
-              <el-button 
-                type="text" 
-                size="small" 
-                @click="reserveBook(book)"
-                :disabled="book.available"
-              >
-                预约
-              </el-button>
-              <el-button 
-                type="text" 
-                size="small" 
-                @click="viewDetails(book)"
-              >
-                详情
-              </el-button>
-            </div>
+        <div class="result-header">
+          <div class="result-count">
+            共找到 <span class="highlight">{{ searchResults.length }}</span> 本图书
           </div>
-        </el-card>
+          <div class="result-sort">
+            <el-select v-model="sortOption" placeholder="排序方式" size="small">
+              <el-option label="相关度" value="relevance" />
+              <el-option label="出版日期(新→旧)" value="date-desc" />
+              <el-option label="出版日期(旧→新)" value="date-asc" />
+              <el-option label="借阅量(高→低)" value="popularity" />
+            </el-select>
+          </div>
+        </div>
+
+        <div class="result-grid">
+          <el-card v-for="book in sortedSearchResults" :key="book.id" class="book-card" shadow="hover">
+            <div class="card-content">
+              <div class="book-cover">
+                <el-image :src="book.cover || defaultBookCover" :preview-src-list="[book.cover || defaultBookCover]"
+                  fit="cover" class="cover-image" hide-on-click-modal>
+                  <template #error>
+                    <div class="image-error">
+                      <el-icon>
+                        <Picture />
+                      </el-icon>
+                    </div>
+                  </template>
+                </el-image>
+              </div>
+              <div class="book-details">
+                <h4 class="book-title">{{ book.title }}</h4>
+                <div class="book-author">{{ book.author }}</div>
+                <div class="book-meta">
+                  <div class="meta-item">
+                    <el-icon>
+                      <Collection />
+                    </el-icon>
+                    {{ book.publisher }} ({{ book.year }})
+                  </div>
+                  <div class="meta-item">
+                    <el-icon>
+                      <Location />
+                    </el-icon>
+                    {{ getLocationName(book.location) }}
+                  </div>
+                  <div class="meta-item">
+                    <el-icon>
+                      <Document />
+                    </el-icon>
+                    {{ book.callNumber || '--' }}
+                  </div>
+                </div>
+                <div class="book-actions">
+                  <el-button type="primary" size="small" @click.stop="borrowBook(book)" :disabled="!book.available">
+                    {{ book.available ? '借阅' : '已借出' }}
+                  </el-button>
+                  <el-button type="info" size="small" @click.stop="viewBookDetails(book)" plain>
+                    详情
+                  </el-button>
+                </div>
+              </div>
+            </div>
+          </el-card>
+        </div>
       </div>
-      
+
       <div class="no-results" v-else>
-        <el-empty 
-          description="未找到匹配的图书"
-          image="empty"
-        />
+        <el-empty description="未找到匹配的图书" image="empty" />
       </div>
     </div>
 
     <!-- 推荐图书 -->
-    <div class="recommended-books">
+    <div class="recommended-books modern-card">
       <div class="section-header">
-        <h3>推荐图书</h3>
-        <div class="change-recommendations">
-          <el-button 
-            type="text" 
-            size="small" 
-            @click="refreshRecommendations"
-          >
-            <el-icon><Refresh /></el-icon> 换一批
-          </el-button>
-        </div>
+        <h3>为您推荐</h3>
+        <el-button type="text" size="small" @click="refreshRecommendations">
+          <el-icon>
+            <Refresh />
+          </el-icon>
+          换一批
+        </el-button>
       </div>
-      
-      <div class="books-grid">
-        <el-card 
-          class="recommended-book-card" 
-          v-for="book in recommendedBooks" 
-          :key="book.id"
-          shadow="hover"
-        >
-          <img 
-            :src="book.cover || defaultBookCover" 
-            alt="图书封面" 
-            class="recommended-cover"
-          />
-          
-          <div class="book-info">
-            <div class="book-title">{{ book.title }}</div>
-            <div class="book-author">{{ book.author }}</div>
-            <div class="book-rating">
-              <el-rate 
-                :value="book.rating" 
-                disabled 
-                show-text 
-                text-color="#ff9900"
-                :texts="['很差', '一般', '良好', '优秀', '极佳']"
-                size="small"
-              />
+
+      <div class="books-list">
+        <div class="book-item" v-for="book in recommendedBooks" :key="book.id" @click="viewBookDetails(book)">
+          <div class="book-cover">
+            <el-image :src="book.cover || defaultBookCover" fit="cover" class="cover-image">
+              <template #error>
+                <div class="image-error">
+                  <el-icon>
+                    <Picture />
+                  </el-icon>
+                </div>
+              </template>
+            </el-image>
+            <div class="book-status" :class="{ 'available': book.available }">
+              {{ book.available ? '可借' : '已借' }}
             </div>
           </div>
-          
-          <div class="book-actions">
-            <el-button 
-              type="primary" 
-              size="small" 
-              @click="borrowBook(book)"
-              :disabled="!book.available"
-            >
-              {{ book.available ? '借阅' : '已借出' }}
-            </el-button>
+          <div class="book-info">
+            <div class="book-title" :title="book.title">{{ book.title }}</div>
+            <div class="book-author">{{ book.author }}</div>
+            <div class="book-meta">
+              <el-rate v-model="book.rating" disabled show-score score-template="{value}" size="small" />
+              <el-tag size="small" effect="plain">{{ book.category }}</el-tag>
+            </div>
           </div>
-        </el-card>
+        </div>
       </div>
     </div>
+
+    <!-- 图书详情弹窗 -->
+    <el-dialog v-model="bookDetailVisible" :title="selectedBook?.title || '图书详情'" width="60%" top="5vh"
+      @close="selectedBook = null">
+      <div class="book-detail" v-if="selectedBook">
+        <div class="detail-header">
+          <div class="book-cover-large">
+            <el-image :src="selectedBook.cover || defaultBookCover" fit="contain" class="cover-image">
+              <template #error>
+                <div class="image-error-large">
+                  <el-icon>
+                    <Picture />
+                  </el-icon>
+                </div>
+              </template>
+            </el-image>
+          </div>
+          <div class="book-info">
+            <h3 class="book-title">{{ selectedBook.title }}</h3>
+            <div class="book-author">{{ selectedBook.author }}</div>
+            <div class="book-rating">
+              <el-rate v-model="selectedBook.rating" disabled show-score score-template="{value}分" />
+              <span class="rating-count">({{ selectedBook.ratingCount || 0 }}人评价)</span>
+            </div>
+            <div class="book-status">
+              <el-tag :type="selectedBook.available ? 'success' : 'danger'" effect="light" size="large">
+                <el-icon v-if="selectedBook.available">
+                  <CircleCheck />
+                </el-icon>
+                <el-icon v-else>
+                  <CircleClose />
+                </el-icon>
+                {{ selectedBook.available ? '可借阅' : '已借出' }}
+              </el-tag>
+            </div>
+            <div class="book-actions">
+              <el-button type="primary" size="large" @click="borrowBook(selectedBook)"
+                :disabled="!selectedBook.available">
+                <el-icon>
+                  <TakeawayBox />
+                </el-icon>
+                立即借阅
+              </el-button>
+              <el-button type="info" size="large" @click="reserveBook(selectedBook)" :disabled="selectedBook.available"
+                plain>
+                <el-icon>
+                  <Bell />
+                </el-icon>
+                预约图书
+              </el-button>
+            </div>
+          </div>
+        </div>
+
+        <el-tabs class="detail-tabs">
+          <el-tab-pane label="图书详情">
+            <div class="book-description">
+              <h4>内容简介</h4>
+              <p>{{ selectedBook.description || '暂无内容简介' }}</p>
+            </div>
+            <div class="book-meta-grid">
+              <div class="meta-item">
+                <span class="label">出版社:</span>
+                <span class="value">{{ selectedBook.publisher || '--' }}</span>
+              </div>
+              <div class="meta-item">
+                <span class="label">出版日期:</span>
+                <span class="value">{{ selectedBook.year || '--' }}</span>
+              </div>
+              <div class="meta-item">
+                <span class="label">ISBN:</span>
+                <span class="value">{{ selectedBook.isbn || '--' }}</span>
+              </div>
+              <div class="meta-item">
+                <span class="label">页数:</span>
+                <span class="value">{{ selectedBook.pages || '--' }}</span>
+              </div>
+              <div class="meta-item">
+                <span class="label">分类:</span>
+                <span class="value">{{ getCategoryName(selectedBook.category) }}</span>
+              </div>
+              <div class="meta-item">
+                <span class="label">语言:</span>
+                <span class="value">{{ selectedBook.language || '中文' }}</span>
+              </div>
+              <div class="meta-item">
+                <span class="label">索书号:</span>
+                <span class="value">{{ selectedBook.callNumber || '--' }}</span>
+              </div>
+              <div class="meta-item">
+                <span class="label">馆藏位置:</span>
+                <span class="value">{{ getLocationName(selectedBook.location) }}</span>
+              </div>
+            </div>
+          </el-tab-pane>
+          <el-tab-pane label="借阅信息">
+            <div class="borrow-info">
+              <el-table :data="selectedBook.borrowRecords" style="width: 100%">
+                <el-table-column prop="user" label="借阅人" width="120" />
+                <el-table-column prop="borrowDate" label="借阅日期" width="120" />
+                <el-table-column prop="returnDate" label="归还日期" width="120" />
+                <el-table-column prop="status" label="状态" width="100">
+                  <template #default="scope">
+                    <el-tag :type="scope.row.status === 'returned' ? 'success' : 'warning'" size="small">
+                      {{ scope.row.status === 'returned' ? '已归还' : '借出中' }}
+                    </el-tag>
+                  </template>
+                </el-table-column>
+              </el-table>
+            </div>
+          </el-tab-pane>
+          <el-tab-pane label="读者评价">
+            <div class="book-reviews">
+              <div class="review-item" v-for="review in selectedBook.reviews" :key="review.id">
+                <div class="review-header">
+                  <div class="reviewer">{{ review.user }}</div>
+                  <div class="review-rating">
+                    <el-rate v-model="review.rating" disabled size="small" />
+                  </div>
+                  <div class="review-date">{{ review.date }}</div>
+                </div>
+                <div class="review-content">{{ review.content }}</div>
+              </div>
+              <div class="no-reviews" v-if="!selectedBook.reviews || selectedBook.reviews.length === 0">
+                暂无读者评价
+              </div>
+            </div>
+          </el-tab-pane>
+        </el-tabs>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { Book, History, Time, Star, Refresh } from '@element-plus/icons-vue'
+import {
+  Search, Refresh, Download, Picture, Collection,
+  Location, Document, CircleCheck, CircleClose,
+  TakeawayBox, Bell, SuccessFilled, Top, Bottom
+} from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+
+// 暗色模式
+const isDarkMode = ref(false)
 
 // 默认图书封面
 const defaultBookCover = 'https://picsum.photos/200/300?random=book'
@@ -418,50 +487,69 @@ const currentBorrows = ref([
   }
 ])
 
-const borrowHistory = ref([
+// 统计数据
+const stats = ref([
   {
-    id: 101,
-    title: '计算机组成与设计',
-    author: 'David A. Patterson',
-    borrowDate: '2023-03-10',
-    returnDate: '2023-04-10',
-    status: 'returned'
+    label: '当前借阅',
+    value: 3,
+    icon: 'Book',
+    bgColor: '#f0f9ff',
+    trend: 'up',
+    change: 5
   },
   {
-    id: 102,
-    title: '编译原理',
-    author: 'Alfred V. Aho',
-    borrowDate: '2023-02-15',
-    returnDate: '2023-03-15',
-    status: 'returned'
+    label: '累计借阅',
+    value: 42,
+    icon: 'Histogram',
+    bgColor: '#f0f7ff',
+    trend: 'up',
+    change: 12
   },
   {
-    id: 103,
-    title: '人工智能：一种现代方法',
-    author: 'Stuart Russell',
-    borrowDate: '2023-01-20',
-    returnDate: '2023-02-20',
-    status: 'returned'
+    label: '逾期数量',
+    value: 0,
+    icon: 'Clock',
+    bgColor: '#fff0f0',
+    trend: 'down',
+    change: 20
   },
   {
-    id: 104,
-    title: '数据库系统概念',
-    author: 'Abraham Silberschatz',
-    borrowDate: '2022-12-10',
-    returnDate: '2023-01-15',
-    status: 'overdue'
+    label: '可借数量',
+    value: 7,
+    icon: 'Star',
+    bgColor: '#f0fff4',
+    trend: 'up',
+    change: 3
   }
 ])
 
+// 搜索相关数据
 const searchKeyword = ref('')
 const searchType = ref('title')
 const categoryFilter = ref('')
 const locationFilter = ref('')
 const searchResults = ref([])
-const historyFilter = ref('all')
-const currentPage = ref(1)
-const pageSize = ref(10)
+const sortOption = ref('relevance')
 
+// 图书分类和位置选项
+const bookCategories = ref([
+  { value: 'computer', label: '计算机科学' },
+  { value: 'literature', label: '文学' },
+  { value: 'history', label: '历史' },
+  { value: 'mathematics', label: '数学' },
+  { value: 'physics', label: '物理学' },
+  { value: 'economics', label: '经济学' },
+  { value: 'art', label: '艺术' }
+])
+
+const libraryLocations = ref([
+  { value: 'main', label: '主馆' },
+  { value: 'branch1', label: '分馆1' },
+  { value: 'branch2', label: '分馆2' },
+  { value: 'digital', label: '电子资源' }
+])
+
+// 推荐图书
 const recommendedBooks = ref([
   {
     id: 201,
@@ -469,7 +557,8 @@ const recommendedBooks = ref([
     author: 'Wes McKinney',
     rating: 4.5,
     cover: 'https://picsum.photos/200/300?random=4',
-    available: true
+    available: true,
+    category: 'computer'
   },
   {
     id: 202,
@@ -477,7 +566,8 @@ const recommendedBooks = ref([
     author: 'Ian Goodfellow',
     rating: 4.8,
     cover: 'https://picsum.photos/200/300?random=5',
-    available: false
+    available: false,
+    category: 'computer'
   },
   {
     id: 203,
@@ -485,38 +575,85 @@ const recommendedBooks = ref([
     author: 'Thomas H. Cormen',
     rating: 4.9,
     cover: 'https://picsum.photos/200/300?random=6',
-    available: true
-  },
-  {
-    id: 204,
-    title: '计算机程序的构造和解释',
-    author: 'Harold Abelson',
-    rating: 4.7,
-    cover: 'https://picsum.photos/200/300?random=7',
-    available: true
+    available: true,
+    category: 'computer'
   }
 ])
 
-// 计算属性
-const totalBorrows = computed(() => {
-  return borrowHistory.value.length
-})
+// 添加借阅历史数据
+const borrowHistory = ref([
+  {
+    id: 101,
+    title: '数据结构与算法分析',
+    author: 'Mark Allen Weiss',
+    borrowDate: '2023-05-10',
+    returnDate: '2023-06-10',
+    status: 'returned'
+  },
+  {
+    id: 102,
+    title: '计算机网络：自顶向下方法',
+    author: 'Andrew S. Tanenbaum',
+    borrowDate: '2023-04-15',
+    returnDate: '2023-05-15',
+    status: 'returned'
+  },
+  {
+    id: 103,
+    title: '操作系统概念',
+    author: 'Abraham Silberschatz',
+    borrowDate: '2023-03-20',
+    returnDate: '',
+    status: 'overdue'
+  }
+])
 
-const overdueCount = computed(() => {
-  return borrowHistory.value.filter(item => item.status === 'overdue').length
-})
+// 历史记录筛选
+const historyFilter = ref('all')
 
-const availableBooks = computed(() => {
-  return 10 - currentBorrows.value.length
-})
-
+// 定义 filteredHistory 计算属性
 const filteredHistory = computed(() => {
   if (historyFilter.value === 'all') {
     return borrowHistory.value
   } else if (historyFilter.value === 'returned') {
     return borrowHistory.value.filter(item => item.status === 'returned')
-  } else {
+  } else if (historyFilter.value === 'overdue') {
     return borrowHistory.value.filter(item => item.status === 'overdue')
+  }
+  return []
+})
+
+// 分页相关
+const currentPage = ref(1)
+const pageSize = ref(10)
+const loading = ref(false)
+
+// 图书详情
+const selectedBook = ref(null)
+const bookDetailVisible = ref(false)
+
+// 计算属性
+const paginatedCurrentBorrows = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value
+  const end = start + pageSize.value
+  return currentBorrows.value.slice(start, end)
+})
+
+const hasRenewableBooks = computed(() => {
+  return currentBorrows.value.some(book => canRenew(book))
+})
+
+const sortedSearchResults = computed(() => {
+  const results = [...searchResults.value]
+  switch (sortOption.value) {
+    case 'date-desc':
+      return results.sort((a, b) => new Date(b.year) - new Date(a.year))
+    case 'date-asc':
+      return results.sort((a, b) => new Date(a.year) - new Date(b.year))
+    case 'popularity':
+      return results.sort((a, b) => (b.popularity || 0) - (a.popularity || 0))
+    default:
+      return results
   }
 })
 
@@ -530,40 +667,42 @@ const formatDate = (dateStr) => {
   }).replace(/\//g, '-')
 }
 
-const formatStatus = (row) => {
-  if (row.status === 'returned') {
-    return '已归还'
-  } else if (row.status === 'overdue') {
-    return '逾期归还'
-  }
-  return '未知'
-}
-
 const isOverdue = (dueDate) => {
   return new Date(dueDate) < new Date()
 }
 
+const canRenew = (book) => {
+  return book.renewTimes < 2 && !isOverdue(book.dueDate)
+}
+
+const getBookStatusType = (book) => {
+  if (isOverdue(book.dueDate)) return 'danger'
+  if (book.renewTimes >= 2) return 'warning'
+  return 'success'
+}
+
+const getBookStatusText = (book) => {
+  if (isOverdue(book.dueDate)) return '已逾期'
+  if (book.renewTimes >= 2) return '不可续借'
+  return '可续借'
+}
+
 const getLocationName = (location) => {
-  const locations = {
-    'main': '主馆',
-    'branch1': '分馆1',
-    'branch2': '分馆2',
-    'digital': '电子资源'
-  }
-  return locations[location] || location
+  const loc = libraryLocations.value.find(item => item.value === location)
+  return loc ? loc.label : location
+}
+
+const getCategoryName = (category) => {
+  const cat = bookCategories.value.find(item => item.value === category)
+  return cat ? cat.label : category
 }
 
 const renewBook = (book) => {
-  if (book.renewTimes >= 2) {
-    ElMessage.warning('每本书最多可续借2次')
+  if (!canRenew(book)) {
+    ElMessage.warning('该书无法续借')
     return
   }
-  
-  if (isOverdue(book.dueDate)) {
-    ElMessage.warning('该书已逾期，无法续借')
-    return
-  }
-  
+
   ElMessageBox.confirm(
     `确定要续借《${book.title}》吗？续借后归还日期将延长30天。`,
     '确认续借',
@@ -578,10 +717,10 @@ const renewBook = (book) => {
     if (index !== -1) {
       const newDueDate = new Date(book.dueDate)
       newDueDate.setDate(newDueDate.getDate() + 30)
-      
+
       currentBorrows.value[index].renewTimes += 1
       currentBorrows.value[index].dueDate = newDueDate.toISOString().split('T')[0]
-      
+
       ElMessage.success('续借成功')
     }
   }).catch(() => {
@@ -590,15 +729,13 @@ const renewBook = (book) => {
 }
 
 const renewAllBooks = () => {
-  const booksToRenew = currentBorrows.value.filter(
-    book => book.renewTimes < 2 && !isOverdue(book.dueDate)
-  )
-  
+  const booksToRenew = currentBorrows.value.filter(canRenew)
+
   if (booksToRenew.length === 0) {
     ElMessage.info('没有可续借的图书')
     return
   }
-  
+
   ElMessageBox.confirm(
     `确定要续借所有${booksToRenew.length}本图书吗？`,
     '确认批量续借',
@@ -614,58 +751,81 @@ const renewAllBooks = () => {
       if (index !== -1) {
         const newDueDate = new Date(book.dueDate)
         newDueDate.setDate(newDueDate.getDate() + 30)
-        
+
         currentBorrows.value[index].renewTimes += 1
         currentBorrows.value[index].dueDate = newDueDate.toISOString().split('T')[0]
       }
     })
-    
+
     ElMessage.success(`成功续借${booksToRenew.length}本图书`)
   }).catch(() => {
     ElMessage.info('已取消批量续借')
   })
 }
 
+const exportBorrowList = () => {
+  ElMessage.success('导出成功')
+  // 实际应用中这里应该调用导出API
+}
+
 const searchBooks = () => {
-  // 模拟搜索图书
-  ElMessage.info(`搜索关键词: ${searchKeyword.value}`)
-  
-  // 这里应该调用API进行实际搜索
-  searchResults.value = [
-    {
-      id: 301,
-      title: `深入理解计算机系统（第${Math.floor(Math.random() * 3) + 3}版）`,
-      author: 'Randal E. Bryant',
-      publisher: '机械工业出版社',
-      year: '2022',
-      isbn: '978-7-111-69670-0',
-      location: 'main',
-      available: Math.random() > 0.5,
-      cover: 'https://picsum.photos/200/300?random=8'
-    },
-    {
-      id: 302,
-      title: `计算机网络与互联网（第${Math.floor(Math.random() * 3) + 5}版）`,
-      author: 'Douglas E. Comer',
-      publisher: '电子工业出版社',
-      year: '2021',
-      isbn: '978-7-121-39877-2',
-      location: 'branch1',
-      available: Math.random() > 0.5,
-      cover: 'https://picsum.photos/200/300?random=9'
-    },
-    {
-      id: 303,
-      title: `Python编程：从入门到实践（第${Math.floor(Math.random() * 2) + 2}版）`,
-      author: 'Eric Matthes',
-      publisher: '人民邮电出版社',
-      year: '2021',
-      isbn: '978-7-115-56882-7',
-      location: 'main',
-      available: Math.random() > 0.5,
-      cover: 'https://picsum.photos/200/300?random=10'
-    }
-  ]
+  if (!searchKeyword.value.trim()) {
+    ElMessage.warning('请输入搜索关键词')
+    return
+  }
+
+  loading.value = true
+  // 模拟API调用延迟
+  setTimeout(() => {
+    // 模拟搜索图书
+    searchResults.value = [
+      {
+        id: 301,
+        title: `深入理解计算机系统（第${Math.floor(Math.random() * 3) + 3}版）`,
+        author: 'Randal E. Bryant',
+        publisher: '机械工业出版社',
+        year: '2022',
+        isbn: '978-7-111-69670-0',
+        location: 'main',
+        available: Math.random() > 0.5,
+        cover: 'https://picsum.photos/200/300?random=8',
+        callNumber: `TP/${Math.floor(Math.random() * 1000)}`,
+        popularity: Math.floor(Math.random() * 100)
+      },
+      {
+        id: 302,
+        title: `计算机网络与互联网（第${Math.floor(Math.random() * 3) + 5}版）`,
+        author: 'Douglas E. Comer',
+        publisher: '电子工业出版社',
+        year: '2021',
+        isbn: '978-7-121-39877-2',
+        location: 'branch1',
+        available: Math.random() > 0.5,
+        cover: 'https://picsum.photos/200/300?random=9',
+        callNumber: `TP/${Math.floor(Math.random() * 1000)}`,
+        popularity: Math.floor(Math.random() * 100)
+      },
+      {
+        id: 303,
+        title: `Python编程：从入门到实践（第${Math.floor(Math.random() * 2) + 2}版）`,
+        author: 'Eric Matthes',
+        publisher: '人民邮电出版社',
+        year: '2021',
+        isbn: '978-7-115-56882-7',
+        location: 'main',
+        available: Math.random() > 0.5,
+        cover: 'https://picsum.photos/200/300?random=10',
+        callNumber: `TP/${Math.floor(Math.random() * 1000)}`,
+        popularity: Math.floor(Math.random() * 100)
+      }
+    ]
+    loading.value = false
+  }, 800)
+}
+
+const clearSearch = () => {
+  searchKeyword.value = ''
+  searchResults.value = []
 }
 
 const borrowBook = (book) => {
@@ -673,12 +833,12 @@ const borrowBook = (book) => {
     ElMessage.warning('该书已被借出，无法借阅')
     return
   }
-  
+
   if (currentBorrows.value.length >= 10) {
     ElMessage.warning('您已达到最大借阅数量（10本）')
     return
   }
-  
+
   ElMessageBox.confirm(
     `确定要借阅《${book.title}》吗？`,
     '确认借阅',
@@ -692,24 +852,30 @@ const borrowBook = (book) => {
     const borrowDate = new Date().toISOString().split('T')[0]
     const dueDate = new Date()
     dueDate.setDate(dueDate.getDate() + 30)
-    
+
     currentBorrows.value.push({
       id: book.id,
       title: book.title,
       author: book.author,
-      callNumber: `TP/${Math.floor(Math.random() * 1000)}`,
+      callNumber: book.callNumber || `TP/${Math.floor(Math.random() * 1000)}`,
       cover: book.cover,
       borrowDate: borrowDate,
       dueDate: dueDate.toISOString().split('T')[0],
       renewTimes: 0
     })
-    
+
     // 更新搜索结果中的图书状态
     const index = searchResults.value.findIndex(item => item.id === book.id)
     if (index !== -1) {
       searchResults.value[index].available = false
     }
-    
+
+    // 更新推荐图书中的状态
+    const recIndex = recommendedBooks.value.findIndex(item => item.id === book.id)
+    if (recIndex !== -1) {
+      recommendedBooks.value[recIndex].available = false
+    }
+
     ElMessage.success('借阅成功，请在借阅期限内归还')
   }).catch(() => {
     ElMessage.info('已取消借阅')
@@ -732,18 +898,56 @@ const reserveBook = (book) => {
   })
 }
 
-const viewDetails = (book) => {
-  ElMessage.info(`查看图书详情: ${book.title}`)
-  // 实际应用中这里可以跳转到图书详情页
+const viewBookDetails = (book) => {
+  // 模拟获取图书详情
+  selectedBook.value = {
+    ...book,
+    description: '这是一本关于' + book.title + '的书籍，详细介绍了相关知识和应用。',
+    pages: Math.floor(Math.random() * 500) + 200,
+    language: '中文',
+    borrowRecords: [
+      {
+        user: '张同学',
+        borrowDate: '2023-05-10',
+        returnDate: '2023-06-10',
+        status: 'returned'
+      },
+      {
+        user: '李同学',
+        borrowDate: '2023-06-15',
+        returnDate: '',
+        status: 'borrowed'
+      }
+    ],
+    reviews: [
+      {
+        id: 1,
+        user: '王同学',
+        rating: 5,
+        date: '2023-04-15',
+        content: '这本书非常棒，讲解清晰，适合初学者。'
+      },
+      {
+        id: 2,
+        user: '赵同学',
+        rating: 4,
+        date: '2023-03-20',
+        content: '内容全面，但有些章节可以更详细些。'
+      }
+    ],
+    ratingCount: 24
+  }
+  bookDetailVisible.value = true
 }
 
 const refreshRecommendations = () => {
   // 模拟刷新推荐图书
   recommendedBooks.value = recommendedBooks.value.map(book => ({
     ...book,
-    cover: `https://picsum.photos/200/300?random=${Math.floor(Math.random() * 100)}`
+    cover: `https://picsum.photos/200/300?random=${Math.floor(Math.random() * 100)}`,
+    available: Math.random() > 0.5
   }))
-  
+
   ElMessage.info('推荐图书已更新')
 }
 
@@ -757,245 +961,632 @@ const handleCurrentChange = (page) => {
 
 // 初始化数据
 onMounted(() => {
-  // 模拟从API获取数据
+  // 可以在这里添加初始化逻辑
 })
 </script>
 
 <style scoped lang="scss">
 .library-page {
   padding: 20px;
-  background-color: #f5f7fa;
   min-height: calc(100vh - 60px);
+  transition: background-color 0.3s ease;
 }
 
-// 借阅概览卡片样式
-.borrow-overview {
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(12px);
+// 现代化卡片样式
+.modern-card {
+  position: relative;
   border-radius: 12px;
   padding: 20px;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  z-index: 1;
+
+  // 浅色模式
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.05);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  
+
+  // 深色模式样式
+  .dark & {
+    background: #2a2a2a;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+
+  // 卡片悬停效果
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  }
+
+  // 卡片头部
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+
+    h2,
+    h3 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--el-text-color-primary);
+    }
+  }
+}
+
+// 借阅概览卡片
+.borrow-overview {
   .overview-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
-    
+
     h2 {
       margin: 0;
-      font-size: 18px;
+      font-size: 20px;
       font-weight: 600;
-      color: #333;
     }
   }
-  
+
   .stats-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 16px;
-    
+
     .stats-card {
-      background: rgba(245, 247, 250, 0.7);
-      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.02);
+      border-radius: 10px;
       padding: 16px;
       display: flex;
       align-items: center;
-      
-      .card-icon {
-        font-size: 32px;
-        color: #409eff;
-        margin-right: 16px;
+      transition: all 0.3s ease;
+      position: relative;
+
+      .dark & {
+        background: rgba(255, 255, 255, 0.05);
       }
-      
+
+      &:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      }
+
+      .card-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 16px;
+        color: var(--el-color-primary);
+        background-color: var(--el-color-primary-light-9);
+
+        .dark & {
+          background-color: rgba(64, 158, 255, 0.2);
+        }
+      }
+
       .card-content {
         .stat-value {
-          font-size: 24px;
+          font-size: 22px;
           font-weight: 700;
-          color: #333;
+          color: var(--el-text-color-primary);
+          line-height: 1;
+          margin-bottom: 4px;
         }
-        
+
         .stat-label {
           font-size: 14px;
-          color: #666;
+          color: var(--el-text-color-secondary);
+        }
+      }
+
+      .trend-indicator {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+
+        &.up {
+          color: var(--el-color-success);
+        }
+
+        &.down {
+          color: var(--el-color-danger);
+        }
+
+        .el-icon {
+          margin-right: 2px;
         }
       }
     }
   }
 }
 
-// 当前借阅列表样式
-.current-borrows, .borrow-history, .book-search, .recommended-books {
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(12px);
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 24px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  
-  .section-header {
+// 当前借阅列表
+.current-borrows {
+  .actions {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-    
-    h3 {
-      margin: 0;
-      font-size: 16px;
-      font-weight: 600;
-      color: #333;
+    gap: 10px;
+  }
+
+  .borrow-table {
+    margin-bottom: 20px;
+
+    .book-cover {
+      width: 60px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 4px;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .image-error {
+      width: 60px;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f5f5f5;
+      border-radius: 4px;
+      color: #999;
+    }
+
+    .text-danger {
+      color: var(--el-color-danger);
+      font-weight: 500;
     }
   }
-  
-  .borrow-table, .history-table {
-    width: 100%;
-    margin-bottom: 16px;
-  }
-  
-  .book-cover {
-    width: 60px;
-    height: 80px;
-    object-fit: cover;
-    border-radius: 4px;
-  }
-  
-  .pagination {
-    text-align: right;
+
+  .pagination-wrapper {
+    display: flex;
+    justify-content: flex-end;
   }
 }
 
-// 图书搜索样式
+// 借阅历史
+.borrow-history {
+  .history-table {
+    margin-bottom: 20px;
+  }
+
+  .pagination {
+    display: flex;
+    justify-content: flex-end;
+  }
+}
+
+// 图书搜索
 .book-search {
   .search-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 16px;
-    
-    h3 {
-      margin: 0;
-      font-size: 16px;
-      font-weight: 600;
-      color: #333;
-    }
-    
+
     .search-box {
+      flex: 1;
+      max-width: 400px;
       display: flex;
-      gap: 12px;
-      
-      .search-input {
-        width: 300px;
-      }
+      gap: 10px;
     }
   }
-  
+
   .search-filters {
     display: flex;
+    flex-wrap: wrap;
     gap: 16px;
     margin-bottom: 16px;
-    align-items: center;
-  }
-  
-  .result-count {
-    margin-bottom: 16px;
-    font-size: 14px;
-    color: #666;
-  }
-  
-  .book-card {
-    margin-bottom: 16px;
-    
-    .card-header {
+
+    .filter-group {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      
-      .book-title {
-        font-size: 16px;
-        font-weight: 500;
-        color: #333;
+      flex-direction: column;
+      gap: 8px;
+
+      label {
+        font-size: 14px;
+        color: var(--el-text-color-secondary);
+      }
+
+      .el-radio-group,
+      .el-select {
+        width: 100%;
       }
     }
-    
+  }
+
+  .result-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+
+    .result-count {
+      font-size: 14px;
+
+      .highlight {
+        color: var(--el-color-primary);
+        font-weight: 600;
+      }
+    }
+  }
+
+  .result-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+  }
+
+  .book-card {
     .card-content {
-      .book-info {
-        display: flex;
-        gap: 16px;
-        margin-bottom: 16px;
-        
-        .book-cover-small {
-          width: 80px;
-          height: 120px;
-          object-fit: cover;
+      display: flex;
+      gap: 16px;
+
+      .book-cover {
+        flex-shrink: 0;
+        width: 100px;
+        height: 140px;
+
+        .cover-image {
+          width: 100%;
+          height: 100%;
           border-radius: 4px;
+          object-fit: cover;
         }
-        
-        .book-details {
-          flex: 1;
-          
-          .detail-row {
+
+        .image-error {
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: #f5f5f5;
+          border-radius: 4px;
+          color: #999;
+        }
+      }
+
+      .book-details {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+
+        .book-title {
+          margin: 0 0 8px 0;
+          font-size: 16px;
+          font-weight: 600;
+        }
+
+        .book-author {
+          font-size: 14px;
+          color: var(--el-text-color-secondary);
+          margin-bottom: 12px;
+        }
+
+        .book-meta {
+          font-size: 13px;
+          color: var(--el-text-color-secondary);
+          margin-bottom: 12px;
+
+          .meta-item {
+            margin-bottom: 6px;
             display: flex;
-            margin-bottom: 8px;
-            
-            .label {
-              width: 60px;
-              color: #909399;
-            }
-            
-            .value {
-              color: #333;
+            align-items: center;
+
+            .el-icon {
+              margin-right: 4px;
+              font-size: 14px;
             }
           }
         }
-      }
-      
-      .book-actions {
-        display: flex;
-        gap: 8px;
+
+        .book-actions {
+          display: flex;
+          gap: 8px;
+        }
       }
     }
   }
 }
 
-// 推荐图书样式
+// 推荐图书
 .recommended-books {
-  .books-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 16px;
+  .books-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
   }
-  
-  .recommended-book-card {
-    padding: 16px;
-    text-align: center;
-    
-    .recommended-cover {
-      width: 120px;
-      height: 180px;
-      object-fit: cover;
-      border-radius: 4px;
-      margin-bottom: 12px;
+
+  .book-item {
+    display: flex;
+    gap: 12px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    transition: all 0.2s;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.03);
+
+      .dark & {
+        background: rgba(255, 255, 255, 0.05);
+      }
     }
-    
+
+    .book-cover {
+      position: relative;
+      flex-shrink: 0;
+      width: 60px;
+      height: 80px;
+
+      .cover-image {
+        width: 100%;
+        height: 100%;
+        border-radius: 4px;
+        object-fit: cover;
+      }
+
+      .image-error {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f5f5f5;
+        border-radius: 4px;
+        color: #999;
+      }
+
+      .book-status {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        font-size: 12px;
+        text-align: center;
+        padding: 2px 0;
+        border-bottom-left-radius: 4px;
+        border-bottom-right-radius: 4px;
+
+        &.available {
+          background: rgba(103, 194, 58, 0.8);
+        }
+      }
+    }
+
     .book-info {
-      margin-bottom: 12px;
-      
+      flex: 1;
+      overflow: hidden;
+
       .book-title {
-        font-size: 16px;
-        font-weight: 500;
-        color: #333;
-        margin-bottom: 4px;
-      }
-      
-      .book-author {
         font-size: 14px;
-        color: #666;
-        margin-bottom: 8px;
+        font-weight: 500;
+        margin-bottom: 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .book-author {
+        font-size: 12px;
+        color: var(--el-text-color-secondary);
+        margin-bottom: 6px;
+      }
+
+      .book-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        .el-rate {
+          --el-rate-icon-size: 14px;
+        }
+
+        .el-tag {
+          height: 22px;
+          padding: 0 6px;
+        }
       }
     }
+  }
+}
+
+// 图书详情弹窗
+.book-detail {
+  .detail-header {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 24px;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+    }
+  }
+
+  .book-cover-large {
+    flex-shrink: 0;
+    width: 200px;
+    height: 280px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+    .cover-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .image-error-large {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f5f5f5;
+      color: #999;
+      font-size: 48px;
+    }
+  }
+
+  .book-info {
+    flex: 1;
+
+    .book-title {
+      margin: 0 0 8px 0;
+      font-size: 24px;
+      font-weight: 600;
+    }
+
+    .book-author {
+      font-size: 16px;
+      color: var(--el-text-color-secondary);
+      margin-bottom: 16px;
+    }
+
+    .book-rating {
+      display: flex;
+      align-items: center;
+      margin-bottom: 16px;
+
+      .el-rate {
+        margin-right: 12px;
+      }
+
+      .rating-count {
+        font-size: 14px;
+        color: var(--el-text-color-secondary);
+      }
+    }
+
+    .book-status {
+      margin-bottom: 24px;
+    }
+
+    .book-actions {
+      display: flex;
+      gap: 12px;
+    }
+  }
+
+  .detail-tabs {
+    margin-top: 24px;
+
+    .book-description {
+      margin-bottom: 24px;
+
+      h4 {
+        margin: 0 0 12px 0;
+        font-size: 16px;
+        font-weight: 600;
+      }
+
+      p {
+        margin: 0;
+        line-height: 1.6;
+        color: var(--el-text-color-primary);
+      }
+    }
+
+    .book-meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+
+      .meta-item {
+        display: flex;
+        align-items: center;
+
+        .label {
+          font-weight: 500;
+          margin-right: 8px;
+          color: var(--el-text-color-secondary);
+        }
+
+        .value {
+          color: var(--el-text-color-primary);
+        }
+      }
+    }
+
+    .book-reviews {
+      .review-item {
+        padding: 16px 0;
+        border-bottom: 1px solid var(--el-border-color);
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        .review-header {
+          display: flex;
+          align-items: center;
+          margin-bottom: 8px;
+
+          .reviewer {
+            font-weight: 500;
+            margin-right: 12px;
+          }
+
+          .review-rating {
+            margin-right: 12px;
+          }
+
+          .review-date {
+            font-size: 12px;
+            color: var(--el-text-color-secondary);
+          }
+        }
+
+        .review-content {
+          line-height: 1.6;
+          color: var(--el-text-color-primary);
+        }
+      }
+
+      .no-reviews {
+        text-align: center;
+        padding: 40px 0;
+        color: var(--el-text-color-secondary);
+      }
+    }
+  }
+}
+
+// 间距工具类
+.mb-6 {
+  margin-bottom: 24px;
+}
+
+// 响应式调整
+@media (max-width: 768px) {
+  .stats-container {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .search-results .result-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .book-detail .detail-header {
+    flex-direction: column;
+  }
+
+  .book-detail .book-cover-large {
+    width: 100%;
+    margin-bottom: 16px;
   }
 }
 </style>

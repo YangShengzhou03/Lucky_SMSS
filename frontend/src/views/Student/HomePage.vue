@@ -249,27 +249,19 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
-.student-home {
-  padding: 20px;
-  color: #666;
-  max-width: 1400px;
-  margin: 0 auto;
-}
+// 导入现有变量
+@use '~@/assets/styles/variables' as *;
 
-.welcome-section {
+// 基础卡片样式
+.base-card {
   position: relative;
-  margin-bottom: 30px;
-  padding: 28px;
-  background: rgba(245, 247, 250, 0.65);
-  backdrop-filter: blur(12px) saturate(180%);
   border-radius: 16px;
+  padding: 24px;
+  transition: all 0.3s ease;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
-  transition: all 0.4s cubic-bezier(0.2, 0.9, 0.4, 1);
   z-index: 1;
 
-  // 鼠标光影效果容器
+  // 卡片光影效果
   &::before {
     content: '';
     position: absolute;
@@ -278,7 +270,7 @@ onMounted(() => {
     right: 0;
     bottom: 0;
     background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y),
-        rgba(100, 150, 255, 0.1) 0%,
+        rgba(64, 158, 255, 0.05) 0%,
         transparent 80%);
     opacity: 0;
     transition: opacity 0.3s ease;
@@ -286,64 +278,27 @@ onMounted(() => {
     pointer-events: none;
   }
 
-  // 夜间模式适配 
-  @media (prefers-color-scheme: dark) {
-    background: rgba(20, 25, 35, 0.7);
-    border-color: rgba(255, 255, 255, 0.15);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-
-    .subtitle {
-      color: rgba(255, 255, 255, 0.65);
-    }
-
-    &::before {
-      background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y),
-          rgba(50, 100, 200, 0.15) 0%,
-          transparent 80%);
-    }
-  }
-
-  h2 {
-    font-size: 32px;
-    margin-bottom: 10px;
-    font-weight: 650;
-    color: #222;
-    letter-spacing: -0.5px;
-
-    @media (prefers-color-scheme: dark) {
-      color: #fff;
-    }
-  }
-
-  .username {
-    color: #409eff;
-    font-weight: 700;
-    text-shadow: 0 2px 4px rgba(0, 120, 255, 0.1);
-  }
-
-  .subtitle {
-    color: rgba(0, 0, 0, 0.65);
-    font-size: 16px;
-    line-height: 1.5;
-    max-width: 80%;
-  }
-
-  // 悬停效果 
+  // 卡片悬停效果
   &:hover {
     transform: translateY(-4px);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
 
     &::before {
       opacity: 1;
     }
+  }
 
-    @media (prefers-color-scheme: dark) {
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+  // 暗色模式适配
+  .dark & {
+    &::before {
+      background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y),
+          rgba(59, 130, 246, 0.08) 0%,
+          transparent 80%);
     }
   }
 }
 
-/* 信息卡片容器 */
+// 信息卡片容器
 .info-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -351,97 +306,21 @@ onMounted(() => {
   margin-bottom: 36px;
 }
 
-/* 基础卡片样式 - 添加毛玻璃和光影效果 */
-.card {
-  position: relative;
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(12px) saturate(180%);
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  transition: all 0.4s cubic-bezier(0.2, 0.9, 0.4, 1);
-  overflow: hidden;
-  z-index: 1;
-
-  /* 鼠标光影效果 */
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y),
-        rgba(100, 150, 255, 0.08) 0%,
-        transparent 80%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    z-index: -1;
-    pointer-events: none;
-  }
-
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
-
-    &::before {
-      opacity: 1;
-    }
-  }
-
-  /* 暗色模式适配 */
-  @media (prefers-color-scheme: dark) {
-    background: rgba(30, 35, 45, 0.7);
-    border-color: rgba(255, 255, 255, 0.15);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-
-    &::before {
-      background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y),
-          rgba(50, 100, 200, 0.12) 0%,
-          transparent 80%);
-    }
-  }
-}
-
-/* 卡片头部 */
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-
-  h3 {
-    font-size: 18px;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    font-weight: 600;
-    color: #333;
-
-    .el-icon {
-      margin-right: 10px;
-      font-size: 20px;
-    }
-
-    @media (prefers-color-scheme: dark) {
-      color: #fff;
-    }
-  }
-
-  .card-badge {
-    background: #e6a23c;
-    color: white;
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: bold;
-    box-shadow: 0 2px 6px rgba(230, 162, 60, 0.2);
-  }
-}
-
-/* 成绩卡片特定样式 */
+// 不同类型卡片样式
 .score-card {
+  @extend .base-card;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(226, 232, 240, 0.7);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+
+  .dark & {
+    background: rgba(30, 35, 45, 0.9);
+    border-color: rgba(59, 130, 246, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  }
+
+  // 成绩卡片特定样式
   .gpa {
     display: flex;
     align-items: flex-end;
@@ -460,7 +339,7 @@ onMounted(() => {
       color: #909399;
       padding-bottom: 6px;
 
-      @media (prefers-color-scheme: dark) {
+      .dark & {
         color: rgba(255, 255, 255, 0.6);
       }
     }
@@ -473,20 +352,32 @@ onMounted(() => {
     color: #909399;
     margin-top: 8px;
 
-    @media (prefers-color-scheme: dark) {
+    .dark & {
       color: rgba(255, 255, 255, 0.5);
     }
   }
 }
 
-/* 课程卡片特定样式 */
 .course-card {
+  @extend .base-card;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(226, 232, 240, 0.7);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+
+  .dark & {
+    background: rgba(30, 35, 45, 0.9);
+    border-color: rgba(59, 130, 246, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  }
+
+  // 课程卡片特定样式
   .course-count {
     font-size: 14px;
     color: #909399;
     margin-bottom: 20px;
 
-    @media (prefers-color-scheme: dark) {
+    .dark & {
       color: rgba(255, 255, 255, 0.6);
     }
 
@@ -509,7 +400,7 @@ onMounted(() => {
       transform: translateX(4px);
     }
 
-    @media (prefers-color-scheme: dark) {
+    .dark & {
       background: rgba(40, 45, 55, 0.6);
     }
 
@@ -526,7 +417,7 @@ onMounted(() => {
       margin-bottom: 6px;
       color: #333;
 
-      @media (prefers-color-scheme: dark) {
+      .dark & {
         color: #fff;
       }
     }
@@ -535,15 +426,27 @@ onMounted(() => {
       font-size: 13px;
       color: #909399;
 
-      @media (prefers-color-scheme: dark) {
+      .dark & {
         color: rgba(255, 255, 255, 0.5);
       }
     }
   }
 }
 
-/* 待办事项卡片特定样式 */
 .todo-card {
+  @extend .base-card;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(226, 232, 240, 0.7);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+
+  .dark & {
+    background: rgba(30, 35, 45, 0.9);
+    border-color: rgba(59, 130, 246, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  }
+
+  // 待办事项卡片特定样式
   .todo-list {
     max-height: 240px;
     overflow-y: auto;
@@ -560,7 +463,7 @@ onMounted(() => {
       border-radius: 3px;
     }
 
-    @media (prefers-color-scheme: dark) {
+    .dark & {
       scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
 
       &::-webkit-scrollbar-thumb {
@@ -600,7 +503,7 @@ onMounted(() => {
           color: #c0c4cc;
         }
 
-        @media (prefers-color-scheme: dark) {
+        .dark & {
           color: rgba(255, 255, 255, 0.8);
 
           &.completed {
@@ -623,60 +526,21 @@ onMounted(() => {
   }
 }
 
-/* 公告区域 - 现代化毛玻璃设计 */
+// 公告区域
 .announcements {
-  position: relative;
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(12px) saturate(180%);
-  border-radius: 16px;
-  padding: 24px;
-  margin-bottom: 36px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  transition: all 0.4s cubic-bezier(0.2, 0.9, 0.4, 1);
-  overflow: hidden;
-  z-index: 1;
+  @extend .base-card;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(226, 232, 240, 0.7);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
 
-  /* 鼠标光影效果 */
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: radial-gradient(800px circle at var(--mouse-x) var(--mouse-y),
-        rgba(100, 150, 255, 0.08) 0%,
-        transparent 80%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    z-index: -1;
-    pointer-events: none;
+  .dark & {
+    background: rgba(30, 35, 45, 0.9);
+    border-color: rgba(59, 130, 246, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
   }
 
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
-
-    &::before {
-      opacity: 1;
-    }
-  }
-
-  /* 暗色模式适配 */
-  @media (prefers-color-scheme: dark) {
-    background: rgba(30, 35, 45, 0.7);
-    border-color: rgba(255, 255, 255, 0.15);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-
-    &::before {
-      background: radial-gradient(800px circle at var(--mouse-x) var(--mouse-y),
-          rgba(50, 100, 200, 0.12) 0%,
-          transparent 80%);
-    }
-  }
-
-  /* 区域头部 */
+  // 公告区域特定样式
   .section-header {
     display: flex;
     justify-content: space-between;
@@ -699,13 +563,13 @@ onMounted(() => {
         text-shadow: 0 2px 4px rgba(230, 162, 60, 0.1);
       }
 
-      @media (prefers-color-scheme: dark) {
+      .dark & {
         color: #fff;
       }
     }
   }
 
-  /* 公告列表 */
+  // 公告列表
   .announcement-list {
     .announcement-item {
       display: flex;
@@ -743,7 +607,7 @@ onMounted(() => {
           color: #333;
           line-height: 1.4;
 
-          @media (prefers-color-scheme: dark) {
+          .dark & {
             color: rgba(255, 255, 255, 0.9);
           }
         }
@@ -753,7 +617,7 @@ onMounted(() => {
           font-size: 13px;
           color: #909399;
 
-          @media (prefers-color-scheme: dark) {
+          .dark & {
             color: rgba(255, 255, 255, 0.5);
           }
 
@@ -778,7 +642,7 @@ onMounted(() => {
     }
   }
 
-  /* 滚动条样式 */
+  // 滚动条样式
   .el-scrollbar {
     max-height: 340px;
     padding-right: 8px;
@@ -792,7 +656,7 @@ onMounted(() => {
       border-radius: 3px;
     }
 
-    @media (prefers-color-scheme: dark) {
+    .dark & {
       &::-webkit-scrollbar-thumb {
         background: rgba(255, 255, 255, 0.1);
       }
@@ -800,7 +664,131 @@ onMounted(() => {
   }
 }
 
-/* 空状态样式 */
+// 欢迎区域样式
+.welcome-section {
+  position: relative;
+  margin-bottom: 30px;
+  padding: 28px;
+  background: rgba(245, 247, 250, 0.65);
+  backdrop-filter: blur(12px) saturate(180%);
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+  transition: all 0.4s cubic-bezier(0.2, 0.9, 0.4, 1);
+  z-index: 1;
+
+  // 鼠标光影效果容器
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y),
+        rgba(100, 150, 255, 0.1) 0%,
+        transparent 80%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  // 夜间模式适配 
+  .dark & {
+    background: rgba(20, 25, 35, 0.7);
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+
+    .subtitle {
+      color: rgba(255, 255, 255, 0.65);
+    }
+
+    &::before {
+      background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y),
+          rgba(50, 100, 200, 0.15) 0%,
+          transparent 80%);
+    }
+  }
+
+  h2 {
+    font-size: 32px;
+    margin-bottom: 10px;
+    font-weight: 650;
+    color: #222;
+    letter-spacing: -0.5px;
+
+    .dark & {
+      color: #fff;
+    }
+  }
+
+  .username {
+    color: #409eff;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0, 120, 255, 0.1);
+  }
+
+  .subtitle {
+    color: rgba(0, 0, 0, 0.65);
+    font-size: 16px;
+    line-height: 1.5;
+    max-width: 80%;
+  }
+
+  // 悬停效果 
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+
+    &::before {
+      opacity: 1;
+    }
+
+    .dark & {
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+    }
+  }
+}
+
+// 卡片头部
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+
+  h3 {
+    font-size: 18px;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    color: #333;
+
+    .el-icon {
+      margin-right: 10px;
+      font-size: 20px;
+    }
+
+    .dark & {
+      color: #fff;
+    }
+  }
+
+  .card-badge {
+    background: #e6a23c;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    box-shadow: 0 2px 6px rgba(230, 162, 60, 0.2);
+  }
+}
+
+// 空状态样式
 .empty-todos,
 .empty-announcements {
   text-align: center;
@@ -809,7 +797,7 @@ onMounted(() => {
   font-size: 14px;
 }
 
-/* 响应式调整 */
+// 响应式调整
 @media (max-width: 768px) {
   .welcome-section h2 {
     font-size: 24px;

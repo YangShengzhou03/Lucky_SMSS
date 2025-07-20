@@ -33,9 +33,7 @@
         <!-- 成绩卡片 -->
         <div class="card score-card">
           <div class="card-header">
-            <h3><el-icon>
-                <Trophy />
-              </el-icon> 学业成绩</h3>
+            <h3><el-icon><Trophy /></el-icon> 学业成绩</h3>
             <div class="card-badge" v-if="student?.rank && student.rank <= 3">TOP {{ student.rank }}</div>
           </div>
           <div class="card-content">
@@ -56,9 +54,7 @@
         <!-- 课程卡片 -->
         <div class="card course-card">
           <div class="card-header">
-            <h3><el-icon>
-                <Notebook />
-              </el-icon> 我的课程</h3>
+            <h3><el-icon><Notebook /></el-icon> 我的课程</h3>
           </div>
           <div class="card-content">
             <div class="course-count">
@@ -75,9 +71,7 @@
         <!-- 待办事项卡片 -->
         <div class="card todo-card">
           <div class="card-header">
-            <h3><el-icon>
-                <List />
-              </el-icon> 待办事项</h3>
+            <h3><el-icon><List /></el-icon> 待办事项</h3>
             <el-tag size="small" type="danger" v-if="pendingCount > 0">
               {{ pendingCount }} 项待完成
             </el-tag>
@@ -94,9 +88,7 @@
                       <el-tag size="mini" :type="getDueTagType(item.dueDate)" effect="plain">
                         {{ item.dueDate }}
                       </el-tag>
-                      <el-icon v-if="item.important" color="#F56C6C">
-                        <StarFilled />
-                      </el-icon>
+                      <el-icon v-if="item.important" color="#F56C6C"><StarFilled /></el-icon>
                     </div>
                   </div>
                 </div>
@@ -104,9 +96,7 @@
               <div v-else class="empty-todos">
                 <p>暂无待办事项</p>
                 <el-button type="primary" size="small" @click="addFirstTodo">
-                  <el-icon>
-                    <Plus />
-                  </el-icon> 添加第一个待办事项
+                  <el-icon><Plus /></el-icon> 添加第一个待办事项
                 </el-button>
               </div>
             </div>
@@ -117,9 +107,7 @@
       <!-- 公告区域 -->
       <div class="announcements">
         <div class="section-header">
-          <h3><el-icon>
-              <Bell />
-            </el-icon> 校园公告</h3>
+          <h3><el-icon><Bell /></el-icon> 校园公告</h3>
           <el-link type="primary" :underline="false">查看更多</el-link>
         </div>
         <el-scrollbar>
@@ -137,9 +125,7 @@
                     <span class="department">{{ item.department }}</span>
                   </div>
                 </div>
-                <el-icon class="arrow">
-                  <ArrowRight />
-                </el-icon>
+                <el-icon class="arrow"><ArrowRight /></el-icon>
               </div>
             </template>
             <div v-else class="empty-announcements">
@@ -162,43 +148,45 @@ import {
 import { ElMessage, ElSkeleton, ElButton, ElLink } from 'element-plus'
 
 // 状态管理
-const student = ref(null)
-const announcements = ref(null)
-const loading = ref(true)
-const error = ref(null)
+const student = ref(null)          // 学生信息数据
+const announcements = ref(null)    // 公告列表数据
+const loading = ref(true)          // 加载状态
+const error = ref(null)            // 错误信息
 
 // 计算属性
 const pendingCount = computed(() => {
+  // 计算未完成的待办事项数量
   return student.value?.todos?.filter(todo => !todo.completed).length || 0
 })
 
 const filteredTodos = computed(() => {
+  // 只显示前4个待办事项
   return student.value?.todos?.slice(0, 4) || []
 })
 
-// 排名百分比计算移到计算属性
 const rankPercentage = computed(() => {
+  // 计算排名百分比用于进度条显示
   if (student.value?.rank && student.value?.classSize) {
     return (1 - (student.value.rank - 1) / student.value.classSize) * 100
   }
   return 0
 })
 
-// 方法
+// 方法定义
 const updateTodo = async (item) => {
-  // 保存原始状态，用于失败时回滚
-  const originalState = item.completed
+  // 更新待办事项状态
+  const originalState = item.completed // 保存原始状态用于错误回滚
 
   try {
-    // 模拟API请求
+    // 模拟API请求延迟
     await new Promise(resolve => setTimeout(resolve, 500))
-
-    // 实际应用中使用真实API
+    
+    // 实际项目中这里应该是API调用
     // await axios.put(`/api/todos/${item.id}`, item)
-
+    
     ElMessage.success('待办事项已更新')
   } catch (err) {
-    // 失败时回滚状态
+    // 出错时恢复原始状态
     item.completed = originalState
     ElMessage.error('更新失败，请重试')
     console.error('更新待办事项失败:', err)
@@ -206,24 +194,28 @@ const updateTodo = async (item) => {
 }
 
 const viewAnnouncement = (item) => {
+  // 查看公告详情
   console.log('查看公告:', item)
-  // 实际应用中可以跳转到详情页
   ElMessage.info(`查看公告: ${item.title}`)
 }
 
 const formatDate = (dateString) => {
+  // 格式化日期显示 2023-12-01 -> 2023.12.01
   return dateString?.replace(/-/g, '.') || '--'
 }
 
 const formatCourseTime = (timeString) => {
+  // 格式化课程时间显示 14:00-15:30 -> 14:00 - 15:30
   return timeString?.replace('-', ' - ') || '--'
 }
 
 const isUrgent = (dueDate) => {
+  // 判断待办事项是否紧急
   return dueDate?.includes('天') || dueDate?.includes('明天')
 }
 
 const getDueTagType = (dueDate) => {
+  // 根据截止日期获取标签类型
   if (!dueDate) return 'info'
   if (dueDate.includes('明天')) return 'danger'
   if (dueDate.includes('天') && parseInt(dueDate) <= 3) return 'warning'
@@ -231,6 +223,7 @@ const getDueTagType = (dueDate) => {
 }
 
 const getAnnouncementType = (type) => {
+  // 公告类型映射
   const types = {
     'important': '重要',
     'notice': '通知',
@@ -240,23 +233,20 @@ const getAnnouncementType = (type) => {
   return types[type] || '公告'
 }
 
-// 空状态操作
 const addFirstTodo = () => {
+  // 添加第一个待办事项
   ElMessage.info('跳转到添加待办事项页面')
-  // 实际应用中跳转到添加页面
   // router.push('/todos/add')
 }
 
-// 鼠标移动事件处理（带节流）
 const handleMouseMove = (e) => {
-  // 直接更新CSS变量，避免响应式变量更新导致的重渲染
+  // 鼠标移动事件处理，用于卡片光影效果
   document.documentElement.style.setProperty('--mouse-x', `${e.clientX}px`)
   document.documentElement.style.setProperty('--mouse-y', `${e.clientY}px`)
 }
 
 // 数据获取
 const fetchData = async () => {
-  // 重置状态
   loading.value = true
   error.value = null
 
@@ -264,7 +254,7 @@ const fetchData = async () => {
     // 模拟API请求延迟
     await new Promise(resolve => setTimeout(resolve, 800))
 
-    // 模拟数据 - 实际开发时替换为真实API请求
+    // 模拟数据 - 实际项目中替换为API调用
     student.value = {
       name: '张三',
       id: '20230001',
@@ -322,19 +312,19 @@ const fetchData = async () => {
   }
 }
 
-// 组件生命周期
+// 生命周期钩子
 onMounted(() => {
   fetchData()
 })
 
-// 组件卸载时移除事件监听
 onUnmounted(() => {
+  // 清理事件监听
   document.querySelector('.student-home')?.removeEventListener('mousemove', handleMouseMove)
 })
 </script>
 
 <style scoped lang="scss">
-// 基础卡片样式
+/* 基础卡片样式 - 所有卡片共享的基本样式 */
 .base-card {
   position: relative;
   border-radius: 16px;
@@ -343,7 +333,7 @@ onUnmounted(() => {
   overflow: hidden;
   z-index: 1;
 
-  // 卡片光影效果
+  /* 卡片光影效果 - 鼠标跟随效果 */
   &::before {
     content: '';
     position: absolute;
@@ -360,7 +350,7 @@ onUnmounted(() => {
     pointer-events: none;
   }
 
-  // 卡片悬停效果
+  /* 卡片悬停效果 */
   &:hover {
     transform: translateY(-4px);
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
@@ -370,7 +360,7 @@ onUnmounted(() => {
     }
   }
 
-  // 暗色模式适配
+  /* 暗色模式适配 */
   .dark & {
     &::before {
       background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y),
@@ -380,7 +370,7 @@ onUnmounted(() => {
   }
 }
 
-// 信息卡片容器
+/* 信息卡片容器 - 三栏布局 */
 .info-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -388,7 +378,7 @@ onUnmounted(() => {
   margin-bottom: 36px;
 }
 
-// 不同类型卡片样式
+/* 成绩卡片特定样式 */
 .score-card {
   @extend .base-card;
   background: rgba(255, 255, 255, 0.9);
@@ -402,7 +392,7 @@ onUnmounted(() => {
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
   }
 
-  // 成绩卡片特定样式
+  /* GPA显示样式 */
   .gpa {
     display: flex;
     align-items: flex-end;
@@ -427,6 +417,7 @@ onUnmounted(() => {
     }
   }
 
+  /* 排名进度条标签 */
   .progress-labels {
     display: flex;
     justify-content: space-between;
@@ -440,6 +431,7 @@ onUnmounted(() => {
   }
 }
 
+/* 课程卡片特定样式 */
 .course-card {
   @extend .base-card;
   background: rgba(255, 255, 255, 0.9);
@@ -453,7 +445,7 @@ onUnmounted(() => {
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
   }
 
-  // 课程卡片特定样式
+  /* 课程数量显示 */
   .course-count {
     font-size: 14px;
     color: #909399;
@@ -472,6 +464,7 @@ onUnmounted(() => {
     }
   }
 
+  /* 下一节课信息 */
   .next-course {
     background: rgba(248, 248, 248, 0.6);
     border-radius: 12px;
@@ -515,6 +508,7 @@ onUnmounted(() => {
   }
 }
 
+/* 待办事项卡片特定样式 */
 .todo-card {
   @extend .base-card;
   background: rgba(255, 255, 255, 0.9);
@@ -528,7 +522,7 @@ onUnmounted(() => {
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
   }
 
-  // 待办事项卡片特定样式
+  /* 待办事项列表容器 */
   .todo-list {
     max-height: 240px;
     overflow-y: auto;
@@ -554,6 +548,7 @@ onUnmounted(() => {
     }
   }
 
+  /* 单个待办事项项 */
   .todo-item {
     display: flex;
     align-items: center;
@@ -569,10 +564,12 @@ onUnmounted(() => {
       border-bottom: none;
     }
 
+    /* 复选框样式 */
     .el-checkbox {
       margin-right: 14px;
     }
 
+    /* 待办内容区域 */
     .todo-content {
       flex: 1;
 
@@ -582,6 +579,7 @@ onUnmounted(() => {
         transition: all 0.2s ease;
       }
 
+      /* 待办元信息（标签、星标等） */
       .todo-meta {
         display: flex;
         align-items: center;
@@ -594,12 +592,14 @@ onUnmounted(() => {
       }
     }
 
+    /* 紧急状态样式 */
     &.urgent {
       .todo-content span {
         color: #F56C6C;
       }
     }
 
+    /* 完成状态样式 */
     &.completed {
       .todo-content span {
         text-decoration: line-through;
@@ -609,7 +609,7 @@ onUnmounted(() => {
   }
 }
 
-// 公告区域
+/* 公告区域样式 */
 .announcements {
   @extend .base-card;
   background: rgba(255, 255, 255, 0.9);
@@ -623,7 +623,7 @@ onUnmounted(() => {
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
   }
 
-  // 公告区域特定样式
+  /* 公告区域头部 */
   .section-header {
     display: flex;
     justify-content: space-between;
@@ -652,85 +652,86 @@ onUnmounted(() => {
     }
   }
 
-  // 公告列表
-  .announcement-list {
-    .announcement-item {
-      display: flex;
-      align-items: flex-start;
-      padding: 16px 0;
-      cursor: pointer;
-      border-bottom: 1px dashed rgba(0, 0, 0, 0.08);
-      transition: all 0.2s ease;
+  /* 公告列表项 */
+  .announcement-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 16px 0;
+    cursor: pointer;
+    border-bottom: 1px dashed rgba(0, 0, 0, 0.08);
+    transition: all 0.2s ease;
 
-      &:hover {
-        transform: translateX(8px);
-        background: rgba(245, 247, 250, 0.4);
-        border-radius: 8px;
-        padding: 16px;
-        margin: 0 -16px;
+    &:hover {
+      transform: translateX(8px);
+      background: rgba(245, 247, 250, 0.4);
+      border-radius: 8px;
+      padding: 16px;
+      margin: 0 -16px;
+
+      .dark & {
+        background: rgba(40, 45, 55, 0.6);
+      }
+    }
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    /* 公告标签 */
+    .announcement-tag {
+      color: #409eff;
+      margin-right: 16px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    /* 公告内容区域 */
+    .announcement-content {
+      flex: 1;
+
+      .title {
+        font-size: 16px;
+        font-weight: 500;
+        margin-bottom: 6px;
+        color: #333;
+        line-height: 1.4;
 
         .dark & {
-          background: rgba(40, 45, 55, 0.6);
+          color: rgba(255, 255, 255, 0.9);
         }
       }
 
-      &:last-child {
-        border-bottom: none;
-      }
+      /* 公告元信息（日期、部门） */
+      .meta {
+        display: flex;
+        font-size: 13px;
+        color: #909399;
 
-      .announcement-tag {
-        color: #409eff;
-        margin-right: 16px;
-        flex-shrink: 0;
-        margin-top: 2px;
-      }
+        .dark & {
+          color: rgba(255, 255, 255, 0.5);
+        }
 
-      .announcement-content {
-        flex: 1;
+        .date {
+          margin-right: 16px;
+          position: relative;
 
-        .title {
-          font-size: 16px;
-          font-weight: 500;
-          margin-bottom: 6px;
-          color: #333;
-          line-height: 1.4;
-
-          .dark & {
-            color: rgba(255, 255, 255, 0.9);
+          &::after {
+            content: '•';
+            position: absolute;
+            right: -10px;
+            opacity: 0.6;
           }
         }
 
-        .meta {
+        .department {
           display: flex;
-          font-size: 13px;
-          color: #909399;
-
-          .dark & {
-            color: rgba(255, 255, 255, 0.5);
-          }
-
-          .date {
-            margin-right: 16px;
-            position: relative;
-
-            &::after {
-              content: '•';
-              position: absolute;
-              right: -10px;
-              opacity: 0.6;
-            }
-          }
-
-          .department {
-            display: flex;
-            align-items: center;
-          }
+          align-items: center;
         }
       }
     }
   }
 
-  // 滚动条样式
+  /* 滚动条样式 */
   .el-scrollbar {
     max-height: 340px;
     padding-right: 8px;
@@ -752,7 +753,7 @@ onUnmounted(() => {
   }
 }
 
-// 欢迎区域样式
+/* 欢迎区域样式 */
 .welcome-section {
   position: relative;
   margin-bottom: 30px;
@@ -766,7 +767,7 @@ onUnmounted(() => {
   transition: all 0.4s cubic-bezier(0.2, 0.9, 0.4, 1);
   z-index: 1;
 
-  // 鼠标光影效果容器
+  /* 鼠标跟随光影效果 */
   &::before {
     content: '';
     position: absolute;
@@ -774,8 +775,8 @@ onUnmounted(() => {
     left: 0;
     right: 0;
     bottom: 0;
-    background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y),
-        rgba(100, 150, 255, 0.1) 0%,
+    background: radial-gradient(800px circle at var(--mouse-x) var(--mouse-y),
+        rgba(99, 102, 241, 0.1) 0%,
         transparent 80%);
     opacity: 0;
     transition: opacity 0.3s ease;
@@ -783,7 +784,7 @@ onUnmounted(() => {
     pointer-events: none;
   }
 
-  // 夜间模式适配 
+  /* 暗色模式适配 */
   .dark & {
     background: rgba(20, 25, 35, 0.7);
     border-color: rgba(255, 255, 255, 0.15);
@@ -800,6 +801,7 @@ onUnmounted(() => {
     }
   }
 
+  /* 欢迎标题 */
   h2 {
     font-size: 32px;
     margin-bottom: 10px;
@@ -812,12 +814,14 @@ onUnmounted(() => {
     }
   }
 
+  /* 用户名特殊样式 */
   .username {
     color: #409eff;
     font-weight: 700;
     text-shadow: 0 2px 4px rgba(0, 120, 255, 0.1);
   }
 
+  /* 副标题 */
   .subtitle {
     color: rgba(0, 0, 0, 0.65);
     font-size: 16px;
@@ -825,7 +829,7 @@ onUnmounted(() => {
     max-width: 80%;
   }
 
-  // 悬停效果 
+  /* 悬停效果增强 */
   &:hover {
     transform: translateY(-4px);
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
@@ -840,7 +844,7 @@ onUnmounted(() => {
   }
 }
 
-// 卡片头部
+/* 卡片头部通用样式 */
 .card-header {
   display: flex;
   justify-content: space-between;
@@ -865,6 +869,7 @@ onUnmounted(() => {
     }
   }
 
+  /* TOP排名徽章 */
   .card-badge {
     background: #e6a23c;
     color: white;
@@ -876,7 +881,7 @@ onUnmounted(() => {
   }
 }
 
-// 空状态样式
+/* 空状态样式 */
 .empty-todos,
 .empty-announcements {
   text-align: center;
@@ -889,14 +894,14 @@ onUnmounted(() => {
   }
 }
 
-// 响应式调整
+/* 响应式调整 - 移动端适配 */
 @media (max-width: 768px) {
   .welcome-section h2 {
     font-size: 24px;
   }
 }
 
-// 设置鼠标位置变量
+/* 定义鼠标位置CSS变量 */
 .student-home {
   --mouse-x: 0;
   --mouse-y: 0;

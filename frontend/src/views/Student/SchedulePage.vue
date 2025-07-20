@@ -1,32 +1,44 @@
 <template>
-  <div class="course-page" :class="{ 'dark': isDarkMode }">
-    <!-- 课程概览卡片 -->
-    <div class="course-overview-card modern-card">
+  <div class="course-dashboard" :class="{ 'dark': isDarkMode }" @mousemove="handleMouseMove">
+    <!-- 课程概览卡片 - 现代化设计 -->
+    <div class="course-overview-card modern-card" ref="overviewRef">
       <div class="card-header">
-        <h2>课程概览</h2>
+        <h2>
+          <el-icon>
+            <DataAnalysis />
+          </el-icon>
+          课程概览
+        </h2>
         <div class="semester-selector">
-          <el-select v-model="currentSemester" placeholder="选择学期" size="small">
+          <el-select v-model="currentSemester" placeholder="选择学期" size="small" class="modern-select">
             <el-option v-for="item in semesters" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </div>
       </div>
 
-      <div class="overview-stats">
-        <div class="stat-item">
-          <div class="stat-value">{{ currentCourses.length }}</div>
-          <div class="stat-label">当前课程</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-value">{{ completedCoursesCount }}</div>
-          <div class="stat-label">已完成课程</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-value">{{ failedCoursesCount }}</div>
-          <div class="stat-label">未通过课程</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-value">{{ avgScore }}分</div>
-          <div class="stat-label">平均成绩</div>
+      <div class="stats-grid">
+        <div class="stat-card" v-for="(stat, index) in stats" :key="index" :style="{ '--card-color': stat.color }">
+          <div class="stat-icon">
+            <div class="icon-bg"></div>
+            <el-icon :size="24">
+              <component :is="stat.icon" />
+            </el-icon>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">
+              <animated-number :value="stat.value" :formatValue="formatStatValue" :duration="800" />
+            </div>
+            <div class="stat-label">{{ stat.label }}</div>
+          </div>
+          <div class="stat-trend" v-if="stat.trend">
+            <el-icon :color="stat.trend > 0 ? '#f56c6c' : '#67c23a'">
+              <CaretTop v-if="stat.trend > 0" />
+              <CaretBottom v-else />
+            </el-icon>
+            <span :style="{ color: stat.trend > 0 ? '#f56c6c' : '#67c23a' }">
+              {{ Math.abs(stat.trend) }}%
+            </span>
+          </div>
         </div>
       </div>
     </div>
@@ -34,12 +46,20 @@
     <!-- 课程表与课程进度 -->
     <div class="course-content">
       <!-- 课程表 -->
-      <div class="course-schedule modern-card">
-        <h3 class="section-title">
-          <el-icon>
-            <Calendar />
-          </el-icon> 本周课程表
-        </h3>
+      <div class="course-schedule modern-card" ref="scheduleRef">
+        <div class="card-header">
+          <h3>
+            <el-icon>
+              <Calendar />
+            </el-icon> 本周课程表
+          </h3>
+          <div class="view-toggle">
+            <el-radio-group v-model="scheduleView">
+              <el-radio-button label="week">周视图</el-radio-button>
+              <el-radio-button label="day">日视图</el-radio-button>
+            </el-radio-group>
+          </div>
+        </div>
 
         <div class="schedule-grid">
           <div class="grid-header">
@@ -51,10 +71,9 @@
             <div class="time-slot" v-for="time in timeSlots" :key="time">
               <div class="time-label">{{ time }}</div>
               <div class="day-slot" v-for="day in weekdays" :key="day">
-                <!-- 课程卡片 -->
-                <div class="course-card" v-for="course in getCoursesByDayAndTime(day, time)" :key="course.id"
-                  :style="{ backgroundColor: course.color, opacity: courseOpacity }"
-                  @mouseenter="handleCourseHover(course)" @mouseleave="handleCourseLeave">
+                <div class="course-block" v-for="course in getCoursesByDayAndTime(day, time)" :key="course.id"
+                  :style="{ backgroundColor: course.color }" @mouseenter="handleCourseHover(course)"
+                  @mouseleave="handleCourseLeave">
                   <div class="course-name">{{ course.name }}</div>
                   <div class="course-teacher">{{ course.teacher }}</div>
                   <div class="course-location">{{ course.location }}</div>
@@ -66,15 +85,25 @@
       </div>
 
       <!-- 课程进度 -->
-      <div class="course-progress modern-card">
-        <h3 class="section-title">
-          <el-icon>
-            <Notebook />
-          </el-icon> 课程进度
-        </h3>
+      <div class="course-progress modern-card" ref="progressRef">
+        <div class="card-header">
+          <h3>
+            <el-icon>
+              <Notebook />
+            </el-icon> 课程进度
+          </h3>
+          <div class="progress-filter">
+            <el-select v-model="progressFilter" placeholder="筛选课程" size="small">
+              <el-option label="全部课程" value="all" />
+              <el-option label="进行中" value="ongoing" />
+              <el-option label="已完成" value="completed" />
+            </el-select>
+          </div>
+        </div>
 
         <div class="progress-list">
-          <el-card class="progress-card" v-for="course in currentCourses" :key="course.id" shadow="hover">
+          <el-card class="progress-card" v-for="course in filteredCourses" :key="course.id" shadow="hover"
+            :style="{ transform: 'translateZ(0)' }">
             <div class="card-content">
               <div class="course-info">
                 <div class="course-name">{{ course.name }}</div>
@@ -115,14 +144,25 @@
     </div>
 
     <!-- 历史课程记录 -->
-    <div class="history-courses modern-card">
-      <h3 class="section-title">
-        <el-icon>
-          <History />
-        </el-icon> 历史课程记录
-      </h3>
+    <div class="history-courses modern-card" ref="historyRef">
+      <div class="card-header">
+        <h3>
+          <el-icon>
+            <History />
+          </el-icon> 历史课程记录
+        </h3>
+        <div class="history-filter">
+          <el-input v-model="historySearch" placeholder="搜索课程" size="small" clearable>
+            <template #suffix>
+              <el-icon>
+                <Search />
+              </el-icon>
+            </template>
+          </el-input>
+        </div>
+      </div>
 
-      <el-table :data="historyCourses" border stripe class="history-table">
+      <el-table :data="filteredHistoryCourses" border stripe class="history-table">
         <el-table-column prop="semester" label="学期" width="120" />
         <el-table-column prop="name" label="课程名称" min-width="180" />
         <el-table-column prop="code" label="课程代码" width="120" />
@@ -132,9 +172,9 @@
         <el-table-column prop="status" label="状态" width="100" :formatter="formatCourseStatus" />
       </el-table>
 
-      <div class="pagination" v-if="historyCourses.length > 0">
+      <div class="pagination" v-if="filteredHistoryCourses.length > 0">
         <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="currentPage"
-          :page-sizes="[5, 10, 20]" :page-size="pageSize" :total="historyCourses.length"
+          :page-sizes="[5, 10, 20]" :page-size="pageSize" :total="filteredHistoryCourses.length"
           layout="total, sizes, prev, pager, next" small />
       </div>
     </div>
@@ -143,7 +183,20 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { Calendar, Notebook, History, ArrowRight } from '@element-plus/icons-vue'
+import {
+  Calendar,
+  Notebook,
+  History,
+  ArrowRight,
+  Search,
+  DataAnalysis,
+  CaretTop,
+  CaretBottom,
+  Collection,
+  Check,
+  Close,
+  Star
+} from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 
 // 暗色模式
@@ -238,13 +291,74 @@ const historyCourses = ref([
     credits: 4,
     score: 92,
     status: 'passed'
+  },
+  {
+    semester: '2022-2023-2',
+    name: '大学物理',
+    code: 'PHYS101',
+    teacher: '黄教授',
+    credits: 4,
+    score: 65,
+    status: 'passed'
+  },
+  {
+    semester: '2022-2023-2',
+    name: '英语（二）',
+    code: 'ENGL102',
+    teacher: '吴老师',
+    credits: 3,
+    score: 72,
+    status: 'passed'
+  },
+  {
+    semester: '2022-2023-1',
+    name: '离散数学',
+    code: 'MATH101',
+    teacher: '郑教授',
+    credits: 4,
+    score: 88,
+    status: 'passed'
   }
 ])
 
 const currentPage = ref(1)
 const pageSize = ref(10)
-const courseOpacity = ref(0.9)
 const hoveredCourse = ref(null)
+const scheduleView = ref('week')
+const progressFilter = ref('all')
+const historySearch = ref('')
+
+// 统计数据 - 改进后的数据结构
+const stats = computed(() => [
+  {
+    value: currentCourses.value.length,
+    label: '当前课程',
+    icon: Collection,
+    color: '#6366f1',
+    trend: 5.2
+  },
+  {
+    value: completedCoursesCount.value,
+    label: '已完成课程',
+    icon: Check,
+    color: '#10b981',
+    trend: 12.8
+  },
+  {
+    value: failedCoursesCount.value,
+    label: '未通过课程',
+    icon: Close,
+    color: '#ef4444',
+    trend: -3.5
+  },
+  {
+    value: avgScore.value,
+    label: '平均成绩',
+    icon: Star,
+    color: '#f59e0b',
+    trend: 2.1
+  }
+])
 
 // 计算属性
 const completedCoursesCount = computed(() => {
@@ -260,6 +374,23 @@ const avgScore = computed(() => {
   if (passedCourses.length === 0) return 0
   const totalScore = passedCourses.reduce((sum, course) => sum + course.score, 0)
   return Math.round(totalScore / passedCourses.length)
+})
+
+const filteredCourses = computed(() => {
+  if (progressFilter.value === 'all') return currentCourses.value
+  if (progressFilter.value === 'ongoing') return currentCourses.value.filter(c => c.progress < 100)
+  return currentCourses.value.filter(c => c.progress === 100)
+})
+
+const filteredHistoryCourses = computed(() => {
+  if (!historySearch.value.trim()) return historyCourses.value
+
+  const searchTerm = historySearch.value.toLowerCase().trim()
+  return historyCourses.value.filter(course =>
+    course.name.toLowerCase().includes(searchTerm) ||
+    course.code.toLowerCase().includes(searchTerm) ||
+    course.teacher.toLowerCase().includes(searchTerm)
+  )
 })
 
 // 方法
@@ -294,11 +425,22 @@ const handleCurrentChange = (page) => {
 
 const handleCourseHover = (course) => {
   hoveredCourse.value = course
-  // 可以添加更多的交互效果
 }
 
 const handleCourseLeave = () => {
   hoveredCourse.value = null
+}
+
+const handleMouseMove = (e) => {
+  const x = e.clientX / window.innerWidth * 100
+  const y = e.clientY / window.innerHeight * 100
+  document.documentElement.style.setProperty('--mouse-x', `${x}px`)
+  document.documentElement.style.setProperty('--mouse-y', `${y}px`)
+}
+
+// 辅助函数 - 格式化统计值
+const formatStatValue = (value) => {
+  return typeof value === 'number' && !Number.isInteger(value) ? value.toFixed(1) : value
 }
 
 // 初始化数据
@@ -308,192 +450,390 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
-.course-page {
-  padding: 20px;
-  min-height: calc(100vh - 60px);
-  transition: background-color 0.3s ease;
-
-  .dark & {
-    background-color: #1e293b;
-  }
-}
-
-// 现代化卡片样式 - 与成绩系统保持一致
+// 基础卡片样式
 .modern-card {
   position: relative;
   border-radius: 16px;
-  padding: 30px;
+  padding: 24px;
+  margin-bottom: 24px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.5);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
   overflow: hidden;
   z-index: 1;
 
-  // 浅色模式
-  background: white;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
-
-  // 深色模式样式
-  .dark & {
-    background: rgba(30, 41, 59, 0.8);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  // 卡片光影效果增强
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(800px circle at var(--mouse-x) var(--mouse-y),
+        rgba(99, 102, 241, 0.1) 0%,
+        transparent 80%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: -1;
+    pointer-events: none;
   }
 
-  // 卡片悬停效果
+  // 统一悬停效果，确保暗色模式也能应用
   &:hover {
     transform: translateY(-4px);
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+    border-color: rgba(199, 210, 254, 0.8);
+
+    &::before {
+      opacity: 1;
+    }
   }
 
-  // 卡片头部
-  .card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
+  // 暗色模式适配 - 调整选择器优先级
+  .dark & {
+    background: rgba(30, 35, 45, 0.95);
+    border-color: rgba(74, 85, 104, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 
-    h2 {
-      margin: 0;
-      font-size: 20px;
-      font-weight: 600;
-      color: var(--text-primary);
+    &::before {
+      background: radial-gradient(800px circle at var(--mouse-x) var(--mouse-y),
+          rgba(99, 102, 241, 0.15) 0%,
+          transparent 80%);
+    }
+
+    // 暗色模式下的悬停效果 - 单独强化
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+      border-color: rgba(99, 102, 241, 0.5);
+
+      &::before {
+        opacity: 1;
+      }
     }
   }
 }
 
-// 课程概览卡片样式
-.course-overview-card {
-  margin-bottom: 24px;
+// 卡片头部样式改进
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.5);
 
-  .overview-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 16px;
+  .dark & {
+    border-color: rgba(74, 85, 104, 0.3);
+  }
 
-    .stat-item {
-      text-align: center;
-      padding: 16px;
-      background: rgba(0, 0, 0, 0.03);
-      border-radius: 8px;
-      transition: all 0.3s ease;
+  h2 {
+    font-size: 1.25rem;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    color: #1e293b;
+    letter-spacing: -0.025em;
+
+    .dark & {
+      color: rgba(248, 250, 252, 0.9);
+    }
+
+    .el-icon {
+      margin-right: 0.75rem;
+      font-size: 1.5rem;
+      color: #6366f1;
 
       .dark & {
-        background: rgba(255, 255, 255, 0.05);
+        color: #818cf8;
       }
+    }
+  }
 
-      &:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-      }
+  h3 {
+    font-size: 1.125rem;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    color: #333;
+    letter-spacing: -0.025em;
 
-      .stat-value {
-        font-size: 24px;
-        font-weight: 700;
-        color: #409eff;
-        margin-bottom: 4px;
-      }
+    .dark & {
+      color: rgba(247, 250, 252, 0.9);
+    }
 
-      .stat-label {
-        font-size: 14px;
-        color: var(--text-secondary);
+    .el-icon {
+      margin-right: 0.75rem;
+      font-size: 1.25rem;
+      color: #409eff;
+
+      .dark & {
+        color: #63b3ed;
       }
     }
   }
 }
 
-// 课程内容区域样式
-.course-content {
-  display: grid;
-  grid-template-columns: 1.5fr 1fr;
-  gap: 24px;
-  margin-bottom: 24px;
+// 现代化选择器样式
+.modern-select {
+  .el-input__inner {
+    background-color: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    border-radius: 12px;
+    padding: 0 12px;
+    height: 36px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
 
-  @media (max-width: 1024px) {
+    &:hover {
+      border-color: #c7d2fe;
+    }
+
+    &:focus {
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+    }
+
+    .dark & {
+      background-color: rgba(30, 41, 59, 0.7);
+      border-color: rgba(74, 85, 104, 0.5);
+      color: rgba(248, 250, 252, 0.9);
+
+      &:hover {
+        border-color: #4f46e5;
+      }
+
+      &:focus {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+      }
+    }
+  }
+}
+
+// 改进后的统计卡片网格布局
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  @media (max-width: 480px) {
     grid-template-columns: 1fr;
+  }
+
+  .stat-card {
+    display: flex;
+    align-items: center;
+    padding: 1.5rem;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(8px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(226, 232, 240, 0.6);
+
+    // 暗色模式基础样式
+    .dark & {
+      background: rgba(30, 41, 59, 0.9);
+      border-color: rgba(74, 85, 104, 0.4);
+    }
+
+    // 悬停效果增强 - 统一基础效果
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+      border-color: rgba(199, 210, 254, 0.8);
+
+      // 卡片内部发光效果
+      &::before {
+        opacity: 0.4;
+      }
+
+      .icon-bg {
+        transform: scale(1.1);
+        opacity: 0.2;
+      }
+    }
+
+    // 暗色模式悬停效果 - 单独设置
+    .dark &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+      border-color: rgba(99, 102, 241, 0.5);
+    }
+
+    // 卡片内部发光效果
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(400px circle at var(--mouse-x) var(--mouse-y),
+          var(--card-color, rgba(99, 102, 241, 0.2)),
+          transparent 70%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    // 统计图标样式优化
+    .stat-icon {
+      position: relative;
+      margin-right: 1.25rem;
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      z-index: 1;
+
+      .icon-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: 12px;
+        background-color: var(--card-color);
+        opacity: 0.1;
+        transition: all 0.3s ease;
+      }
+
+      .el-icon {
+        color: var(--card-color);
+        z-index: 1;
+      }
+    }
+
+    // 统计内容区域
+    .stat-content {
+      flex: 1;
+      min-width: 0;
+      z-index: 1;
+
+      // 统计数值样式
+      .stat-value {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #1e293b;
+        line-height: 1.2;
+        margin-bottom: 0.25rem;
+        font-feature-settings: "tnum";
+
+        .dark & {
+          color: rgba(248, 250, 252, 0.9);
+        }
+      }
+
+      // 统计标签样式
+      .stat-label {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #64748b;
+        line-height: 1.4;
+
+        .dark & {
+          color: rgba(203, 213, 225, 0.8);
+        }
+      }
+    }
+
+    // 趋势指示器
+    .stat-trend {
+      display: flex;
+      align-items: center;
+      margin-left: 0.75rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+
+      .el-icon {
+        margin-right: 0.25rem;
+        font-size: 0.875rem;
+      }
+    }
   }
 }
 
 // 课程表样式
-.course-schedule {
-  .section-title {
-    display: flex;
-    align-items: center;
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 16px;
+.schedule-grid {
+  overflow-x: auto;
 
-    .el-icon {
-      margin-right: 8px;
+  .grid-header {
+    display: grid;
+    grid-template-columns: 80px repeat(7, 1fr);
+    border-bottom: 1px solid #ebeef5;
+
+    .dark & {
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .time-column,
+    .day-column {
+      padding: 12px;
+      font-weight: 500;
+      text-align: center;
+      color: #606266;
+
+      .dark & {
+        color: rgba(255, 255, 255, 0.7);
+      }
     }
   }
 
-  .schedule-grid {
-    width: 100%;
-
-    .grid-header {
+  .grid-body {
+    .time-slot {
       display: grid;
       grid-template-columns: 80px repeat(7, 1fr);
-      margin-bottom: 8px;
+      border-bottom: 1px solid #f2f3f5;
 
-      .time-column {
-        width: 80px;
-        text-align: center;
-        font-weight: 500;
-        color: var(--text-secondary);
+      .dark & {
+        border-color: rgba(255, 255, 255, 0.05);
       }
 
-      .day-column {
+      .time-label {
+        padding: 12px;
         text-align: center;
-        font-weight: 500;
-        color: var(--text-secondary);
-        padding: 8px 0;
+        color: #909399;
+        font-size: 14px;
+        border-right: 1px solid #f2f3f5;
+
+        .dark & {
+          color: rgba(255, 255, 255, 0.5);
+          border-color: rgba(255, 255, 255, 0.05);
+        }
       }
-    }
 
-    .grid-body {
-      .time-slot {
-        display: grid;
-        grid-template-columns: 80px repeat(7, 1fr);
-        margin-bottom: 8px;
+      .day-slot {
+        padding: 4px;
 
-        .time-label {
-          width: 80px;
-          text-align: center;
-          font-size: 14px;
-          color: var(--text-secondary);
-          padding-top: 8px;
-        }
-
-        .day-slot {
-          position: relative;
-          min-height: 80px;
-          border: 1px solid rgba(0, 0, 0, 0.05);
-          border-radius: 4px;
-          margin: 0 4px;
-
-          .dark & {
-            border: 1px solid rgba(255, 255, 255, 0.05);
-          }
-        }
-
-        .course-card {
-          position: absolute;
-          width: calc(100% - 8px);
-          margin: 4px;
+        .course-block {
           padding: 8px;
-          border-radius: 4px;
+          border-radius: 8px;
+          margin-bottom: 4px;
           color: white;
-          font-size: 12px;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-          transition: all 0.3s ease;
-          cursor: pointer;
+          font-size: 13px;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+          transition: all 0.2s ease;
 
           &:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-            opacity: 1 !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
           }
 
           .course-name {
@@ -503,7 +843,7 @@ onMounted(() => {
 
           .course-teacher,
           .course-location {
-            font-size: 11px;
+            font-size: 12px;
             opacity: 0.8;
           }
         }
@@ -513,103 +853,172 @@ onMounted(() => {
 }
 
 // 课程进度样式
-.course-progress {
-  .section-title {
-    display: flex;
-    align-items: center;
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 16px;
+.progress-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
 
-    .el-icon {
-      margin-right: 8px;
+  .progress-card {
+    transition: all 0.3s ease;
+    border: 1px solid rgba(226, 232, 240, 0.6);
+    border-radius: 14px;
+    overflow: hidden;
+
+    // 暗色模式基础样式
+    .dark & {
+      background: #1e293b;
+      border-color: rgba(74, 85, 104, 0.4);
     }
-  }
 
-  .progress-list {
-    .progress-card {
+    // 统一悬停效果
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+      border-color: rgba(199, 210, 254, 0.8);
+    }
+
+    // 暗色模式悬停效果
+    .dark &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+      border-color: rgba(99, 102, 241, 0.5);
+    }
+
+    .course-info {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 12px;
+
+      .course-name {
+        font-size: 16px;
+        font-weight: 500;
+
+        .dark & {
+          color: rgba(255, 255, 255, 0.9);
+        }
+      }
+
+      .course-code {
+        font-size: 13px;
+        color: #909399;
+
+        .dark & {
+          color: rgba(255, 255, 255, 0.6);
+        }
+      }
+    }
+
+    .progress-bar {
       margin-bottom: 16px;
+    }
 
-      .card-content {
-        .course-info {
-          display: flex;
-          justify-content: space-between;
-          margin-bottom: 12px;
+    .course-details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
 
-          .course-name {
-            font-size: 16px;
-            font-weight: 500;
-            color: var(--text-primary);
-          }
+      .detail-item {
+        display: flex;
+        align-items: center;
 
-          .course-code {
-            font-size: 14px;
-            color: var(--text-secondary);
+        .label {
+          font-size: 13px;
+          color: #909399;
+          margin-right: 8px;
+
+          .dark & {
+            color: rgba(255, 255, 255, 0.6);
           }
         }
 
-        .progress-bar {
-          margin-bottom: 12px;
-        }
+        .value {
+          font-size: 13px;
+          color: #333;
 
-        .course-details {
-          display: flex;
-          justify-content: space-between;
-          font-size: 14px;
-
-          .detail-item {
-            .label {
-              color: var(--text-secondary);
-            }
-
-            .value {
-              color: var(--text-primary);
-            }
+          .dark & {
+            color: rgba(255, 255, 255, 0.9);
           }
         }
       }
+    }
 
-      .card-actions {
-        text-align: right;
-      }
+    .card-actions {
+      margin-top: 16px;
+      text-align: right;
     }
   }
 }
 
 // 历史课程记录样式
-.history-courses {
-  .section-title {
-    display: flex;
-    align-items: center;
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 16px;
+.history-table {
+  .el-table__header th {
+    background-color: rgba(245, 247, 250, 0.7);
 
-    .el-icon {
-      margin-right: 8px;
+    .dark & {
+      background-color: rgba(40, 45, 55, 0.7);
     }
   }
 
-  .history-table {
-    width: 100%;
-    margin-bottom: 16px;
+  .el-table__body td {
+    transition: all 0.2s ease;
   }
 
-  .pagination {
-    text-align: right;
+  .el-table__row:hover {
+    td {
+      background-color: rgba(64, 158, 255, 0.05) !important;
+
+      .dark & {
+        background-color: rgba(64, 158, 255, 0.1) !important;
+      }
+    }
   }
 }
 
-// 颜色变量
-:root {
-  --text-primary: #303133;
-  --text-secondary: #606266;
+// 分页样式
+.pagination {
+  margin-top: 20px;
+  text-align: center;
 }
 
-.dark {
-  --text-primary: #ffffff;
-  --text-secondary: rgba(255, 255, 255, 0.7);
+// 筛选器样式
+.view-toggle,
+.progress-filter,
+.history-filter {
+
+  .el-select,
+  .el-input {
+    width: 180px;
+  }
+}
+
+// 响应式调整
+@media (max-width: 768px) {
+  .schedule-grid {
+    min-width: 700px;
+  }
+
+  .progress-list {
+    grid-template-columns: 1fr;
+  }
+
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+
+    h3 {
+      margin-bottom: 12px;
+    }
+
+    .view-toggle,
+    .progress-filter,
+    .history-filter {
+      width: 100%;
+
+      .el-select,
+      .el-input {
+        width: 100%;
+      }
+    }
+  }
 }
 </style>

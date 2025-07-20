@@ -108,6 +108,7 @@ import { ref, computed, onMounted, onUnmounted, nextTick, watch, inject } from '
 import { Calendar, School } from '@element-plus/icons-vue'
 import Chart from 'chart.js/auto'
 
+// DOM 引用
 const statusCard = ref(null)
 const creditChartCard = ref(null)
 const trendChartCard = ref(null)
@@ -117,7 +118,7 @@ const performanceTrendCanvas = ref(null)
 // 从父组件或全局状态中注入暗色模式状态
 const isDarkMode = inject('isDarkMode', ref(false))
 
-// 状态配置映射
+// 学籍状态配置映射 - 定义不同学籍状态的显示样式
 const statusConfig = {
   normal: { label: '正常', type: 'success', color: '#10b981' },
   suspended: { label: '休学', type: 'warning', color: '#f59e0b' },
@@ -127,43 +128,45 @@ const statusConfig = {
 }
 
 // 响应式数据
-const status = ref('normal')
-const effectiveDate = ref('2023-09-01')
-const graduationDate = ref('2027-06-30')
-const credits = ref(68)
-const totalCredits = ref(140)
-const attendanceRate = ref(96)
-const performanceLevel = ref('良好')
-let creditChart = null
-let trendChart = null
+const status = ref('normal') // 学籍状态
+const effectiveDate = ref('2023-09-01') // 入学日期
+const graduationDate = ref('2027-06-30') // 预计毕业日期
+const credits = ref(68) // 已修学分
+const totalCredits = ref(140) // 总学分要求
+const attendanceRate = ref(96) // 出勤率
+const performanceLevel = ref('良好') // 学业等级
+let creditChart = null // 学分进度图表实例
+let trendChart = null // 学业表现趋势图表实例
 
-// 鼠标移动事件处理
+// 鼠标移动事件处理 - 用于创建卡片的光影效果
 const handleMouseMove = (e) => {
   // 直接更新CSS变量，避免响应式变量更新导致的重渲染
   document.documentElement.style.setProperty('--mouse-x', `${e.clientX}px`)
   document.documentElement.style.setProperty('--mouse-y', `${e.clientY}px`)
 }
 
-// 计算属性
+// 计算属性 - 学分完成百分比
 const creditProgress = computed(() => {
   return Math.round((credits.value / totalCredits.value) * 100)
 })
 
+// 计算属性 - 根据学分进度确定进度条颜色
 const progressColor = computed(() => {
   const progress = creditProgress.value
-  if (progress < 30) return '#ef4444'
-  if (progress < 60) return '#f59e0b'
-  return '#10b981'
+  if (progress < 30) return '#ef4444' // 红色：进度较低
+  if (progress < 60) return '#f59e0b' // 橙色：进度中等
+  return '#10b981' // 绿色：进度良好
 })
 
+// 计算属性 - 根据出勤率确定进度条颜色
 const attendanceColor = computed(() => {
   const rate = attendanceRate.value
-  if (rate < 70) return '#ef4444'
-  if (rate < 90) return '#f59e0b'
-  return '#10b981'
+  if (rate < 70) return '#ef4444' // 红色：出勤率低
+  if (rate < 90) return '#f59e0b' // 橙色：出勤率中等
+  return '#10b981' // 绿色：出勤率高
 })
 
-// 将学业等级转换为评分
+// 将学业等级转换为评分（用于星级显示）
 const levelToRating = (level) => {
   const levelMap = {
     '优秀': 5,
@@ -172,8 +175,7 @@ const levelToRating = (level) => {
     '及格': 2,
     '不及格': 1
   }
-  console.log(`转换后的评分: ${levelMap[level]}`)
-  return levelMap[level] || 3
+  return levelMap[level] || 3 // 默认返回中等评分
 }
 
 // 计算属性：根据暗色模式动态调整评分颜色
@@ -183,7 +185,7 @@ const ratingColors = computed(() => {
     : ['rgba(0, 0, 0, 0.2)', '#3b82f6', '#3b82f6', '#10b981', '#10b981']
 })
 
-// 方法
+// 日期格式化方法 - 将YYYY-MM-DD格式转换为本地日期格式
 const formatDate = (dateStr) => {
   if (!dateStr) return '--'
   return new Date(dateStr).toLocaleDateString('zh-CN', {
@@ -205,11 +207,11 @@ const initCharts = () => {
         datasets: [{
           data: [credits.value, totalCredits.value - credits.value],
           backgroundColor: [
-            '#409eff',
-            isDarkMode.value ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)'
+            '#409eff', // 已修部分颜色
+            isDarkMode.value ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)' // 剩余部分颜色，根据暗色模式调整
           ],
           borderWidth: 0,
-          cutout: '70%'
+          cutout: '70%' // 环形图中心空洞大小
         }]
       },
       options: {
@@ -217,7 +219,7 @@ const initCharts = () => {
         maintainAspectRatio: false,
         plugins: {
           legend: {
-            display: false
+            display: false // 不显示图例
           },
           tooltip: {
             callbacks: {
@@ -247,17 +249,17 @@ const initCharts = () => {
         datasets: [{
           label: '学业表现',
           data: [80, 85, 88, 90, 92, 94, attendanceRate.value],
-          borderColor: '#409eff',
+          borderColor: '#409eff', // 线条颜色
           backgroundColor: isDarkMode.value
             ? 'rgba(64, 158, 255, 0.1)'
-            : 'rgba(64, 158, 255, 0.2)',
-          tension: 0.4,
-          fill: true,
-          pointBackgroundColor: '#fff',
-          pointBorderColor: '#409eff',
-          pointBorderWidth: 2,
-          pointRadius: 4,
-          pointHoverRadius: 6
+            : 'rgba(64, 158, 255, 0.2)', // 填充颜色，根据暗色模式调整
+          tension: 0.4, // 线条弯曲度
+          fill: true, // 填充区域
+          pointBackgroundColor: '#fff', // 数据点背景色
+          pointBorderColor: '#409eff', // 数据点边框色
+          pointBorderWidth: 2, // 数据点边框宽度
+          pointRadius: 4, // 数据点半径
+          pointHoverRadius: 6 // 鼠标悬停时数据点半径
         }]
       },
       options: {
@@ -274,18 +276,18 @@ const initCharts = () => {
             grid: {
               color: isDarkMode.value
                 ? 'rgba(255, 255, 255, 0.1)'
-                : 'rgba(0, 0, 0, 0.05)'
+                : 'rgba(0, 0, 0, 0.05)' // 网格线颜色，根据暗色模式调整
             }
           },
           x: {
             grid: {
-              display: false
+              display: false // 不显示x轴网格线
             }
           }
         },
         plugins: {
           legend: {
-            display: false
+            display: false // 不显示图例
           },
           tooltip: {
             mode: 'index',
@@ -302,9 +304,9 @@ const initCharts = () => {
   })
 }
 
-// 监听暗色模式变化
+// 监听暗色模式变化，更新图表样式
 watch(isDarkMode, (newVal) => {
-  // 更新图表样式
+  // 更新学分环形图样式
   if (creditChart) {
     creditChart.data.datasets[0].backgroundColor[1] = newVal
       ? 'rgba(255, 255, 255, 0.1)'
@@ -312,6 +314,7 @@ watch(isDarkMode, (newVal) => {
     creditChart.update()
   }
 
+  // 更新学业表现趋势图样式
   if (trendChart) {
     trendChart.data.datasets[0].backgroundColor = newVal
       ? 'rgba(64, 158, 255, 0.1)'
@@ -325,11 +328,11 @@ watch(isDarkMode, (newVal) => {
   }
 })
 
-// 初始化数据
+// 组件挂载时初始化数据和图表
 onMounted(() => {
   initCharts()
 
-  // 数字计数器动画
+  // 数字计数器动画 - 用于学分和出勤率的数字增长动画
   const counters = document.querySelectorAll('.counter')
   counters.forEach(counter => {
     const target = parseInt(counter.innerText)
@@ -351,10 +354,10 @@ onMounted(() => {
   })
 })
 
-// 清理
+// 组件卸载时清理资源
 onUnmounted(() => {
-  if (creditChart) creditChart.destroy()
-  if (trendChart) trendChart.destroy()
+  if (creditChart) creditChart.destroy() // 销毁学分图表
+  if (trendChart) trendChart.destroy() // 销毁趋势图表
 })
 </script>
 
@@ -381,7 +384,7 @@ onUnmounted(() => {
   gap: 30px;
 }
 
-// 现代化卡片样式
+// 现代化卡片样式 - 与主页保持一致的卡片设计语言
 .modern-card {
   position: relative;
   border-radius: 16px;
@@ -409,7 +412,7 @@ onUnmounted(() => {
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
   }
 
-  // 卡片光影效果
+  // 卡片光影效果 - 随鼠标位置变化
   &::before {
     content: '';
     position: absolute;
@@ -646,7 +649,7 @@ onUnmounted(() => {
   }
 }
 
-// 颜色变量
+// 颜色变量 - 与主页保持一致的配色方案
 :root {
   --text-primary: #303133;
   --text-secondary: #606266;
@@ -656,4 +659,4 @@ onUnmounted(() => {
   --text-primary: #ffffff;
   --text-secondary: rgba(255, 255, 255, 0.7);
 }
-</style>
+</style>  

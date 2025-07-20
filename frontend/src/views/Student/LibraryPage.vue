@@ -264,177 +264,6 @@
         <el-empty description="未找到匹配的图书" image="empty" />
       </div>
     </div>
-
-    <!-- 推荐图书 -->
-    <div class="recommended-books modern-card">
-      <div class="section-header">
-        <h3>为您推荐</h3>
-        <el-button type="text" size="small" @click="refreshRecommendations">
-          <el-icon>
-            <Refresh />
-          </el-icon>
-          换一批
-        </el-button>
-      </div>
-
-      <div class="books-list">
-        <div class="book-item" v-for="book in recommendedBooks" :key="book.id" @click="viewBookDetails(book)">
-          <div class="book-cover">
-            <el-image :src="book.cover || defaultBookCover" fit="cover" class="cover-image">
-              <template #error>
-                <div class="image-error">
-                  <el-icon>
-                    <Picture />
-                  </el-icon>
-                </div>
-              </template>
-            </el-image>
-            <div class="book-status" :class="{ 'available': book.available }">
-              {{ book.available ? '可借' : '已借' }}
-            </div>
-          </div>
-          <div class="book-info">
-            <div class="book-title" :title="book.title">{{ book.title }}</div>
-            <div class="book-author">{{ book.author }}</div>
-            <div class="book-meta">
-              <el-rate v-model="book.rating" disabled show-score score-template="{value}" size="small" />
-              <el-tag size="small" effect="plain">{{ book.category }}</el-tag>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 图书详情弹窗 -->
-    <el-dialog v-model="bookDetailVisible" :title="selectedBook?.title || '图书详情'" width="60%" top="5vh"
-      @close="selectedBook = null">
-      <div class="book-detail" v-if="selectedBook">
-        <div class="detail-header">
-          <div class="book-cover-large">
-            <el-image :src="selectedBook.cover || defaultBookCover" fit="contain" class="cover-image">
-              <template #error>
-                <div class="image-error-large">
-                  <el-icon>
-                    <Picture />
-                  </el-icon>
-                </div>
-              </template>
-            </el-image>
-          </div>
-          <div class="book-info">
-            <h3 class="book-title">{{ selectedBook.title }}</h3>
-            <div class="book-author">{{ selectedBook.author }}</div>
-            <div class="book-rating">
-              <el-rate v-model="selectedBook.rating" disabled show-score score-template="{value}分" />
-              <span class="rating-count">({{ selectedBook.ratingCount || 0 }}人评价)</span>
-            </div>
-            <div class="book-status">
-              <el-tag :type="selectedBook.available ? 'success' : 'danger'" effect="light" size="large">
-                <el-icon v-if="selectedBook.available">
-                  <CircleCheck />
-                </el-icon>
-                <el-icon v-else>
-                  <CircleClose />
-                </el-icon>
-                {{ selectedBook.available ? '可借阅' : '已借出' }}
-              </el-tag>
-            </div>
-            <div class="book-actions">
-              <el-button type="primary" size="large" @click="borrowBook(selectedBook)"
-                :disabled="!selectedBook.available">
-                <el-icon>
-                  <TakeawayBox />
-                </el-icon>
-                立即借阅
-              </el-button>
-              <el-button type="info" size="large" @click="reserveBook(selectedBook)" :disabled="selectedBook.available"
-                plain>
-                <el-icon>
-                  <Bell />
-                </el-icon>
-                预约图书
-              </el-button>
-            </div>
-          </div>
-        </div>
-
-        <el-tabs class="detail-tabs">
-          <el-tab-pane label="图书详情">
-            <div class="book-description">
-              <h4>内容简介</h4>
-              <p>{{ selectedBook.description || '暂无内容简介' }}</p>
-            </div>
-            <div class="book-meta-grid">
-              <div class="meta-item">
-                <span class="label">出版社:</span>
-                <span class="value">{{ selectedBook.publisher || '--' }}</span>
-              </div>
-              <div class="meta-item">
-                <span class="label">出版日期:</span>
-                <span class="value">{{ selectedBook.year || '--' }}</span>
-              </div>
-              <div class="meta-item">
-                <span class="label">ISBN:</span>
-                <span class="value">{{ selectedBook.isbn || '--' }}</span>
-              </div>
-              <div class="meta-item">
-                <span class="label">页数:</span>
-                <span class="value">{{ selectedBook.pages || '--' }}</span>
-              </div>
-              <div class="meta-item">
-                <span class="label">分类:</span>
-                <span class="value">{{ getCategoryName(selectedBook.category) }}</span>
-              </div>
-              <div class="meta-item">
-                <span class="label">语言:</span>
-                <span class="value">{{ selectedBook.language || '中文' }}</span>
-              </div>
-              <div class="meta-item">
-                <span class="label">索书号:</span>
-                <span class="value">{{ selectedBook.callNumber || '--' }}</span>
-              </div>
-              <div class="meta-item">
-                <span class="label">馆藏位置:</span>
-                <span class="value">{{ getLocationName(selectedBook.location) }}</span>
-              </div>
-            </div>
-          </el-tab-pane>
-          <el-tab-pane label="借阅信息">
-            <div class="borrow-info">
-              <el-table :data="selectedBook.borrowRecords" style="width: 100%">
-                <el-table-column prop="user" label="借阅人" width="120" />
-                <el-table-column prop="borrowDate" label="借阅日期" width="120" />
-                <el-table-column prop="returnDate" label="归还日期" width="120" />
-                <el-table-column prop="status" label="状态" width="100">
-                  <template #default="scope">
-                    <el-tag :type="scope.row.status === 'returned' ? 'success' : 'warning'" size="small">
-                      {{ scope.row.status === 'returned' ? '已归还' : '借出中' }}
-                    </el-tag>
-                  </template>
-                </el-table-column>
-              </el-table>
-            </div>
-          </el-tab-pane>
-          <el-tab-pane label="读者评价">
-            <div class="book-reviews">
-              <div class="review-item" v-for="review in selectedBook.reviews" :key="review.id">
-                <div class="review-header">
-                  <div class="reviewer">{{ review.user }}</div>
-                  <div class="review-rating">
-                    <el-rate v-model="review.rating" disabled size="small" />
-                  </div>
-                  <div class="review-date">{{ review.date }}</div>
-                </div>
-                <div class="review-content">{{ review.content }}</div>
-              </div>
-              <div class="no-reviews" v-if="!selectedBook.reviews || selectedBook.reviews.length === 0">
-                暂无读者评价
-              </div>
-            </div>
-          </el-tab-pane>
-        </el-tabs>
-      </div>
-    </el-dialog>
   </div>
 </template>
 
@@ -442,8 +271,7 @@
 import { ref, computed, onMounted } from 'vue'
 import {
   Search, Refresh, Download, Picture, Collection,
-  Location, Document, CircleCheck, CircleClose,
-  TakeawayBox, Bell, SuccessFilled, Top, Bottom
+  Location, Document, SuccessFilled, Top, Bottom
 } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
@@ -692,11 +520,6 @@ const getLocationName = (location) => {
   return loc ? loc.label : location
 }
 
-const getCategoryName = (category) => {
-  const cat = bookCategories.value.find(item => item.value === category)
-  return cat ? cat.label : category
-}
-
 const renewBook = (book) => {
   if (!canRenew(book)) {
     ElMessage.warning('该书无法续借')
@@ -882,22 +705,6 @@ const borrowBook = (book) => {
   })
 }
 
-const reserveBook = (book) => {
-  ElMessageBox.confirm(
-    `确定要预约《${book.title}》吗？该书目前已被借出，预约成功后将在图书归还时通知您。`,
-    '确认预约',
-    {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'info'
-    }
-  ).then(() => {
-    ElMessage.success('预约成功，我们将在该书归还后通知您')
-  }).catch(() => {
-    ElMessage.info('已取消预约')
-  })
-}
-
 const viewBookDetails = (book) => {
   // 模拟获取图书详情
   selectedBook.value = {
@@ -938,17 +745,6 @@ const viewBookDetails = (book) => {
     ratingCount: 24
   }
   bookDetailVisible.value = true
-}
-
-const refreshRecommendations = () => {
-  // 模拟刷新推荐图书
-  recommendedBooks.value = recommendedBooks.value.map(book => ({
-    ...book,
-    cover: `https://picsum.photos/200/300?random=${Math.floor(Math.random() * 100)}`,
-    available: Math.random() > 0.5
-  }))
-
-  ElMessage.info('推荐图书已更新')
 }
 
 const handleSizeChange = (size) => {

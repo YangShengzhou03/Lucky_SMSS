@@ -1,120 +1,129 @@
 <template>
-  <div class="settings-page" @mousemove="handleMouseMove">
-    <!-- 设置内容区域 -->
-    <div class="settings-content">
-      <!-- 个人信息设置 -->
-      <div class="setting-panel modern-card" :class="{'panel-hover': isHoveringPanel}">
-        <div class="panel-header">
-          <h3><el-icon><User /></el-icon> 个人信息</h3>
-          <div class="action-buttons">
-            <el-button 
-              type="primary" 
-              size="small" 
-              @click="saveProfile"
-            >
-              <el-icon><Check /></el-icon> 保存修改
-            </el-button>
-          </div>
-        </div>
-        
-        <el-form :model="userProfile" label-width="120px" class="profile-form">
-          <el-form-item label="学号">
-            <el-input v-model="userProfile.studentId" disabled />
-          </el-form-item>
-          
-          <el-form-item label="姓名">
-            <el-input v-model="userProfile.name" />
-          </el-form-item>
-          
-          <el-form-item label="性别">
-            <el-radio-group v-model="userProfile.gender">
-              <el-radio label="male">男</el-radio>
-              <el-radio label="female">女</el-radio>
-              <el-radio label="other">其他</el-radio>
-            </el-radio-group>
-          </el-form-item>
-          
-          <el-form-item label="出生日期">
-            <el-date-picker
-              v-model="userProfile.birthdate"
-              type="date"
-              placeholder="选择日期"
-              format="YYYY-MM-DD"
-              value-format="YYYY-MM-DD"
-            />
-          </el-form-item>
-          
-          <el-form-item label="邮箱">
-            <el-input v-model="userProfile.email" />
-          </el-form-item>
-          
-          <el-form-item label="手机号码">
-            <el-input v-model="userProfile.phone" />
-          </el-form-item>
-          
-          <el-form-item label="头像">
-            <el-upload
-              class="avatar-uploader"
-              action="#"
-              :show-file-list="false"
-              :on-success="handleAvatarSuccess"
-              :before-upload="beforeAvatarUpload"
-            >
+  <div class="personal-center-page" @mousemove="handleMouseMove">
+    <!-- 个人中心内容区域 -->
+    <div class="personal-center-content">
+      <!-- 个人信息卡片 -->
+      <div class="personal-info-card modern-card" :class="{ 'panel-hover': isHoveringPanel }">
+        <div class="card-header">
+          <div class="avatar-section">
+            <el-upload class="avatar-uploader" action="#" :show-file-list="false" :on-success="handleAvatarSuccess"
+              :before-upload="beforeAvatarUpload">
               <img v-if="userProfile.avatarUrl" :src="userProfile.avatarUrl" class="avatar" />
               <el-icon v-else class="avatar-uploader-icon">
                 <Plus />
               </el-icon>
             </el-upload>
-          </el-form-item>
-        </el-form>
+            <div class="user-info">
+              <h2 class="username">{{ userProfile.name }}</h2>
+              <p class="student-id">{{ userProfile.studentId }}</p>
+            </div>
+          </div>
+          <el-button type="primary" size="small" @click="editProfile" class="edit-button">
+            <el-icon>
+              <Edit />
+            </el-icon> 编辑信息
+          </el-button>
+        </div>
+
+        <div class="card-body">
+          <div class="info-row">
+            <div class="info-item">
+              <el-icon class="item-icon">
+                <User />
+              </el-icon>
+              <div class="item-content">
+                <p class="item-label">性别</p>
+                <p class="item-value">{{ getGenderText(userProfile.gender) }}</p>
+              </div>
+            </div>
+            <div class="info-item">
+              <el-icon class="item-icon">
+                <Calendar />
+              </el-icon>
+              <div class="item-content">
+                <p class="item-label">出生日期</p>
+                <p class="item-value">{{ userProfile.birthdate }}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="info-row">
+            <div class="info-item">
+              <el-icon class="item-icon">
+                <Notification />
+              </el-icon>
+              <div class="item-content">
+                <p class="item-label">邮箱</p>
+                <p class="item-value">{{ userProfile.email }}</p>
+              </div>
+            </div>
+            <div class="info-item">
+              <el-icon class="item-icon">
+                <Phone />
+              </el-icon>
+              <div class="item-content">
+                <p class="item-label">手机号码</p>
+                <p class="item-value">{{ userProfile.phone }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <!-- 密码修改设置 -->
-      <div class="setting-panel modern-card" :class="{'panel-hover': isHoveringPassword}">
-        <div class="panel-header">
-          <h3><el-icon><Lock /></el-icon> 密码修改</h3>
+      <!-- 快捷操作卡片 -->
+      <div class="quick-actions-card modern-card">
+        <div class="card-title">
+          <el-icon class="title-icon">
+            <Setting />
+          </el-icon>
+          <span>账户设置</span>
         </div>
-        
-        <el-form 
-          :model="passwordForm" 
-          label-width="150px" 
-          class="password-form"
-          :rules="passwordRules"
-          ref="passwordFormRef"
-        >
-          <el-form-item label="当前密码" prop="oldPassword">
-            <el-input 
-              type="password" 
-              v-model="passwordForm.oldPassword" 
-              autocomplete="off"
-            />
-          </el-form-item>
-          
-          <el-form-item label="新密码" prop="newPassword">
-            <el-input 
-              type="password" 
-              v-model="passwordForm.newPassword" 
-              autocomplete="off"
-            />
-          </el-form-item>
-          
-          <el-form-item label="确认新密码" prop="confirmPassword">
-            <el-input 
-              type="password" 
-              v-model="passwordForm.confirmPassword" 
-              autocomplete="off"
-            />
-          </el-form-item>
-          
-          <el-form-item>
-            <el-button 
-              type="primary" 
-              @click="changePassword"
-            >
-              <el-icon><RefreshRight /></el-icon> 修改密码
-            </el-button>
-          </el-form-item>
-        </el-form>
+        <div class="actions-grid">
+          <el-button type="text" @click="changePassword" class="action-button">
+            <div class="action-content">
+              <el-icon class="action-icon">
+                <Lock />
+              </el-icon>
+              <span>修改密码</span>
+            </div>
+            <el-icon class="arrow-icon">
+              <ArrowRight />
+            </el-icon>
+          </el-button>
+          <el-button type="text" @click="notificationSettings" class="action-button">
+            <div class="action-content">
+              <el-icon class="action-icon">
+                <Bell />
+              </el-icon>
+              <span>通知设置</span>
+            </div>
+            <el-icon class="arrow-icon">
+              <ArrowRight />
+            </el-icon>
+          </el-button>
+          <el-button type="text" @click="securitySettings" class="action-button">
+            <div class="action-content">
+              <el-icon class="action-icon">
+                <FirstAidKit />
+              </el-icon>
+              <span>安全设置</span>
+            </div>
+            <el-icon class="arrow-icon">
+              <ArrowRight />
+            </el-icon>
+          </el-button>
+          <el-button type="text" @click="helpCenter" class="action-button">
+            <div class="action-content">
+              <el-icon class="action-icon">
+                <QuestionFilled />
+              </el-icon>
+              <span>帮助中心</span>
+            </div>
+            <el-icon class="arrow-icon">
+              <ArrowRight />
+            </el-icon>
+          </el-button>
+        </div>
       </div>
     </div>
   </div>
@@ -122,8 +131,10 @@
 
 <script setup>
 import { ref, reactive } from 'vue'
-import { 
-  Plus, User, Lock, Check, RefreshRight
+import {
+  Plus, User, Edit, ArrowRight, Lock,
+  Calendar, Notification, Phone, Setting, Bell,
+  FirstAidKit, QuestionFilled
 } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 
@@ -138,16 +149,8 @@ const userProfile = reactive({
   avatarUrl: 'https://picsum.photos/id/1005/200/200'
 })
 
-// 密码表单
-const passwordForm = reactive({
-  oldPassword: '',
-  newPassword: '',
-  confirmPassword: ''
-})
-
 // 卡片悬停状态
 const isHoveringPanel = ref(false)
-const isHoveringPassword = ref(false)
 
 // 鼠标位置
 const handleMouseMove = (e) => {
@@ -155,76 +158,98 @@ const handleMouseMove = (e) => {
   document.documentElement.style.setProperty('--mouse-y', `${e.clientY}px`)
 }
 
-// 密码验证规则
-const passwordRules = reactive({
-  oldPassword: [
-    { required: true, message: '请输入当前密码', trigger: 'blur' }
-  ],
-  newPassword: [
-    { required: true, message: '请输入新密码', trigger: 'blur' },
-    { min: 6, message: '密码长度至少为6位', trigger: 'blur' }
-  ],
-  confirmPassword: [
-    { required: true, message: '请确认新密码', trigger: 'blur' },
-    { 
-      validator: (rule, value) => {
-        if (value !== passwordForm.newPassword) {
-          return Promise.reject('两次输入的密码不一致')
-        } else {
-          return Promise.resolve()
-        }
-      },
-      trigger: 'blur'
-    }
-  ]
-})
-
-// 方法
-// 个人信息相关方法
-const saveProfile = () => {
-  // 模拟保存个人信息
-  ElMessage.success('个人信息保存成功')
+// 获取性别的文本表示
+const getGenderText = (gender) => {
+  const genderMap = {
+    'male': '男',
+    'female': '女',
+    'other': '其他'
+  }
+  return genderMap[gender] || '未知'
 }
 
+// 方法
+const editProfile = () => ElMessage.info('编辑个人信息功能将在未来版本中实现')
+const changePassword = () => ElMessage.info('修改密码功能将在未来版本中实现')
+const notificationSettings = () => ElMessage.info('通知设置功能将在未来版本中实现')
+const securitySettings = () => ElMessage.info('安全设置功能将在未来版本中实现')
+const helpCenter = () => ElMessage.info('帮助中心功能将在未来版本中实现')
+
+// 头像上传相关方法
 const handleAvatarSuccess = (res, file) => {
   userProfile.avatarUrl = URL.createObjectURL(file.raw)
+  ElMessage.success('头像更新成功')
 }
 
 const beforeAvatarUpload = (file) => {
   const isJPG = file.type === 'image/jpeg' || file.type === 'image/png'
   const isLt2M = file.size / 1024 / 1024 < 2
 
-  if (!isJPG) {
-    ElMessage.error('上传头像图片只能是 JPG 或 PNG 格式!')
-  }
-  if (!isLt2M) {
-    ElMessage.error('上传头像图片大小不能超过 2MB!')
-  }
+  if (!isJPG) ElMessage.error('上传头像图片只能是 JPG 或 PNG 格式!')
+  if (!isLt2M) ElMessage.error('上传头像图片大小不能超过 2MB!')
   return isJPG && isLt2M
-}
-
-// 密码修改相关方法
-const changePassword = () => {
-  // 模拟修改密码
-  ElMessage.success('密码修改成功，请使用新密码登录')
 }
 </script>
 
 <style scoped lang="scss">
-.settings-page {
-  display: flex;
-  min-height: calc(100vh - 60px);
-  padding: 20px;
-  background: transparent;
-  --mouse-x: 0;
-  --mouse-y: 0;
+// 定义深色和浅色主题变量
+:root {
+  --bg-color: #ffffff;
+  --card-bg: rgba(255, 255, 255, 0.95);
+  // 增强基础边框，使其在默认状态下更清晰
+  --card-border: 1px solid rgba(226, 232, 240, 0.7);
+  --card-border-hover: 1px solid rgba(199, 210, 254, 0.8);
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --text-tertiary: #94a3b8;
+  --accent-color: #6366f1;
+  --hover-bg: #f1f5f9;
+  --item-bg: #f8fafc;
+  // 增强基础阴影，使卡片更突出
+  --shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  --shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.12);
+  --avatar-border: 3px solid #fff;
+  --uploader-bg: #f8fafc;
+  --uploader-border: 2px dashed #d9d9d9;
 }
 
-.settings-content {
-  flex: 1;
-  max-width: 100%;
-  
-  .setting-panel {
+// 深色主题变量
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-color: #1a1c23;
+    --card-bg: rgba(30, 35, 45, 0.95);
+    // 深色模式下增强边框可见性
+    --card-border: 1px solid rgba(74, 85, 104, 0.5);
+    --card-border-hover: 1px solid rgba(199, 210, 254, 0.8);
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-tertiary: #94a3b8;
+    --accent-color: #8b5cf6;
+    --hover-bg: #2d313a;
+    --item-bg: #252932;
+    // 深色模式下的阴影调整
+    --shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    --shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.25);
+    --avatar-border: 3px solid #252932;
+    --uploader-bg: #252932;
+    --uploader-border: 2px dashed #3a3f4b;
+  }
+}
+
+.personal-center-page {
+  background: var(--bg-color);
+  --mouse-x: 0;
+  --mouse-y: 0;
+  min-height: 100vh;
+}
+
+.personal-center-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+
+  .personal-info-card,
+  .quick-actions-card {
     margin-bottom: 24px;
   }
 }
@@ -232,19 +257,15 @@ const changePassword = () => {
 .modern-card {
   position: relative;
   border-radius: 16px;
-  padding: 30px;
+  padding: 24px;
+  margin-bottom: 24px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.5);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
   overflow: hidden;
   z-index: 1;
-
-  .card-content {
-    position: relative;
-    z-index: 2;
-  }
-
-  background: white;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
 
   &::before {
     content: '';
@@ -264,115 +285,221 @@ const changePassword = () => {
 
   &:hover {
     transform: translateY(-4px);
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+    border-color: rgba(199, 210, 254, 0.8);
 
     &::before {
       opacity: 1;
     }
   }
 
-  .panel-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
+  .dark & {
+    background: rgba(30, 35, 45, 0.95);
+    border-color: rgba(74, 85, 104, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 
-    h3 {
-      margin: 0;
-      font-size: 20px;
-      font-weight: 600;
-      color: #2c3e50;
-      display: flex;
-      align-items: center;
-
-      .el-icon {
-        margin-right: 12px;
-        font-size: 22px;
-        color: #409eff;
-      }
+    &::before {
+      background: radial-gradient(800px circle at var(--mouse-x) var(--mouse-y),
+          rgba(99, 102, 241, 0.15) 0%,
+          transparent 80%);
     }
 
-    .action-buttons {
-      display: flex;
-      gap: 10px;
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+      border-color: rgba(99, 102, 241, 0.5);
+
+      &::before {
+        opacity: 1;
+      }
     }
   }
 }
 
-.profile-form, .password-form {
-  margin-top: 24px;
-  
-  .el-form-item {
-    margin-bottom: 18px;
+/* 以下样式保持不变 */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+
+  .avatar-section {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+
+    .user-info {
+      .username {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+
+      .student-id {
+        margin: 4px 0 0;
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+      }
+    }
   }
-  
-  .el-input, .el-date-picker, .el-radio-group {
-    transition: all 0.2s ease;
-    
-    &:focus-within {
-      transform: translateY(-1px);
+
+  .edit-button {
+    padding: 8px 16px;
+    font-weight: 500;
+
+    .el-icon {
+      margin-right: 6px;
     }
   }
 }
 
 .avatar-uploader {
   .avatar {
-    width: 120px;
-    height: 120px;
+    width: 100px;
+    height: 100px;
     border-radius: 50%;
     object-fit: cover;
-    cursor: pointer;
-    border: 3px solid #fff;
+    border: var(--avatar-border);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
-    
+    cursor: pointer;
+
     &:hover {
       transform: scale(1.05);
       box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
     }
   }
-  
+
   .avatar-uploader-icon {
-    width: 120px;
-    height: 120px;
-    line-height: 120px;
-    text-align: center;
-    border: 2px dashed #d9d9d9;
+    width: 100px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: var(--uploader-border);
     border-radius: 50%;
-    background-color: #fafafa;
-    color: #8c8c8c;
-    font-size: 28px;
+    background-color: var(--uploader-bg);
+    color: var(--text-tertiary);
+    font-size: 24px;
     cursor: pointer;
     transition: all 0.3s ease;
-    
+
     &:hover {
-      border-color: #409eff;
-      background-color: #f5faff;
-      color: #409eff;
-      transform: scale(1.03);
+      border-color: var(--accent-color);
+      background-color: #f0f2ff;
+      color: var(--accent-color);
     }
   }
 }
 
-// 悬停效果类
-.panel-hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
-  border-color: rgba(64, 158, 255, 0.3);
+.card-body {
+  .info-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .info-item {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      padding: 16px;
+      border-radius: 12px;
+      background: var(--item-bg);
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: var(--hover-bg);
+        transform: translateY(-2px);
+      }
+
+      .item-icon {
+        font-size: 20px;
+        color: var(--accent-color);
+        margin-right: 16px;
+      }
+
+      .item-content {
+        .item-label {
+          font-size: 0.85rem;
+          color: var(--text-secondary);
+          margin-bottom: 4px;
+        }
+
+        .item-value {
+          font-size: 1rem;
+          font-weight: 500;
+          color: var(--text-primary);
+        }
+      }
+    }
+  }
 }
 
-@media (max-width: 768px) {
-  .settings-content {
-    padding: 15px;
+.quick-actions-card {
+  .card-title {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+
+    .title-icon {
+      margin-right: 12px;
+      color: var(--accent-color);
+      font-size: 1.2em;
+    }
   }
-  
-  .modern-card {
-    padding: 20px;
+
+  .actions-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+    }
   }
-  
-  .panel-header h3 {
-    font-size: 18px;
+
+  .action-button {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 16px;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+    color: var(--text-primary);
+
+    &:hover {
+      background: var(--hover-bg);
+      color: var(--accent-color);
+    }
+
+    .action-content {
+      display: flex;
+      align-items: center;
+
+      .action-icon {
+        margin-right: 12px;
+        color: var(--accent-color);
+        font-size: 1.1em;
+      }
+
+      span {
+        font-weight: 500;
+      }
+    }
+
+    .arrow-icon {
+      color: var(--text-tertiary);
+    }
   }
 }
 </style>
-    

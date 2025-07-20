@@ -569,7 +569,6 @@ const renewBook = (book) => {
 .library-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
 }
 
 /* 现代卡片样式 */

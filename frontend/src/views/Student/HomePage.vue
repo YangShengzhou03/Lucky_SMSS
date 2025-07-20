@@ -334,9 +334,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
-// 导入现有变量
-@use '~@/assets/styles/variables' as *;
-
 // 基础卡片样式
 .base-card {
   position: relative;

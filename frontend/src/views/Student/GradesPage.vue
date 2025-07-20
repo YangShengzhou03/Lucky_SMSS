@@ -1,7 +1,7 @@
 <template>
   <div class="grades-dashboard" :class="{ 'dark': isDarkMode }" @mousemove="handleMouseMove">
     <!-- 成绩概览卡片 -->
-    <div class="grades-overview modern-card">
+    <div class="grades-overview modern-card" ref="overviewCard">
       <div class="card-header">
         <h2>成绩概览</h2>
         <div class="semester-selector">
@@ -123,58 +123,12 @@
       </div>
     </div>
 
-    <!-- 绩点计算器卡片 -->
-    <div class="gpa-calculator modern-card">
-      <div class="card-header">
-        <h2>绩点计算器</h2>
-        <el-button type="primary" size="small" @click="addCourse" class="add-course-btn">
-          <el-icon>
-            <Plus />
-          </el-icon> 添加课程
-        </el-button>
-      </div>
-
-      <div class="calculator-content">
-        <el-table :data="calculatorCourses" border stripe class="calculator-table">
-          <el-table-column label="课程名称" width="200">
-            <template #default="scope">
-              <el-input v-model="scope.row.name" size="small" placeholder="输入课程名称" />
-            </template>
-          </el-table-column>
-          <el-table-column label="学分" width="100">
-            <template #default="scope">
-              <el-input-number v-model="scope.row.credits" size="small" :min="1" :max="5" :step="0.5" />
-            </template>
-          </el-table-column>
-          <el-table-column label="成绩" width="100">
-            <template #default="scope">
-              <el-input-number v-model="scope.row.score" size="small" :min="0" :max="100" :step="1" />
-            </template>
-          </el-table-column>
-          <el-table-column label="操作" width="80">
-            <template #default="scope">
-              <el-button type="text" size="small" @click="removeCourse(scope.$index)">
-                删除
-              </el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-
-        <div class="calculator-result">
-          <div class="result-label">计算结果:</div>
-          <div class="result-value">预计绩点: <span class="gpa-result">{{ calculatedGPA || '0.00' }}</span></div>
-          <el-button type="primary" size="small" @click="calculateGPA">
-            计算绩点
-          </el-button>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, inject, watch } from 'vue'
-import { Plus, User } from '@element-plus/icons-vue'
+import { User } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import Chart from 'chart.js/auto'
 
@@ -263,10 +217,6 @@ const searchKeyword = ref('')
 const filterType = ref('all')
 const currentPage = ref(1)
 const pageSize = ref(10)
-
-// 鼠标位置
-const mouseX = ref(0)
-const mouseY = ref(0)
 
 // 计算属性
 const filteredGrades = computed(() => {
@@ -403,12 +353,6 @@ watch(isDarkMode, (newVal) => {
   }
 })
 
-// 绩点计算器
-const calculatorCourses = ref([
-  { name: '', credits: 3, score: 80 }
-])
-const calculatedGPA = ref('0.00')
-
 // 方法
 const formatScore = (row) => {
   if (row.score >= 90) return `${row.score} (优秀)`
@@ -430,46 +374,11 @@ const handleCurrentChange = (page) => {
   currentPage.value = page
 }
 
-const addCourse = () => {
-  calculatorCourses.value.push({ name: '', credits: 3, score: 80 })
-}
-
-const removeCourse = (index) => {
-  if (calculatorCourses.value.length > 1) {
-    calculatorCourses.value.splice(index, 1)
-  } else {
-    ElMessage.warning('至少保留一门课程')
-  }
-}
-
-const calculateGPA = () => {
-  const validCourses = calculatorCourses.value.filter(course => course.score && course.credits)
-  if (validCourses.length === 0) return 0
-
-  const totalCredits = validCourses.reduce((sum, course) => sum + course.credits, 0)
-  const totalPoints = validCourses.reduce((sum, course) => {
-    // 百分制转绩点计算
-    let gpa = 0
-    if (course.score >= 90) gpa = 4.0
-    else if (course.score >= 85) gpa = 3.7
-    else if (course.score >= 82) gpa = 3.3
-    else if (course.score >= 78) gpa = 3.0
-    else if (course.score >= 75) gpa = 2.7
-    else if (course.score >= 72) gpa = 2.3
-    else if (course.score >= 68) gpa = 2.0
-    else if (course.score >= 64) gpa = 1.5
-    else if (course.score >= 60) gpa = 1.0
-    return sum + (gpa * course.credits)
-  }, 0)
-
-  calculatedGPA.value = (totalPoints / totalCredits).toFixed(2)
-  return calculatedGPA.value
-}
-
 // 处理鼠标移动
 const handleMouseMove = (e) => {
-  mouseX.value = e.clientX
-  mouseY.value = e.clientY
+  // 直接更新CSS变量，避免响应式变量更新导致的重渲染
+  document.documentElement.style.setProperty('--mouse-x', `${e.clientX}px`)
+  document.documentElement.style.setProperty('--mouse-y', `${e.clientY}px`)
 }
 
 // 初始化
@@ -483,24 +392,75 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
+// 基础卡片样式
+.base-card {
+  position: relative;
+  border-radius: 16px;
+  padding: 24px;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  z-index: 1;
+
+  // 卡片光影效果
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y),
+        rgba(64, 158, 255, 0.05) 0%,
+        transparent 80%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  // 卡片悬停效果
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+
+    &::before {
+      opacity: 1;
+    }
+  }
+
+  // 暗色模式适配
+  .dark & {
+    &::before {
+      background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y),
+          rgba(59, 130, 246, 0.08) 0%,
+          transparent 80%);
+    }
+  }
+}
+
+
 .grades-dashboard {
-  // min-height: 100vh;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   transition: background-color 0.3s ease;
+  gap: 30px; // 保持与系列设计一致的卡片间距
   padding: 0 15px;
-  gap: 30px;
+  --mouse-x: 0;
+  --mouse-y: 0;
 }
 
+// 主内容区域
 .dashboard-content {
   flex: 1;
   width: 100%;
+  max-width: 1400px;
   margin: 0 auto;
   display: grid;
   grid-template-columns: 1fr;
 }
 
-// 现代化卡片样式
+// 现代化卡片样式 - 完全统一设计语言
 .modern-card {
   position: relative;
   border-radius: 16px;
@@ -508,7 +468,12 @@ onUnmounted(() => {
   transition: all 0.3s ease;
   overflow: hidden;
   z-index: 1;
-  margin-bottom: 15px; // 额外增加底部间距
+
+  // 卡片内部相对定位
+  .card-content {
+    position: relative;
+    z-index: 2;
+  }
 
   // 浅色模式
   background: white;
@@ -523,10 +488,31 @@ onUnmounted(() => {
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
   }
 
-  // 卡片悬停效果 - 减少悬浮高度，增强阴影清晰度
+  // 卡片光影效果 - 与系列设计完全一致
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y),
+        rgba(64, 158, 255, 0.08) 0%,
+        transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  // 卡片悬停效果 - 与系列设计完全一致
   &:hover {
-    transform: translateY(-2px); // 减少悬浮高度，避免覆盖相邻卡片
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12); // 调整阴影，保持足够的视觉反馈
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+
+    &::before {
+      opacity: 1;
+    }
   }
 
   // 卡片头部
@@ -536,11 +522,20 @@ onUnmounted(() => {
     align-items: center;
     margin-bottom: 20px;
 
-    h2 {
+    h2,
+    h3 {
       margin: 0;
       font-size: 20px;
       font-weight: 600;
       color: var(--text-primary);
+    }
+
+    .progress-indicator {
+      background-color: rgba(64, 158, 255, 0.1);
+      color: #409eff;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 14px;
     }
   }
 }
@@ -549,8 +544,8 @@ onUnmounted(() => {
 .grades-overview {
   .stats-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 30px; // 增加了小卡片之间的间距
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 24px; // 保持与系列设计一致的内部卡片间距
 
     @media (max-width: 768px) {
       grid-template-columns: 1fr;
@@ -558,21 +553,19 @@ onUnmounted(() => {
   }
 
   .stats-card {
-    background-color: rgba(0, 0, 0, 0.03);
-    border-radius: 12px;
-    padding: 20px;
-    transition: all 0.3s ease;
+    @extend .base-card; // 继承基础卡片样式
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(226, 232, 240, 0.7);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
 
     .dark & {
-      background-color: rgba(255, 255, 255, 0.05);
+      background: rgba(30, 35, 45, 0.9);
+      border-color: rgba(59, 130, 246, 0.2);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
     }
 
-    // 调整小卡片的悬停效果
-    &:hover {
-      transform: translateY(-2px); // 减少悬浮高度
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08); // 调整阴影
-    }
-
+    // 统计卡片特定样式
     .stat-header {
       display: flex;
       justify-content: space-between;
@@ -690,42 +683,7 @@ onUnmounted(() => {
   }
 }
 
-// 绩点计算器卡片
-.gpa-calculator {
-  .add-course-btn {
-    margin-left: auto;
-  }
-
-  .calculator-table {
-    margin-top: 20px;
-  }
-
-  .calculator-result {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    margin-top: 20px;
-
-    .result-label {
-      font-size: 16px;
-      font-weight: 500;
-      color: var(--text-secondary);
-    }
-
-    .result-value {
-      font-size: 16px;
-      color: var(--text-primary);
-
-      .gpa-result {
-        font-size: 20px;
-        font-weight: 700;
-        color: #409eff;
-      }
-    }
-  }
-}
-
-// 颜色变量
+// 颜色变量 - 与系列设计保持一致
 :root {
   --text-primary: #303133;
   --text-secondary: #606266;

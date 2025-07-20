@@ -455,9 +455,9 @@ onMounted(() => {
     left: 0;
     right: 0;
     bottom: 0;
-    background: radial-gradient(800px circle at var(--mouse-x) var(--mouse-y),
-        rgba(99, 102, 241, 0.1) 0%,
-        transparent 80%);
+    background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y),
+        rgba(99, 102, 241, 0.08) 0%,
+        transparent 70%);
     opacity: 0;
     transition: opacity 0.3s ease;
     z-index: -1;

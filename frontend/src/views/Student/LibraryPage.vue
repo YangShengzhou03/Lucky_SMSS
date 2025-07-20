@@ -771,44 +771,62 @@ onMounted(() => {
 // 现代化卡片样式
 .modern-card {
   position: relative;
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 20px;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.5);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
   overflow: hidden;
   z-index: 1;
 
-  // 浅色模式
-  background: white;
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-
-  // 深色模式样式
-  .dark & {
-    background: #2a2a2a;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y),
+        rgba(99, 102, 241, 0.08) 0%,
+        transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: -1;
+    pointer-events: none;
   }
 
-  // 卡片悬停效果
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+    border-color: rgba(199, 210, 254, 0.8);
+
+    &::before {
+      opacity: 1;
+    }
   }
 
-  // 卡片头部
-  .section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
+  .dark & {
+    background: rgba(30, 35, 45, 0.95);
+    border-color: rgba(74, 85, 104, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 
-    h2,
-    h3 {
-      margin: 0;
-      font-size: 18px;
-      font-weight: 600;
-      color: var(--el-text-color-primary);
+    &::before {
+      background: radial-gradient(800px circle at var(--mouse-x) var(--mouse-y),
+          rgba(99, 102, 241, 0.15) 0%,
+          transparent 80%);
+    }
+
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+      border-color: rgba(99, 102, 241, 0.5);
+
+      &::before {
+        opacity: 1;
+      }
     }
   }
 }

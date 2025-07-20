@@ -129,8 +129,8 @@ const statusConfig = {
 
 // 响应式数据
 const status = ref('normal') // 学籍状态
-const effectiveDate = ref('2023-09-01') // 入学日期
-const graduationDate = ref('2027-06-30') // 预计毕业日期
+const effectiveDate = ref('2022-09-01') // 入学日期
+const graduationDate = ref('2026-06-30') // 预计毕业日期
 const credits = ref(68) // 已修学分
 const totalCredits = ref(140) // 总学分要求
 const attendanceRate = ref(96) // 出勤率
@@ -421,7 +421,7 @@ onUnmounted(() => {
     right: 0;
     bottom: 0;
     background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y),
-        rgba(64, 158, 255, 0.08) 0%,
+        rgba(99, 102, 241, 0.08) 0%,
         transparent 70%);
     opacity: 0;
     transition: opacity 0.3s ease;

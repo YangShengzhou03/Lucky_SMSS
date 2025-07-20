@@ -440,7 +440,6 @@ onUnmounted(() => {
 
 
 .grades-dashboard {
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
   transition: background-color 0.3s ease;
@@ -693,4 +692,4 @@ onUnmounted(() => {
   --text-primary: #ffffff;
   --text-secondary: rgba(255, 255, 255, 0.7);
 }
-</style>  
+</style>

@@ -435,19 +435,45 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
+.course-dashboard {
+  display: flex;
+  flex-direction: column;
+  transition: background-color 0.3s ease;
+  gap: 30px; // 保持与系列设计一致的卡片间距
+  padding: 0 15px;
+  --mouse-x: 0;
+  --mouse-y: 0;
+}
+
+// 现代化卡片样式 - 完全统一设计语言
 .modern-card {
   position: relative;
   border-radius: 16px;
-  padding: 24px;
-  margin-bottom: 24px;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(226, 232, 240, 0.5);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  padding: 30px;
   transition: all 0.3s ease;
   overflow: hidden;
   z-index: 1;
 
+  // 卡片内部相对定位
+  .card-content {
+    position: relative;
+    z-index: 2;
+  }
+
+  // 浅色模式
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+
+  // 深色模式样式
+  .dark & {
+    background: rgba(30, 41, 59, 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  }
+
+  // 卡片光影效果 - 微紫色
   &::before {
     content: '';
     position: absolute;
@@ -464,35 +490,37 @@ onMounted(() => {
     pointer-events: none;
   }
 
+  // 卡片悬停效果 - 与系列设计完全一致
   &:hover {
     transform: translateY(-4px);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
-    border-color: rgba(199, 210, 254, 0.8);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
 
     &::before {
       opacity: 1;
     }
   }
 
-  .dark & {
-    background: rgba(30, 35, 45, 0.95);
-    border-color: rgba(74, 85, 104, 0.3);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  // 卡片头部
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
 
-    &::before {
-      background: radial-gradient(800px circle at var(--mouse-x) var(--mouse-y),
-          rgba(99, 102, 241, 0.15) 0%,
-          transparent 80%);
+    h2,
+    h3 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-primary);
     }
 
-    &:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
-      border-color: rgba(99, 102, 241, 0.5);
-
-      &::before {
-        opacity: 1;
-      }
+    .progress-indicator {
+      background-color: rgba(64, 158, 255, 0.1);
+      color: #409eff;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 14px;
     }
   }
 }
@@ -592,6 +620,12 @@ onMounted(() => {
       }
     }
   }
+}
+
+.course-content {
+  display: flex;
+  flex-direction: column;
+  gap: 30px
 }
 
 .stats-grid {

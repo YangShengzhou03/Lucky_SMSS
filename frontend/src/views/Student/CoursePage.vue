@@ -6,47 +6,48 @@
         <h2>选课概览</h2>
         <div class="semester-selector">
           <el-select v-model="currentSemester" placeholder="选择学期" size="small">
-            <el-option
-              v-for="item in semesters"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
+            <el-option v-for="item in semesters" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </div>
       </div>
-      
+
       <div class="stats-container">
         <div class="stats-card">
           <div class="card-icon">
-            <el-icon><Calendar /></el-icon>
+            <el-icon>
+              <Calendar />
+            </el-icon>
           </div>
           <div class="card-content">
             <div class="stat-value">{{ availableCourses.length }}</div>
             <div class="stat-label">可选课程</div>
           </div>
         </div>
-        
+
         <div class="stats-card">
           <div class="card-icon">
-            <el-icon><Check /></el-icon>
+            <el-icon>
+              <Check />
+            </el-icon>
           </div>
           <div class="card-content">
             <div class="stat-value">{{ selectedCourses.length }}</div>
             <div class="stat-label">已选课程</div>
           </div>
         </div>
-        
+
         <div class="stats-card">
           <div class="card-icon">
-            <el-icon><Clock /></el-icon>
+            <el-icon>
+              <Clock />
+            </el-icon>
           </div>
           <div class="card-content">
             <div class="stat-value">{{ selectedCredits }}/{{ maxCredits }}</div>
             <div class="stat-label">已选学分</div>
           </div>
         </div>
-        
+
         <div class="stats-card">
           <div class="card-icon">
             <el-icon><Time /></el-icon>
@@ -64,31 +65,18 @@
       <div class="section-header">
         <h3>可选课程</h3>
         <div class="course-filters">
-          <el-input
-            v-model="searchKeyword"
-            placeholder="搜索课程名称"
-            prefix-icon="Search"
-            size="small"
-            class="search-input"
-          />
-          
-          <el-select 
-            v-model="categoryFilter" 
-            placeholder="课程分类" 
-            size="small"
-          >
+          <el-input v-model="searchKeyword" placeholder="搜索课程名称" prefix-icon="Search" size="small"
+            class="search-input" />
+
+          <el-select v-model="categoryFilter" placeholder="课程分类" size="small">
             <el-option label="全部类别" value="" />
             <el-option label="专业必修课" value="required" />
             <el-option label="专业选修课" value="elective" />
             <el-option label="公共必修课" value="general_required" />
             <el-option label="公共选修课" value="general_elective" />
           </el-select>
-          
-          <el-select 
-            v-model="timeFilter" 
-            placeholder="上课时间" 
-            size="small"
-          >
+
+          <el-select v-model="timeFilter" placeholder="上课时间" size="small">
             <el-option label="全部时间" value="" />
             <el-option label="周一上午" value="mon_morning" />
             <el-option label="周一下午" value="mon_afternoon" />
@@ -98,48 +86,30 @@
           </el-select>
         </div>
       </div>
-      
-      <el-table 
-        :data="filteredAvailableCourses" 
-        border 
-        stripe
-        class="course-table"
-      >
+
+      <el-table :data="filteredAvailableCourses" border stripe class="course-table">
         <el-table-column prop="code" label="课程代码" width="120" />
         <el-table-column prop="name" label="课程名称" min-width="200" />
         <el-table-column prop="teacher" label="授课教师" width="120" />
-        <el-table-column prop="category" label="课程类别" width="120" 
-          :formatter="formatCategory" />
+        <el-table-column prop="category" label="课程类别" width="120" :formatter="formatCategory" />
         <el-table-column prop="credits" label="学分" width="80" />
         <el-table-column prop="time" label="上课时间" min-width="150" />
         <el-table-column prop="location" label="上课地点" width="120" />
-        <el-table-column prop="capacity" label="容量/已选" width="120" 
-          :formatter="formatCapacity" />
+        <el-table-column prop="capacity" label="容量/已选" width="120" :formatter="formatCapacity" />
         <el-table-column label="操作" width="120">
           <template #default="scope">
-            <el-button 
-              type="primary" 
-              size="small" 
-              @click="selectCourse(scope.row)"
-              :disabled="!scope.row.available || isConflict(scope.row)"
-            >
+            <el-button type="primary" size="small" @click="selectCourse(scope.row)"
+              :disabled="!scope.row.available || isConflict(scope.row)">
               {{ isConflict(scope.row) ? '时间冲突' : (scope.row.available ? '选课' : '已满') }}
             </el-button>
           </template>
         </el-table-column>
       </el-table>
-      
+
       <div class="pagination" v-if="filteredAvailableCourses.length > 0">
-        <el-pagination
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-          :current-page="currentPage"
-          :page-sizes="[5, 10, 20]"
-          :page-size="pageSize"
-          :total="filteredAvailableCourses.length"
-          layout="total, sizes, prev, pager, next"
-          small
-        />
+        <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="currentPage"
+          :page-sizes="[5, 10, 20]" :page-size="pageSize" :total="filteredAvailableCourses.length"
+          layout="total, sizes, prev, pager, next" small />
       </div>
     </div>
 
@@ -148,50 +118,33 @@
       <div class="section-header">
         <h3>已选课程</h3>
         <div class="credit-info">
-          已选学分: <span class="credit-value">{{ selectedCredits }}</span> / 最大学分: <span class="credit-value">{{ maxCredits }}</span>
+          已选学分: <span class="credit-value">{{ selectedCredits }}</span> / 最大学分: <span class="credit-value">{{ maxCredits
+            }}</span>
         </div>
       </div>
-      
-      <el-table 
-        :data="selectedCourses" 
-        border 
-        stripe
-        class="course-table"
-      >
+
+      <el-table :data="selectedCourses" border stripe class="course-table">
         <el-table-column prop="code" label="课程代码" width="120" />
         <el-table-column prop="name" label="课程名称" min-width="200" />
         <el-table-column prop="teacher" label="授课教师" width="120" />
-        <el-table-column prop="category" label="课程类别" width="120" 
-          :formatter="formatCategory" />
+        <el-table-column prop="category" label="课程类别" width="120" :formatter="formatCategory" />
         <el-table-column prop="credits" label="学分" width="80" />
         <el-table-column prop="time" label="上课时间" min-width="150" />
         <el-table-column prop="location" label="上课地点" width="120" />
         <el-table-column label="操作" width="120">
           <template #default="scope">
-            <el-button 
-              type="danger" 
-              size="small" 
-              @click="dropCourse(scope.row)"
-            >
+            <el-button type="danger" size="small" @click="dropCourse(scope.row)">
               退选
             </el-button>
           </template>
         </el-table-column>
       </el-table>
-      
+
       <div class="selection-actions">
-        <el-button 
-          type="primary" 
-          size="small" 
-          @click="confirmSelection"
-        >
+        <el-button type="primary" size="small" @click="confirmSelection">
           确认选课
         </el-button>
-        <el-button 
-          type="warning" 
-          size="small" 
-          @click="clearSelection"
-        >
+        <el-button type="warning" size="small" @click="clearSelection">
           清空已选
         </el-button>
       </div>
@@ -208,58 +161,45 @@
           </el-radio-group>
         </div>
       </div>
-      
+
       <div class="preview-content">
         <!-- 文本视图 -->
         <div v-if="previewType === 'text'" class="text-preview">
-          <el-card 
-            class="day-card" 
-            v-for="day in weekdays" 
-            :key="day"
-            shadow="hover"
-          >
+          <el-card class="day-card" v-for="day in weekdays" :key="day" shadow="hover">
             <template #header>
               <div class="day-header">{{ day }}</div>
             </template>
-            
+
             <div class="day-courses">
-              <div 
-                class="course-item" 
-                v-for="course in getCoursesByDay(day)" 
-                :key="course.id"
-                :style="{ backgroundColor: course.color }"
-              >
+              <div class="course-item" v-for="course in getCoursesByDay(day)" :key="course.id"
+                :style="{ backgroundColor: course.color }">
                 <div class="course-time">{{ course.timeSlot }}</div>
                 <div class="course-name">{{ course.name }}</div>
                 <div class="course-teacher">{{ course.teacher }}</div>
                 <div class="course-location">{{ course.location }}</div>
               </div>
-              
+
               <div class="no-courses" v-if="getCoursesByDay(day).length === 0">
                 今天没有课程
               </div>
             </div>
           </el-card>
         </div>
-        
+
         <!-- 网格视图 -->
         <div v-else class="grid-preview">
           <div class="grid-header">
             <div class="time-column"></div>
             <div class="day-column" v-for="day in weekdays" :key="day">{{ day }}</div>
           </div>
-          
+
           <div class="grid-body">
             <div class="time-slot" v-for="time in timeSlots" :key="time">
               <div class="time-label">{{ time }}</div>
               <div class="day-slot" v-for="day in weekdays" :key="day">
                 <!-- 课程卡片 -->
-                <div 
-                  class="course-card" 
-                  v-for="course in getCoursesByDayAndTime(day, time)" 
-                  :key="course.id"
-                  :style="{ backgroundColor: course.color }"
-                >
+                <div class="course-card" v-for="course in getCoursesByDayAndTime(day, time)" :key="course.id"
+                  :style="{ backgroundColor: course.color }">
                   <div class="course-name">{{ course.name }}</div>
                   <div class="course-teacher">{{ course.teacher }}</div>
                 </div>
@@ -275,7 +215,7 @@
       <div class="section-header">
         <h3>选课指南</h3>
       </div>
-      
+
       <div class="guide-content">
         <el-collapse accordion>
           <el-collapse-item title="选课流程" name="1">
@@ -289,7 +229,7 @@
               </ol>
             </div>
           </el-collapse-item>
-          
+
           <el-collapse-item title="选课须知" name="2">
             <div class="guide-item">
               <ul>
@@ -301,15 +241,15 @@
               </ul>
             </div>
           </el-collapse-item>
-          
+
           <el-collapse-item title="常见问题" name="3">
             <div class="guide-item">
               <p><strong>Q: 如何解决选课时间冲突问题？</strong></p>
               <p>A: 可以调整课程选择，避免选择同一时间段的课程，或使用课程表预览功能查看时间安排。</p>
-              
+
               <p><strong>Q: 选课成功后可以退选吗？</strong></p>
               <p>A: 可以，在选课截止日期前，您可以在"已选课程"列表中退选课程。</p>
-              
+
               <p><strong>Q: 课程容量已满怎么办？</strong></p>
               <p>A: 您可以选择其他课程，或定期查看课程容量，部分学生会在截止前退选。</p>
             </div>
@@ -446,15 +386,15 @@ const selectionDeadline = '2023-07-30'
 // 计算属性
 const filteredAvailableCourses = computed(() => {
   return availableCourses.value
-    .filter(course => 
+    .filter(course =>
       course.name.toLowerCase().includes(searchKeyword.value.toLowerCase()) ||
       course.code.toLowerCase().includes(searchKeyword.value.toLowerCase()) ||
       course.teacher.toLowerCase().includes(searchKeyword.value.toLowerCase())
     )
-    .filter(course => 
+    .filter(course =>
       !categoryFilter.value || course.category === categoryFilter.value
     )
-    .filter(course => 
+    .filter(course =>
       !timeFilter.value || course.time.toLowerCase().includes(timeFilter.value.toLowerCase())
     )
 })
@@ -483,25 +423,25 @@ const selectCourse = (course) => {
     ElMessage.warning(`已超过最大学分限制(${maxCredits})`)
     return
   }
-  
+
   if (isConflict(course)) {
     ElMessage.warning('该课程与已选课程时间冲突')
     return
   }
-  
+
   // 检查是否已选
   const isAlreadySelected = selectedCourses.value.some(item => item.id === course.id)
   if (isAlreadySelected) {
     ElMessage.warning('该课程已选')
     return
   }
-  
+
   // 添加到已选课程
   selectedCourses.value.push({
     ...course,
     available: false
   })
-  
+
   // 更新可选课程状态
   const index = availableCourses.value.findIndex(item => item.id === course.id)
   if (index !== -1) {
@@ -510,7 +450,7 @@ const selectCourse = (course) => {
       availableCourses.value[index].available = false
     }
   }
-  
+
   ElMessage.success('选课成功')
 }
 
@@ -526,7 +466,7 @@ const dropCourse = (course) => {
   ).then(() => {
     // 从已选课程中移除
     selectedCourses.value = selectedCourses.value.filter(item => item.id !== course.id)
-    
+
     // 更新可选课程状态
     const index = availableCourses.value.findIndex(item => item.id === course.id)
     if (index !== -1) {
@@ -535,7 +475,7 @@ const dropCourse = (course) => {
         availableCourses.value[index].available = true
       }
     }
-    
+
     ElMessage.success('退选成功')
   }).catch(() => {
     ElMessage.info('已取消退选')
@@ -561,7 +501,7 @@ const confirmSelection = () => {
     ElMessage.warning('请先选择课程')
     return
   }
-  
+
   ElMessageBox.confirm(
     `确定要提交当前选课吗？共选择了 ${selectedCourses.value.length} 门课程，总学分为 ${selectedCredits.value}。`,
     '确认提交',
@@ -583,7 +523,7 @@ const clearSelection = () => {
     ElMessage.info('没有已选课程')
     return
   }
-  
+
   ElMessageBox.confirm(
     '确定要清空所有已选课程吗？',
     '确认清空',
@@ -603,10 +543,10 @@ const clearSelection = () => {
         }
       }
     })
-    
+
     // 清空已选课程
     selectedCourses.value = []
-    
+
     ElMessage.success('已清空所有已选课程')
   }).catch(() => {
     ElMessage.info('已取消清空')
@@ -614,7 +554,7 @@ const clearSelection = () => {
 }
 
 const getCoursesByDay = (day) => {
-  return selectedCourses.value.filter(course => 
+  return selectedCourses.value.filter(course =>
     course.timeSlots.some(slot => slot.day === day)
   ).map(course => {
     const slot = course.timeSlots.find(s => s.day === day)
@@ -626,7 +566,7 @@ const getCoursesByDay = (day) => {
 }
 
 const getCoursesByDayAndTime = (day, time) => {
-  return selectedCourses.value.filter(course => 
+  return selectedCourses.value.filter(course =>
     course.timeSlots.some(slot => slot.day === day && slot.time === time)
   )
 }
@@ -661,13 +601,13 @@ onMounted(() => {
   margin-bottom: 24px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.4);
-  
+
   .overview-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
-    
+
     h2 {
       margin: 0;
       font-size: 18px;
@@ -675,32 +615,32 @@ onMounted(() => {
       color: #333;
     }
   }
-  
+
   .stats-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 16px;
-    
+
     .stats-card {
       background: rgba(245, 247, 250, 0.7);
       border-radius: 12px;
       padding: 16px;
       display: flex;
       align-items: center;
-      
+
       .card-icon {
         font-size: 32px;
         color: #409eff;
         margin-right: 16px;
       }
-      
+
       .card-content {
         .stat-value {
           font-size: 24px;
           font-weight: 700;
           color: #333;
         }
-        
+
         .stat-label {
           font-size: 14px;
           color: #666;
@@ -711,7 +651,10 @@ onMounted(() => {
 }
 
 // 可选课程和已选课程列表样式
-.available-courses, .selected-courses, .schedule-preview, .selection-guide {
+.available-courses,
+.selected-courses,
+.schedule-preview,
+.selection-guide {
   background: rgba(255, 255, 255, 0.75);
   backdrop-filter: blur(12px);
   border-radius: 12px;
@@ -719,41 +662,41 @@ onMounted(() => {
   margin-bottom: 24px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.4);
-  
+
   .section-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 16px;
-    
+
     h3 {
       margin: 0;
       font-size: 16px;
       font-weight: 600;
       color: #333;
     }
-    
+
     .course-filters {
       display: flex;
       gap: 12px;
     }
-    
+
     .credit-info {
       font-size: 14px;
       color: #666;
-      
+
       .credit-value {
         font-weight: 500;
         color: #409eff;
       }
     }
   }
-  
+
   .course-table {
     width: 100%;
     margin-bottom: 16px;
   }
-  
+
   .pagination {
     text-align: right;
   }
@@ -771,44 +714,45 @@ onMounted(() => {
 .schedule-preview {
   .preview-content {
     margin-top: 16px;
-    
+
     // 文本视图
     .text-preview {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
       gap: 16px;
-      
+
       .day-card {
         .day-header {
           font-size: 16px;
           font-weight: 500;
           color: #333;
         }
-        
+
         .day-courses {
           .course-item {
             padding: 8px;
             border-radius: 4px;
             margin-bottom: 8px;
             color: white;
-            
+
             .course-time {
               font-size: 12px;
               margin-bottom: 2px;
             }
-            
+
             .course-name {
               font-size: 14px;
               font-weight: 500;
               margin-bottom: 2px;
             }
-            
-            .course-teacher, .course-location {
+
+            .course-teacher,
+            .course-location {
               font-size: 12px;
               opacity: 0.8;
             }
           }
-          
+
           .no-courses {
             padding: 8px;
             text-align: center;
@@ -818,21 +762,21 @@ onMounted(() => {
         }
       }
     }
-    
+
     // 网格视图
     .grid-preview {
       .grid-header {
         display: grid;
         grid-template-columns: 80px repeat(7, 1fr);
         margin-bottom: 8px;
-        
+
         .time-column {
           width: 80px;
           text-align: center;
           font-weight: 500;
           color: #666;
         }
-        
+
         .day-column {
           text-align: center;
           font-weight: 500;
@@ -840,13 +784,13 @@ onMounted(() => {
           padding: 8px 0;
         }
       }
-      
+
       .grid-body {
         .time-slot {
           display: grid;
           grid-template-columns: 80px repeat(7, 1fr);
           margin-bottom: 8px;
-          
+
           .time-label {
             width: 80px;
             text-align: center;
@@ -854,7 +798,7 @@ onMounted(() => {
             color: #666;
             padding-top: 8px;
           }
-          
+
           .day-slot {
             position: relative;
             min-height: 60px;
@@ -862,7 +806,7 @@ onMounted(() => {
             border-radius: 4px;
             margin: 0 4px;
           }
-          
+
           .course-card {
             position: absolute;
             width: calc(100% - 8px);
@@ -872,7 +816,7 @@ onMounted(() => {
             color: white;
             font-size: 12px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            
+
             .course-name {
               font-weight: 500;
               margin-bottom: 2px;
@@ -883,5 +827,4 @@ onMounted(() => {
     }
   }
 }
-
-</style>  
+</style>

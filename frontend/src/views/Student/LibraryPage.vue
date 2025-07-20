@@ -132,7 +132,7 @@
     </div>
 
     <!-- 当前借阅列表 -->
-    <div class="section">
+    <div class="modern-card">
       <h2>当前借阅</h2>
       <div class="book-list">
         <div class="book-card" v-for="book in currentBorrows" :key="book.id">
@@ -576,21 +576,15 @@ const renewBook = (book) => {
 .modern-card {
   position: relative;
   border-radius: 16px;
-  padding: 30px;
+  padding: 24px;
+  margin-bottom: 24px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.5);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
   overflow: hidden;
   z-index: 1;
-  background: white;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
-  margin-bottom: 30px;
-
-  .dark & {
-    background: rgba(30, 41, 59, 0.8);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
-  }
 
   &::before {
     content: '';
@@ -610,10 +604,33 @@ const renewBook = (book) => {
 
   &:hover {
     transform: translateY(-4px);
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+    border-color: rgba(199, 210, 254, 0.8);
 
     &::before {
       opacity: 1;
+    }
+  }
+
+  .dark & {
+    background: rgba(30, 35, 45, 0.95);
+    border-color: rgba(74, 85, 104, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+
+    &::before {
+      background: radial-gradient(800px circle at var(--mouse-x) var(--mouse-y),
+          rgba(99, 102, 241, 0.15) 0%,
+          transparent 80%);
+    }
+
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+      border-color: rgba(99, 102, 241, 0.5);
+
+      &::before {
+        opacity: 1;
+      }
     }
   }
 }
@@ -974,22 +991,105 @@ const renewBook = (book) => {
 }
 
 .summary-card {
-  background: white;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
   display: flex;
   align-items: center;
-  transition: transform 0.2s, box-shadow 0.2s;
+  padding: 1.5rem;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(8px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(226, 232, 240, 0.6);
 
   .dark & {
-    background: rgba(30, 41, 59, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(30, 41, 59, 0.9);
+    border-color: rgba(74, 85, 104, 0.4);
   }
 
   &:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    border-color: rgba(199, 210, 254, 0.8);
+  }
+
+  .dark &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    border-color: rgba(99, 102, 241, 0.5);
+  }
+
+  .stat-icon {
+    position: relative;
+    margin-right: 1.25rem;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    z-index: 1;
+
+    .icon-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 12px;
+      background-color: var(--card-color);
+      opacity: 0.1;
+      transition: all 0.3s ease;
+    }
+
+    .el-icon {
+      color: var(--card-color);
+      z-index: 1;
+    }
+  }
+
+  .stat-content {
+    flex: 1;
+    min-width: 0;
+    z-index: 1;
+
+    .stat-value {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #1e293b;
+      line-height: 1.2;
+      margin-bottom: 0.25rem;
+      font-feature-settings: "tnum";
+
+      .dark & {
+        color: rgba(248, 250, 252, 0.9);
+      }
+    }
+
+    .stat-label {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #64748b;
+      line-height: 1.4;
+
+      .dark & {
+        color: rgba(203, 213, 225, 0.8);
+      }
+    }
+  }
+
+  .stat-trend {
+    display: flex;
+    align-items: center;
+    margin-left: 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+
+    .el-icon {
+      margin-right: 0.25rem;
+      font-size: 0.875rem;
+    }
   }
 }
 
@@ -1008,25 +1108,6 @@ const renewBook = (book) => {
   margin: 5px 0 0;
   color: #666;
   font-size: 14px;
-}
-
-.section {
-  background: white;
-  border-radius: 12px;
-  padding: 25px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  margin-bottom: 30px;
-
-  .dark & {
-    background: rgba(30, 41, 59, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  }
-
-  h2 {
-    margin: 0 0 20px;
-    font-size: 20px;
-    font-weight: 600;
-  }
 }
 
 .book-list {

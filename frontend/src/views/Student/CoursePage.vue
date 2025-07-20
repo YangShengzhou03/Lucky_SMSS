@@ -1,14 +1,14 @@
 <template>
-  <div class="course-selection-container">
+  <div class="course-selection-container" @mousemove="handleMouseMove">
     <!-- 课程概览卡片 -->
-    <div class="course-overview-card modern-card">
-      <div class="card-header">
-        <h2>
+    <div class="course-overview-card modern-card" :class="{ 'panel-hover': isHoveringOverview }">
+      <div class="panel-header">
+        <h3>
           <el-icon>
             <DataAnalysis />
           </el-icon>
           课程概览
-        </h2>
+        </h3>
         <div class="semester-selector">
           <el-select v-model="currentSemester" placeholder="选择学期" size="small" class="modern-select">
             <el-option v-for="item in semesters" :key="item.value" :label="item.label" :value="item.value" />
@@ -17,7 +17,8 @@
       </div>
 
       <div class="stats-grid">
-        <div class="stat-card" v-for="(stat, index) in stats" :key="index" :style="{ '--card-color': stat.color }">
+        <div class="stat-card" v-for="(stat, index) in stats" :key="index" :style="{ '--card-color': stat.color }"
+          @mouseenter="hoverStat(index)" @mouseleave="unhoverStat(index)">
           <div class="stat-icon">
             <div class="icon-bg"></div>
             <el-icon :size="24">
@@ -28,12 +29,21 @@
             <div class="stat-value">{{ stat.value }}</div>
             <div class="stat-label">{{ stat.label }}</div>
           </div>
+          <div class="stat-trend" v-if="stat.trend">
+            <el-icon :color="stat.trend > 0 ? '#f56c6c' : '#67c23a'">
+              <CaretTop v-if="stat.trend > 0" />
+              <CaretBottom v-else />
+            </el-icon>
+            <span :style="{ color: stat.trend > 0 ? '#f56c6c' : '#67c23a' }">
+              {{ Math.abs(stat.trend) }}%
+            </span>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- 选课指南风琴面板 -->
-    <div class="selection-guide modern-card">
+    <div class="selection-guide modern-card" :class="{ 'panel-hover': isHoveringGuide }">
       <el-collapse v-model="activeGuide" accordion>
         <el-collapse-item title="选课指南" name="guide">
           <div class="guide-content">
@@ -80,9 +90,15 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import {
-  DataAnalysis
+  DataAnalysis,
+  Collection,
+  Check,
+  CaretTop,
+  CaretBottom,
+  Calendar,
+  CreditCard  // 添加缺失的CreditCard图标导入
 } from '@element-plus/icons-vue'
 
 // 学期数据
@@ -95,10 +111,63 @@ const semesters = ref([
 // 选课指南
 const activeGuide = ref(['guide'])
 
+// 悬停状态
+const isHoveringOverview = ref(false)
+const isHoveringGuide = ref(false)
+const hoveredStat = ref(null)
+
 // 配置参数
 const maxCredits = 25
 const selectionDeadline = '2023年7月30日'
 
+// 统计卡片数据
+const stats = computed(() => [
+  {
+    value: 8,
+    label: '可选课程',
+    icon: Collection,
+    color: '#6366f1',
+    trend: 5.2
+  },
+  {
+    value: 3,
+    label: '已选课程',
+    icon: Check,
+    color: '#10b981',
+    trend: 12.8
+  },
+  {
+    value: '12/25',
+    label: '已选学分',
+    icon: CreditCard,
+    color: '#f59e0b',
+    trend: -3.5
+  },
+  {
+    value: '7天',
+    label: '选课截止',
+    icon: Calendar,
+    color: '#ef4444',
+    trend: 2.1
+  }
+])
+
+// 鼠标位置
+const handleMouseMove = (e) => {
+  document.documentElement.style.setProperty('--mouse-x', `${e.clientX}px`)
+  document.documentElement.style.setProperty('--mouse-y', `${e.clientY}px`)
+}
+
+// 悬停效果
+const hoverStat = (index) => {
+  hoveredStat.value = index
+}
+
+const unhoverStat = (index) => {
+  if (hoveredStat.value === index) {
+    hoveredStat.value = null
+  }
+}
 </script>
 
 <style scoped lang="scss">
@@ -106,49 +175,68 @@ const selectionDeadline = '2023年7月30日'
   max-width: 1200px;
   margin: 0 auto;
   padding: 24px;
+  --mouse-x: 0;
+  --mouse-y: 0;
 }
 
 .modern-card {
   position: relative;
   border-radius: 16px;
-  padding: 24px;
+  padding: 30px;
   margin-bottom: 24px;
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.98);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(226, 232, 240, 0.5);
+  border: 1px solid rgba(226, 232, 240, 0.6);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
   overflow: hidden;
   z-index: 1;
 
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y),
+        rgba(99, 102, 241, 0.08) 0%,
+        transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: -1;
+    pointer-events: none;
+  }
+
   &:hover {
     transform: translateY(-4px);
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
     border-color: rgba(199, 210, 254, 0.8);
+
+    &::before {
+      opacity: 1;
+    }
   }
 }
 
-.card-header {
+.panel-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid rgba(226, 232, 240, 0.5);
+  margin-bottom: 24px;
 
-  h2 {
-    font-size: 1.25rem;
+  h3 {
     margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: #2c3e50;
     display: flex;
     align-items: center;
-    font-weight: 600;
-    color: #1e293b;
-    letter-spacing: -0.025em;
 
     .el-icon {
-      margin-right: 0.75rem;
-      font-size: 1.5rem;
-      color: #6366f1;
+      margin-right: 12px;
+      font-size: 22px;
+      color: #409eff;
     }
   }
 }
@@ -199,6 +287,7 @@ const selectionDeadline = '2023年7月30日'
     position: relative;
     overflow: hidden;
     border: 1px solid rgba(226, 232, 240, 0.6);
+    cursor: pointer;
 
     &:hover {
       transform: translateY(-4px);
@@ -257,6 +346,19 @@ const selectionDeadline = '2023年7月30日'
         line-height: 1.4;
       }
     }
+
+    .stat-trend {
+      display: flex;
+      align-items: center;
+      margin-left: 0.75rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+
+      .el-icon {
+        margin-right: 0.25rem;
+        font-size: 0.875rem;
+      }
+    }
   }
 }
 
@@ -307,9 +409,36 @@ const selectionDeadline = '2023年7月30日'
   font-size: 16px;
   padding: 0 16px;
   height: 56px;
+  border-bottom: none;
+
+  .el-icon {
+    margin-right: 12px;
+    color: #409eff;
+  }
 }
 
 :deep(.el-collapse-item__content) {
   padding-bottom: 16px;
+}
+
+// 悬停效果类
+.panel-hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+  border-color: rgba(64, 158, 255, 0.3);
+}
+
+@media (max-width: 768px) {
+  .course-selection-container {
+    padding: 15px;
+  }
+
+  .modern-card {
+    padding: 20px;
+  }
+
+  .panel-header h3 {
+    font-size: 18px;
+  }
 }
 </style>

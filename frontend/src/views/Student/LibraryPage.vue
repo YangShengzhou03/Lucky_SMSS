@@ -201,7 +201,7 @@
 import { ref, onMounted } from 'vue'
 import {
   Search, Location, ArrowRight, DocumentDelete,
-  Book, Clock, Check, List
+  Reading, Clock, Check, List
 } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 
@@ -485,7 +485,7 @@ const stats = ref([
   {
     label: '当前借阅',
     value: 3,
-    icon: Book,
+    icon: Reading,
     color: '#6366f1'
   },
   {

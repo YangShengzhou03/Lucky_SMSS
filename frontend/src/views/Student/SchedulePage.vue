@@ -181,7 +181,6 @@ import { ref, computed, onMounted } from 'vue'
 import {
   Calendar,
   Notebook,
-  History,
   ArrowRight,
   Search,
   DataAnalysis,

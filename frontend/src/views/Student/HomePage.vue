@@ -23,7 +23,7 @@
     <!-- 主内容区 -->
     <div v-else>
       <!-- 欢迎区域 -->
-      <div class="welcome-section">
+      <div class="welcome-section modern-card">
         <h2>欢迎回来，<span class="username">{{ student?.name || '--' }}</span> 👋</h2>
         <p class="subtitle">学号：{{ student?.id || '--' }} | 班级：{{ student?.class || '--' }}</p>
       </div>
@@ -31,7 +31,7 @@
       <!-- 快速信息卡片 -->
       <div class="info-cards">
         <!-- 成绩卡片 -->
-        <div class="card score-card">
+        <div class="modern-card score-card">
           <div class="card-header">
             <h3><el-icon><Trophy /></el-icon> 学业成绩</h3>
             <div class="card-badge" v-if="student?.rank && student.rank <= 3">TOP {{ student.rank }}</div>
@@ -52,7 +52,7 @@
         </div>
 
         <!-- 课程卡片 -->
-        <div class="card course-card">
+        <div class="modern-card course-card">
           <div class="card-header">
             <h3><el-icon><Notebook /></el-icon> 我的课程</h3>
           </div>
@@ -69,7 +69,7 @@
         </div>
 
         <!-- 待办事项卡片 -->
-        <div class="card todo-card">
+        <div class="modern-card todo-card">
           <div class="card-header">
             <h3><el-icon><List /></el-icon> 待办事项</h3>
             <el-tag size="small" type="danger" v-if="pendingCount > 0">
@@ -105,7 +105,7 @@
       </div>
 
       <!-- 公告区域 -->
-      <div class="announcements">
+      <div class="modern-card announcements">
         <div class="section-header">
           <h3><el-icon><Bell /></el-icon> 校园公告</h3>
           <el-link type="primary" :underline="false">查看更多</el-link>
@@ -324,16 +324,57 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
-/* 基础卡片样式 - 所有卡片共享的基本样式 */
-.base-card {
+/* 继承模板的基础样式 */
+:root {
+  --text-primary: #303133;
+  --text-secondary: #606266;
+}
+
+.dark {
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.7);
+}
+
+/* 页面容器 */
+.student-home {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  transition: background-color 0.3s ease;
+  padding: 0 15px;
+  --mouse-x: 0;
+  --mouse-y: 0;
+}
+
+/* 现代化卡片样式 - 与学籍状态仪表盘保持一致 */
+.modern-card {
   position: relative;
   border-radius: 16px;
-  padding: 24px;
+  padding: 30px;
   transition: all 0.3s ease;
   overflow: hidden;
   z-index: 1;
 
-  /* 卡片光影效果 - 鼠标跟随效果 */
+  /* 卡片内部相对定位 */
+  .card-content {
+    position: relative;
+    z-index: 2;
+  }
+
+  /* 浅色模式 */
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+
+  /* 深色模式样式 */
+  .dark & {
+    background: rgba(30, 41, 59, 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  }
+
+  /* 卡片光影效果 - 随鼠标位置变化 */
   &::before {
     content: '';
     position: absolute;
@@ -342,8 +383,8 @@ onUnmounted(() => {
     right: 0;
     bottom: 0;
     background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y),
-        rgba(64, 158, 255, 0.05) 0%,
-        transparent 80%);
+        rgba(64, 158, 255, 0.08) 0%,
+        transparent 70%);
     opacity: 0;
     transition: opacity 0.3s ease;
     z-index: -1;
@@ -353,51 +394,53 @@ onUnmounted(() => {
   /* 卡片悬停效果 */
   &:hover {
     transform: translateY(-4px);
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
 
     &::before {
       opacity: 1;
     }
   }
 
-  /* 暗色模式适配 */
-  .dark & {
-    &::before {
-      background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y),
-          rgba(59, 130, 246, 0.08) 0%,
-          transparent 80%);
+  /* 卡片头部 */
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+
+    h3 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .progress-indicator {
+      background-color: rgba(64, 158, 255, 0.1);
+      color: #409eff;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 14px;
     }
   }
 }
 
-/* 信息卡片容器 - 三栏布局 */
+/* 信息卡片容器 */
 .info-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 24px;
-  margin-bottom: 36px;
+  gap: 30px; /* 调整间隙与模板一致 */
+  margin-bottom: 30px;
+}
+
+/* 欢迎区域样式 */
+.welcome-section {
+  margin-bottom: 30px;
 }
 
 /* 成绩卡片特定样式 */
 .score-card {
-  @extend .base-card;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(226, 232, 240, 0.7);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
-
-  .dark & {
-    background: rgba(30, 35, 45, 0.9);
-    border-color: rgba(59, 130, 246, 0.2);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
-  }
-
-  /* GPA显示样式 */
   .gpa {
-    display: flex;
-    align-items: flex-end;
-    margin-bottom: 20px;
-
     .value {
       font-size: 40px;
       font-weight: 700;
@@ -408,52 +451,26 @@ onUnmounted(() => {
 
     .label {
       font-size: 14px;
-      color: #909399;
+      color: var(--text-secondary);
       padding-bottom: 6px;
-
-      .dark & {
-        color: rgba(255, 255, 255, 0.6);
-      }
     }
   }
 
-  /* 排名进度条标签 */
   .progress-labels {
     display: flex;
     justify-content: space-between;
     font-size: 12px;
-    color: #909399;
+    color: var(--text-secondary);
     margin-top: 8px;
-
-    .dark & {
-      color: rgba(255, 255, 255, 0.5);
-    }
   }
 }
 
 /* 课程卡片特定样式 */
 .course-card {
-  @extend .base-card;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(226, 232, 240, 0.7);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
-
-  .dark & {
-    background: rgba(30, 35, 45, 0.9);
-    border-color: rgba(59, 130, 246, 0.2);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
-  }
-
-  /* 课程数量显示 */
   .course-count {
     font-size: 14px;
-    color: #909399;
+    color: var(--text-secondary);
     margin-bottom: 20px;
-
-    .dark & {
-      color: rgba(255, 255, 255, 0.6);
-    }
 
     .highlight {
       font-size: 28px;
@@ -464,7 +481,6 @@ onUnmounted(() => {
     }
   }
 
-  /* 下一节课信息 */
   .next-course {
     background: rgba(248, 248, 248, 0.6);
     border-radius: 12px;
@@ -490,39 +506,18 @@ onUnmounted(() => {
       font-size: 16px;
       font-weight: 600;
       margin-bottom: 6px;
-      color: #333;
-
-      .dark & {
-        color: rgba(255, 255, 255, 0.9);
-      }
+      color: var(--text-primary);
     }
 
     .course-location {
       font-size: 13px;
-      color: #909399;
-
-      .dark & {
-        color: rgba(255, 255, 255, 0.5);
-      }
+      color: var(--text-secondary);
     }
   }
 }
 
 /* 待办事项卡片特定样式 */
 .todo-card {
-  @extend .base-card;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(226, 232, 240, 0.7);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
-
-  .dark & {
-    background: rgba(30, 35, 45, 0.9);
-    border-color: rgba(59, 130, 246, 0.2);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
-  }
-
-  /* 待办事项列表容器 */
   .todo-list {
     max-height: 240px;
     overflow-y: auto;
@@ -548,7 +543,6 @@ onUnmounted(() => {
     }
   }
 
-  /* 单个待办事项项 */
   .todo-item {
     display: flex;
     align-items: center;
@@ -564,22 +558,19 @@ onUnmounted(() => {
       border-bottom: none;
     }
 
-    /* 复选框样式 */
     .el-checkbox {
       margin-right: 14px;
     }
 
-    /* 待办内容区域 */
     .todo-content {
       flex: 1;
 
       span {
         font-size: 14px;
-        color: #333;
+        color: var(--text-primary);
         transition: all 0.2s ease;
       }
 
-      /* 待办元信息（标签、星标等） */
       .todo-meta {
         display: flex;
         align-items: center;
@@ -592,14 +583,12 @@ onUnmounted(() => {
       }
     }
 
-    /* 紧急状态样式 */
     &.urgent {
       .todo-content span {
         color: #F56C6C;
       }
     }
 
-    /* 完成状态样式 */
     &.completed {
       .todo-content span {
         text-decoration: line-through;
@@ -611,19 +600,6 @@ onUnmounted(() => {
 
 /* 公告区域样式 */
 .announcements {
-  @extend .base-card;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(226, 232, 240, 0.7);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
-
-  .dark & {
-    background: rgba(30, 35, 45, 0.9);
-    border-color: rgba(59, 130, 246, 0.2);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
-  }
-
-  /* 公告区域头部 */
   .section-header {
     display: flex;
     justify-content: space-between;
@@ -636,7 +612,7 @@ onUnmounted(() => {
       font-weight: 650;
       display: flex;
       align-items: center;
-      color: #333;
+      color: var(--text-primary);
       letter-spacing: -0.3px;
 
       .el-icon {
@@ -645,14 +621,9 @@ onUnmounted(() => {
         color: #e6a23c;
         text-shadow: 0 2px 4px rgba(230, 162, 60, 0.1);
       }
-
-      .dark & {
-        color: rgba(255, 255, 255, 0.9);
-      }
     }
   }
 
-  /* 公告列表项 */
   .announcement-item {
     display: flex;
     align-items: flex-start;
@@ -677,7 +648,6 @@ onUnmounted(() => {
       border-bottom: none;
     }
 
-    /* 公告标签 */
     .announcement-tag {
       color: #409eff;
       margin-right: 16px;
@@ -685,7 +655,6 @@ onUnmounted(() => {
       margin-top: 2px;
     }
 
-    /* 公告内容区域 */
     .announcement-content {
       flex: 1;
 
@@ -693,23 +662,14 @@ onUnmounted(() => {
         font-size: 16px;
         font-weight: 500;
         margin-bottom: 6px;
-        color: #333;
+        color: var(--text-primary);
         line-height: 1.4;
-
-        .dark & {
-          color: rgba(255, 255, 255, 0.9);
-        }
       }
 
-      /* 公告元信息（日期、部门） */
       .meta {
         display: flex;
         font-size: 13px;
-        color: #909399;
-
-        .dark & {
-          color: rgba(255, 255, 255, 0.5);
-        }
+        color: var(--text-secondary);
 
         .date {
           margin-right: 16px;
@@ -731,7 +691,6 @@ onUnmounted(() => {
     }
   }
 
-  /* 滚动条样式 */
   .el-scrollbar {
     max-height: 340px;
     padding-right: 8px;
@@ -753,97 +712,6 @@ onUnmounted(() => {
   }
 }
 
-/* 欢迎区域样式 */
-.welcome-section {
-  position: relative;
-  margin-bottom: 30px;
-  padding: 28px;
-  background: rgba(245, 247, 250, 0.65);
-  backdrop-filter: blur(12px) saturate(180%);
-  border-radius: 16px;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
-  transition: all 0.4s cubic-bezier(0.2, 0.9, 0.4, 1);
-  z-index: 1;
-
-  /* 鼠标跟随光影效果 */
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: radial-gradient(800px circle at var(--mouse-x) var(--mouse-y),
-        rgba(99, 102, 241, 0.1) 0%,
-        transparent 80%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    z-index: -1;
-    pointer-events: none;
-  }
-
-  /* 暗色模式适配 */
-  .dark & {
-    background: rgba(20, 25, 35, 0.7);
-    border-color: rgba(255, 255, 255, 0.15);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-
-    .subtitle {
-      color: rgba(255, 255, 255, 0.65);
-    }
-
-    &::before {
-      background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y),
-          rgba(50, 100, 200, 0.15) 0%,
-          transparent 80%);
-    }
-  }
-
-  /* 欢迎标题 */
-  h2 {
-    font-size: 32px;
-    margin-bottom: 10px;
-    font-weight: 650;
-    color: #222;
-    letter-spacing: -0.5px;
-
-    .dark & {
-      color: rgba(255, 255, 255, 0.95);
-    }
-  }
-
-  /* 用户名特殊样式 */
-  .username {
-    color: #409eff;
-    font-weight: 700;
-    text-shadow: 0 2px 4px rgba(0, 120, 255, 0.1);
-  }
-
-  /* 副标题 */
-  .subtitle {
-    color: rgba(0, 0, 0, 0.65);
-    font-size: 16px;
-    line-height: 1.5;
-    max-width: 80%;
-  }
-
-  /* 悬停效果增强 */
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
-
-    &::before {
-      opacity: 1;
-    }
-
-    .dark & {
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
-    }
-  }
-}
-
 /* 卡片头部通用样式 */
 .card-header {
   display: flex;
@@ -857,19 +725,14 @@ onUnmounted(() => {
     display: flex;
     align-items: center;
     font-weight: 600;
-    color: #333;
+    color: var(--text-primary);
 
     .el-icon {
       margin-right: 10px;
       font-size: 20px;
     }
-
-    .dark & {
-      color: rgba(255, 255, 255, 0.9);
-    }
   }
 
-  /* TOP排名徽章 */
   .card-badge {
     background: #e6a23c;
     color: white;
@@ -886,24 +749,18 @@ onUnmounted(() => {
 .empty-announcements {
   text-align: center;
   padding: 20px;
-  color: #909399;
+  color: var(--text-secondary);
   font-size: 14px;
-
-  .dark & {
-    color: rgba(255, 255, 255, 0.5);
-  }
 }
 
-/* 响应式调整 - 移动端适配 */
+/* 响应式调整 */
 @media (max-width: 768px) {
   .welcome-section h2 {
     font-size: 24px;
   }
-}
 
-/* 定义鼠标位置CSS变量 */
-.student-home {
-  --mouse-x: 0;
-  --mouse-y: 0;
+  .info-cards {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

@@ -1,6 +1,5 @@
 <template>
   <div class="course-dashboard" :class="{ 'dark': isDarkMode }" @mousemove="handleMouseMove">
-    <!-- 课程概览卡片 - 现代化设计 -->
     <div class="course-overview-card modern-card" ref="overviewRef">
       <div class="card-header">
         <h2>
@@ -43,9 +42,7 @@
       </div>
     </div>
 
-    <!-- 课程表与课程进度 -->
     <div class="course-content">
-      <!-- 课程表 -->
       <div class="course-schedule modern-card" ref="scheduleRef">
         <div class="card-header">
           <h3>
@@ -84,7 +81,6 @@
         </div>
       </div>
 
-      <!-- 课程进度 -->
       <div class="course-progress modern-card" ref="progressRef">
         <div class="card-header">
           <h3>
@@ -143,7 +139,6 @@
       </div>
     </div>
 
-    <!-- 历史课程记录 -->
     <div class="history-courses modern-card" ref="historyRef">
       <div class="card-header">
         <h3>
@@ -199,10 +194,8 @@ import {
 } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 
-// 暗色模式
 const isDarkMode = ref(false)
 
-// 课程状态配置
 const courseStatusConfig = {
   passed: { label: '通过', type: 'success' },
   failed: { label: '未通过', type: 'danger' },
@@ -210,7 +203,6 @@ const courseStatusConfig = {
   auditing: { label: '旁听', type: 'info' }
 }
 
-// 响应式数据
 const currentSemester = ref('2023-2024-2')
 const semesters = ref([
   { value: '2023-2024-2', label: '2023-2024学年第二学期' },
@@ -328,7 +320,6 @@ const scheduleView = ref('week')
 const progressFilter = ref('all')
 const historySearch = ref('')
 
-// 统计数据 - 改进后的数据结构
 const stats = computed(() => [
   {
     value: currentCourses.value.length,
@@ -360,7 +351,6 @@ const stats = computed(() => [
   }
 ])
 
-// 计算属性
 const completedCoursesCount = computed(() => {
   return historyCourses.value.filter(course => course.status === 'passed').length
 })
@@ -393,7 +383,6 @@ const filteredHistoryCourses = computed(() => {
   )
 })
 
-// 方法
 const getCoursesByDayAndTime = (day, time) => {
   return currentCourses.value.filter(course =>
     course.schedule.some(s => s.day === day && s.time === time)
@@ -412,7 +401,6 @@ const formatCourseStatus = (row) => {
 
 const viewCourseDetails = (course) => {
   ElMessage.info(`查看课程详情: ${course.name}`)
-  // 实际应用中这里可以跳转到课程详情页
 }
 
 const handleSizeChange = (size) => {
@@ -438,19 +426,15 @@ const handleMouseMove = (e) => {
   document.documentElement.style.setProperty('--mouse-y', `${y}px`)
 }
 
-// 辅助函数 - 格式化统计值
 const formatStatValue = (value) => {
   return typeof value === 'number' && !Number.isInteger(value) ? value.toFixed(1) : value
 }
 
-// 初始化数据
 onMounted(() => {
-  // 模拟从API获取课程数据
 })
 </script>
 
 <style scoped lang="scss">
-// 基础卡片样式
 .modern-card {
   position: relative;
   border-radius: 16px;
@@ -464,7 +448,6 @@ onMounted(() => {
   overflow: hidden;
   z-index: 1;
 
-  // 卡片光影效果增强
   &::before {
     content: '';
     position: absolute;
@@ -481,7 +464,6 @@ onMounted(() => {
     pointer-events: none;
   }
 
-  // 统一悬停效果，确保暗色模式也能应用
   &:hover {
     transform: translateY(-4px);
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
@@ -492,7 +474,6 @@ onMounted(() => {
     }
   }
 
-  // 暗色模式适配 - 调整选择器优先级
   .dark & {
     background: rgba(30, 35, 45, 0.95);
     border-color: rgba(74, 85, 104, 0.3);
@@ -504,7 +485,6 @@ onMounted(() => {
           transparent 80%);
     }
 
-    // 暗色模式下的悬停效果 - 单独强化
     &:hover {
       transform: translateY(-4px);
       box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
@@ -517,7 +497,6 @@ onMounted(() => {
   }
 }
 
-// 卡片头部样式改进
 .card-header {
   display: flex;
   justify-content: space-between;
@@ -579,7 +558,6 @@ onMounted(() => {
   }
 }
 
-// 现代化选择器样式
 .modern-select {
   .el-input__inner {
     background-color: rgba(255, 255, 255, 0.7);
@@ -616,7 +594,6 @@ onMounted(() => {
   }
 }
 
-// 改进后的统计卡片网格布局
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -643,54 +620,23 @@ onMounted(() => {
     overflow: hidden;
     border: 1px solid rgba(226, 232, 240, 0.6);
 
-    // 暗色模式基础样式
     .dark & {
       background: rgba(30, 41, 59, 0.9);
       border-color: rgba(74, 85, 104, 0.4);
     }
 
-    // 悬停效果增强 - 统一基础效果
     &:hover {
       transform: translateY(-4px);
       box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
       border-color: rgba(199, 210, 254, 0.8);
-
-      // 卡片内部发光效果
-      &::before {
-        opacity: 0.4;
-      }
-
-      .icon-bg {
-        transform: scale(1.1);
-        opacity: 0.2;
-      }
     }
 
-    // 暗色模式悬停效果 - 单独设置
     .dark &:hover {
       transform: translateY(-4px);
       box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
       border-color: rgba(99, 102, 241, 0.5);
     }
 
-    // 卡片内部发光效果
-    &::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: radial-gradient(400px circle at var(--mouse-x) var(--mouse-y),
-          var(--card-color, rgba(99, 102, 241, 0.2)),
-          transparent 70%);
-      opacity: 0;
-      transition: opacity 0.3s ease;
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    // 统计图标样式优化
     .stat-icon {
       position: relative;
       margin-right: 1.25rem;
@@ -721,13 +667,11 @@ onMounted(() => {
       }
     }
 
-    // 统计内容区域
     .stat-content {
       flex: 1;
       min-width: 0;
       z-index: 1;
 
-      // 统计数值样式
       .stat-value {
         font-size: 1.75rem;
         font-weight: 700;
@@ -741,7 +685,6 @@ onMounted(() => {
         }
       }
 
-      // 统计标签样式
       .stat-label {
         font-size: 0.875rem;
         font-weight: 500;
@@ -754,7 +697,6 @@ onMounted(() => {
       }
     }
 
-    // 趋势指示器
     .stat-trend {
       display: flex;
       align-items: center;
@@ -770,7 +712,6 @@ onMounted(() => {
   }
 }
 
-// 课程表样式
 .schedule-grid {
   overflow-x: auto;
 
@@ -852,7 +793,6 @@ onMounted(() => {
   }
 }
 
-// 课程进度样式
 .progress-list {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -864,20 +804,17 @@ onMounted(() => {
     border-radius: 14px;
     overflow: hidden;
 
-    // 暗色模式基础样式
     .dark & {
       background: #1e293b;
       border-color: rgba(74, 85, 104, 0.4);
     }
 
-    // 统一悬停效果
     &:hover {
       transform: translateY(-4px);
       box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
       border-color: rgba(199, 210, 254, 0.8);
     }
 
-    // 暗色模式悬停效果
     .dark &:hover {
       transform: translateY(-4px);
       box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
@@ -949,7 +886,6 @@ onMounted(() => {
   }
 }
 
-// 历史课程记录样式
 .history-table {
   .el-table__header th {
     background-color: rgba(245, 247, 250, 0.7);
@@ -974,13 +910,11 @@ onMounted(() => {
   }
 }
 
-// 分页样式
 .pagination {
   margin-top: 20px;
   text-align: center;
 }
 
-// 筛选器样式
 .view-toggle,
 .progress-filter,
 .history-filter {
@@ -991,7 +925,6 @@ onMounted(() => {
   }
 }
 
-// 响应式调整
 @media (max-width: 768px) {
   .schedule-grid {
     min-width: 700px;

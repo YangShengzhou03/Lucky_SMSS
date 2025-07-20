@@ -1,6 +1,5 @@
 <template>
   <div class="student-home" @mousemove="handleMouseMove">
-    <!-- 加载状态 -->
     <div v-if="loading" class="loading-container">
       <el-skeleton :loading="true" class="welcome-skeleton" />
       <div class="info-cards">
@@ -10,8 +9,6 @@
       </div>
       <el-skeleton :loading="true" class="announcement-skeleton" />
     </div>
-
-    <!-- 错误状态 -->
     <div v-else-if="error" class="error-container">
       <el-icon class="error-icon">
         <WarningFilled />
@@ -19,21 +16,17 @@
       <div class="error-message">{{ error }}</div>
       <el-button type="primary" @click="fetchData">重试</el-button>
     </div>
-
-    <!-- 主内容区 -->
     <div v-else>
-      <!-- 欢迎区域 -->
       <div class="welcome-section modern-card">
         <h2>欢迎回来，<span class="username">{{ student?.name || '--' }}</span> 👋</h2>
         <p class="subtitle">学号：{{ student?.id || '--' }} | 班级：{{ student?.class || '--' }}</p>
       </div>
-
-      <!-- 快速信息卡片 -->
       <div class="info-cards">
-        <!-- 成绩卡片 -->
         <div class="modern-card score-card">
           <div class="card-header">
-            <h3><el-icon><Trophy /></el-icon> 学业成绩</h3>
+            <h3><el-icon>
+                <Trophy />
+              </el-icon> 学业成绩</h3>
             <div class="card-badge" v-if="student?.rank && student.rank <= 3">TOP {{ student.rank }}</div>
           </div>
           <div class="card-content">
@@ -50,11 +43,11 @@
             </div>
           </div>
         </div>
-
-        <!-- 课程卡片 -->
         <div class="modern-card course-card">
           <div class="card-header">
-            <h3><el-icon><Notebook /></el-icon> 我的课程</h3>
+            <h3><el-icon>
+                <Notebook />
+              </el-icon> 我的课程</h3>
           </div>
           <div class="card-content">
             <div class="course-count">
@@ -67,11 +60,11 @@
             </div>
           </div>
         </div>
-
-        <!-- 待办事项卡片 -->
         <div class="modern-card todo-card">
           <div class="card-header">
-            <h3><el-icon><List /></el-icon> 待办事项</h3>
+            <h3><el-icon>
+                <List />
+              </el-icon> 待办事项</h3>
             <el-tag size="small" type="danger" v-if="pendingCount > 0">
               {{ pendingCount }} 项待完成
             </el-tag>
@@ -88,7 +81,9 @@
                       <el-tag size="mini" :type="getDueTagType(item.dueDate)" effect="plain">
                         {{ item.dueDate }}
                       </el-tag>
-                      <el-icon v-if="item.important" color="#F56C6C"><StarFilled /></el-icon>
+                      <el-icon v-if="item.important" color="#F56C6C">
+                        <StarFilled />
+                      </el-icon>
                     </div>
                   </div>
                 </div>
@@ -96,18 +91,20 @@
               <div v-else class="empty-todos">
                 <p>暂无待办事项</p>
                 <el-button type="primary" size="small" @click="addFirstTodo">
-                  <el-icon><Plus /></el-icon> 添加第一个待办事项
+                  <el-icon>
+                    <Plus />
+                  </el-icon> 添加第一个待办事项
                 </el-button>
               </div>
             </div>
           </div>
         </div>
       </div>
-
-      <!-- 公告区域 -->
       <div class="modern-card announcements">
         <div class="section-header">
-          <h3><el-icon><Bell /></el-icon> 校园公告</h3>
+          <h3><el-icon>
+              <Bell />
+            </el-icon> 校园公告</h3>
           <el-link type="primary" :underline="false">查看更多</el-link>
         </div>
         <el-scrollbar>
@@ -125,7 +122,9 @@
                     <span class="department">{{ item.department }}</span>
                   </div>
                 </div>
-                <el-icon class="arrow"><ArrowRight /></el-icon>
+                <el-icon class="arrow">
+                  <ArrowRight />
+                </el-icon>
               </div>
             </template>
             <div v-else class="empty-announcements">
@@ -147,46 +146,33 @@ import {
 } from '@element-plus/icons-vue'
 import { ElMessage, ElSkeleton, ElButton, ElLink } from 'element-plus'
 
-// 状态管理
-const student = ref(null)          // 学生信息数据
-const announcements = ref(null)    // 公告列表数据
-const loading = ref(true)          // 加载状态
-const error = ref(null)            // 错误信息
+const student = ref(null)
+const announcements = ref(null)
+const loading = ref(true)
+const error = ref(null)
 
-// 计算属性
 const pendingCount = computed(() => {
-  // 计算未完成的待办事项数量
   return student.value?.todos?.filter(todo => !todo.completed).length || 0
 })
 
 const filteredTodos = computed(() => {
-  // 只显示前4个待办事项
   return student.value?.todos?.slice(0, 4) || []
 })
 
 const rankPercentage = computed(() => {
-  // 计算排名百分比用于进度条显示
   if (student.value?.rank && student.value?.classSize) {
     return (1 - (student.value.rank - 1) / student.value.classSize) * 100
   }
   return 0
 })
 
-// 方法定义
 const updateTodo = async (item) => {
-  // 更新待办事项状态
-  const originalState = item.completed // 保存原始状态用于错误回滚
+  const originalState = item.completed
 
   try {
-    // 模拟API请求延迟
     await new Promise(resolve => setTimeout(resolve, 500))
-    
-    // 实际项目中这里应该是API调用
-    // await axios.put(`/api/todos/${item.id}`, item)
-    
     ElMessage.success('待办事项已更新')
   } catch (err) {
-    // 出错时恢复原始状态
     item.completed = originalState
     ElMessage.error('更新失败，请重试')
     console.error('更新待办事项失败:', err)
@@ -194,28 +180,23 @@ const updateTodo = async (item) => {
 }
 
 const viewAnnouncement = (item) => {
-  // 查看公告详情
   console.log('查看公告:', item)
   ElMessage.info(`查看公告: ${item.title}`)
 }
 
 const formatDate = (dateString) => {
-  // 格式化日期显示 2023-12-01 -> 2023.12.01
   return dateString?.replace(/-/g, '.') || '--'
 }
 
 const formatCourseTime = (timeString) => {
-  // 格式化课程时间显示 14:00-15:30 -> 14:00 - 15:30
   return timeString?.replace('-', ' - ') || '--'
 }
 
 const isUrgent = (dueDate) => {
-  // 判断待办事项是否紧急
   return dueDate?.includes('天') || dueDate?.includes('明天')
 }
 
 const getDueTagType = (dueDate) => {
-  // 根据截止日期获取标签类型
   if (!dueDate) return 'info'
   if (dueDate.includes('明天')) return 'danger'
   if (dueDate.includes('天') && parseInt(dueDate) <= 3) return 'warning'
@@ -223,7 +204,6 @@ const getDueTagType = (dueDate) => {
 }
 
 const getAnnouncementType = (type) => {
-  // 公告类型映射
   const types = {
     'important': '重要',
     'notice': '通知',
@@ -234,27 +214,21 @@ const getAnnouncementType = (type) => {
 }
 
 const addFirstTodo = () => {
-  // 添加第一个待办事项
   ElMessage.info('跳转到添加待办事项页面')
-  // router.push('/todos/add')
 }
 
 const handleMouseMove = (e) => {
-  // 鼠标移动事件处理，用于卡片光影效果
   document.documentElement.style.setProperty('--mouse-x', `${e.clientX}px`)
   document.documentElement.style.setProperty('--mouse-y', `${e.clientY}px`)
 }
 
-// 数据获取
 const fetchData = async () => {
   loading.value = true
   error.value = null
 
   try {
-    // 模拟API请求延迟
     await new Promise(resolve => setTimeout(resolve, 800))
 
-    // 模拟数据 - 实际项目中替换为API调用
     student.value = {
       name: '张三',
       id: '20230001',
@@ -312,19 +286,16 @@ const fetchData = async () => {
   }
 }
 
-// 生命周期钩子
 onMounted(() => {
   fetchData()
 })
 
 onUnmounted(() => {
-  // 清理事件监听
   document.querySelector('.student-home')?.removeEventListener('mousemove', handleMouseMove)
 })
 </script>
 
 <style scoped lang="scss">
-/* 继承模板的基础样式 */
 :root {
   --text-primary: #303133;
   --text-secondary: #606266;
@@ -335,7 +306,6 @@ onUnmounted(() => {
   --text-secondary: rgba(255, 255, 255, 0.7);
 }
 
-/* 页面容器 */
 .student-home {
   min-height: 100vh;
   display: flex;
@@ -346,7 +316,6 @@ onUnmounted(() => {
   --mouse-y: 0;
 }
 
-/* 现代化卡片样式 - 与学籍状态仪表盘保持一致 */
 .modern-card {
   position: relative;
   border-radius: 16px;
@@ -355,18 +324,15 @@ onUnmounted(() => {
   overflow: hidden;
   z-index: 1;
 
-  /* 卡片内部相对定位 */
   .card-content {
     position: relative;
     z-index: 2;
   }
 
-  /* 浅色模式 */
   background: white;
   border: 1px solid rgba(0, 0, 0, 0.1);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
 
-  /* 深色模式样式 */
   .dark & {
     background: rgba(30, 41, 59, 0.8);
     backdrop-filter: blur(12px);
@@ -374,7 +340,6 @@ onUnmounted(() => {
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
   }
 
-  /* 卡片光影效果 - 随鼠标位置变化 */
   &::before {
     content: '';
     position: absolute;
@@ -383,7 +348,7 @@ onUnmounted(() => {
     right: 0;
     bottom: 0;
     background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y),
-        rgba(64, 158, 255, 0.08) 0%,
+        rgba(99, 102, 241, 0.08) 0%,
         transparent 70%);
     opacity: 0;
     transition: opacity 0.3s ease;
@@ -391,7 +356,6 @@ onUnmounted(() => {
     pointer-events: none;
   }
 
-  /* 卡片悬停效果 */
   &:hover {
     transform: translateY(-4px);
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
@@ -401,7 +365,6 @@ onUnmounted(() => {
     }
   }
 
-  /* 卡片头部 */
   .card-header {
     display: flex;
     justify-content: space-between;
@@ -425,20 +388,17 @@ onUnmounted(() => {
   }
 }
 
-/* 信息卡片容器 */
 .info-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 30px; /* 调整间隙与模板一致 */
+  gap: 30px;
   margin-bottom: 30px;
 }
 
-/* 欢迎区域样式 */
 .welcome-section {
   margin-bottom: 30px;
 }
 
-/* 成绩卡片特定样式 */
 .score-card {
   .gpa {
     .value {
@@ -465,7 +425,6 @@ onUnmounted(() => {
   }
 }
 
-/* 课程卡片特定样式 */
 .course-card {
   .course-count {
     font-size: 14px;
@@ -516,7 +475,6 @@ onUnmounted(() => {
   }
 }
 
-/* 待办事项卡片特定样式 */
 .todo-card {
   .todo-list {
     max-height: 240px;
@@ -598,7 +556,6 @@ onUnmounted(() => {
   }
 }
 
-/* 公告区域样式 */
 .announcements {
   .section-header {
     display: flex;
@@ -712,7 +669,6 @@ onUnmounted(() => {
   }
 }
 
-/* 卡片头部通用样式 */
 .card-header {
   display: flex;
   justify-content: space-between;
@@ -744,7 +700,6 @@ onUnmounted(() => {
   }
 }
 
-/* 空状态样式 */
 .empty-todos,
 .empty-announcements {
   text-align: center;
@@ -753,7 +708,6 @@ onUnmounted(() => {
   font-size: 14px;
 }
 
-/* 响应式调整 */
 @media (max-width: 768px) {
   .welcome-section h2 {
     font-size: 24px;

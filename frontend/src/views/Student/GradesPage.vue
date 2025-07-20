@@ -401,7 +401,7 @@ onUnmounted(() => {
   overflow: hidden;
   z-index: 1;
 
-  // 卡片光影效果
+  // 卡片光影效果 - 使用微紫色
   &::before {
     content: '';
     position: absolute;
@@ -410,7 +410,7 @@ onUnmounted(() => {
     right: 0;
     bottom: 0;
     background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y),
-        rgba(64, 158, 255, 0.05) 0%,
+        rgba(99, 102, 241, 0.05) 0%,
         transparent 80%);
     opacity: 0;
     transition: opacity 0.3s ease;
@@ -432,7 +432,7 @@ onUnmounted(() => {
   .dark & {
     &::before {
       background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y),
-          rgba(59, 130, 246, 0.08) 0%,
+          rgba(99, 102, 241, 0.08) 0%,
           transparent 80%);
     }
   }
@@ -488,7 +488,7 @@ onUnmounted(() => {
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
   }
 
-  // 卡片光影效果 - 与系列设计完全一致
+  // 卡片光影效果 - 微紫色
   &::before {
     content: '';
     position: absolute;
@@ -497,7 +497,7 @@ onUnmounted(() => {
     right: 0;
     bottom: 0;
     background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y),
-        rgba(64, 158, 255, 0.08) 0%,
+        rgba(99, 102, 241, 0.08) 0%,
         transparent 70%);
     opacity: 0;
     transition: opacity 0.3s ease;
@@ -693,4 +693,4 @@ onUnmounted(() => {
   --text-primary: #ffffff;
   --text-secondary: rgba(255, 255, 255, 0.7);
 }
-</style>
+</style>  

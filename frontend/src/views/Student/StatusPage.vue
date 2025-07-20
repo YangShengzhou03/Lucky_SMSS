@@ -376,7 +376,6 @@ onUnmounted(() => {
   width: 100%;
   max-width: 1400px;
   margin: 0 auto;
-  padding: 30px 0;
   display: grid;
   grid-template-columns: 1fr;
   gap: 30px;

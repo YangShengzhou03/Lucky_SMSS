@@ -484,23 +484,20 @@ onUnmounted(() => {
 
 <style scoped lang="scss">
 .grades-dashboard {
-  min-height: 100vh;
+  // min-height: 100vh;
   display: flex;
   flex-direction: column;
   transition: background-color 0.3s ease;
   padding: 0 15px;
+  gap: 30px;
 }
 
-// 主内容区域 - 增加了 gap 值，调整了 max-width
 .dashboard-content {
   flex: 1;
   width: 100%;
-  max-width: 1600px;
   margin: 0 auto;
-  padding: 40px 0;
   display: grid;
   grid-template-columns: 1fr;
-  gap: 60px; // 显著增加了卡片之间的间距
 }
 
 // 现代化卡片样式

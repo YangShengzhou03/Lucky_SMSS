@@ -382,7 +382,6 @@ onUnmounted(() => {
   line-height: 1.6;
   color: var(--gray-800);
   background-color: var(--white);
-  /* overflow-x: hidden; */
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -544,11 +543,20 @@ onUnmounted(() => {
   position: relative;
   z-index: 1;
   padding: 40px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(0, 255, 98, 0.1);
   backdrop-filter: blur(10px);
   border-radius: var(--border-radius);
   border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  transition: all 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+
+  &:hover {
+    transform: translateY(-5px) perspective(500px) rotateX(1deg);
+    background: rgba(0, 255, 98, 0.15);
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.2),
+      0 0 10px rgba(0, 255, 98, 0.3);
+    border-color: rgba(0, 255, 98, 0.4);
+  }
 }
 
 .hero-title {

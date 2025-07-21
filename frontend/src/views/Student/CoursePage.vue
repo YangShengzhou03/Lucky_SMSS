@@ -141,9 +141,15 @@
               <div class="time-row" v-for="(timeSlot, timeIndex) in timeSlots" :key="timeIndex">
                 <div class="time-label">{{ timeSlot }}</div>
                 <div class="day-column" v-for="(day, dayIndex) in daysOfWeek" :key="dayIndex">
-                  <div class="course-block" v-for="course in selectedCourses"
-                    :key="course.id + '-' + dayIndex + '-' + timeIndex"
-                    :style="{ top: course.schedule[0].timeSlot * 80 + 'px', height: '72px' }">
+                  <!-- 这里是关键修改：只渲染属于当前天的课程 -->
+                  <div class="course-block"
+                    v-for="course in selectedCourses.filter(c => c.schedule.some(s => s.day === dayIndex + 1 && s.timeSlot === timeIndex))"
+                    :key="course.id" :style="{
+                      left: '0',
+                      top: '0',
+                      height: '72px',
+                      width: '100%'
+                    }">
                     <div class="course-block-inner"
                       :style="{ backgroundColor: courseColors[course.id % courseColors.length] }">
                       <div class="course-name">{{ course.name }}</div>
@@ -967,7 +973,7 @@ onMounted(() => {
   .course-block {
     position: absolute;
     width: calc(100% - 16px);
-    margin: 4px 8px;
+    margin: 4px 0px;
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);

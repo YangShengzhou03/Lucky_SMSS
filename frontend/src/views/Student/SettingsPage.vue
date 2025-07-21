@@ -67,6 +67,28 @@
               </div>
             </div>
           </div>
+
+          <!-- 新增的班级和学院信息行 -->
+          <div class="info-row">
+            <div class="info-item">
+              <el-icon class="item-icon">
+                <School />
+              </el-icon>
+              <div class="item-content">
+                <p class="item-label">学院</p>
+                <p class="item-value">{{ userProfile.college }}</p>
+              </div>
+            </div>
+            <div class="info-item">
+              <el-icon class="item-icon">
+                <Collection />
+              </el-icon>
+              <div class="item-content">
+                <p class="item-label">班级</p>
+                <p class="item-value">{{ userProfile.class }}</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -134,7 +156,7 @@ import { ref, reactive } from 'vue'
 import {
   Plus, User, Edit, ArrowRight, Lock,
   Calendar, Notification, Phone, Setting, Bell,
-  FirstAidKit, QuestionFilled
+  FirstAidKit, QuestionFilled, School, Collection
 } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 
@@ -146,6 +168,8 @@ const userProfile = reactive({
   birthdate: '2000-01-15',
   email: 'zhangsan@example.com',
   phone: '13800138000',
+  college: '计算机科学与技术学院',
+  class: '计算机科学与技术2101班',
   avatarUrl: 'https://picsum.photos/id/1005/200/200'
 })
 

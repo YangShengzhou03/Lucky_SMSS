@@ -1,6 +1,5 @@
 <template>
   <div class="course-selection-container" @mousemove="handleMouseMove">
-    <!-- 顶部统计卡片 -->
     <div class="modern-card">
       <div class="panel-header">
         <h3>
@@ -29,69 +28,12 @@
             <div class="stat-value">{{ stat.value }}</div>
             <div class="stat-label">{{ stat.label }}</div>
           </div>
-          <div class="stat-trend" v-if="stat.trend">
-            <el-icon :color="stat.trend > 0 ? '#f56c6c' : '#67c23a'">
-              <CaretTop v-if="stat.trend > 0" />
-              <CaretBottom v-else />
-            </el-icon>
-            <span :style="{ color: stat.trend > 0 ? '#f56c6c' : '#67c23a' }">
-              {{ Math.abs(stat.trend) }}%
-            </span>
-          </div>
         </div>
       </div>
     </div>
 
-    <!-- 主内容区域 -->
     <div class="main-content">
-      <!-- 左侧：选课指南和课程列表 -->
-      <div class="left-panel">
-        <!-- 选课指南风琴面板 -->
-        <div class="selection-guide modern-card">
-          <el-collapse v-model="activeGuide" accordion>
-            <el-collapse-item title="选课指南" name="guide">
-              <div class="guide-content">
-                <h3>选课流程</h3>
-                <ol>
-                  <li>在课程列表中浏览或搜索您感兴趣的课程</li>
-                  <li>点击"选课"按钮选择课程，系统会自动检查时间冲突</li>
-                  <li>已选课程会显示在已选列表中</li>
-                  <li>通过课程表预览功能查看您的时间安排</li>
-                  <li>确认无误后点击"确认选课"完成选课</li>
-                </ol>
-
-                <h3>注意事项</h3>
-                <ul>
-                  <li>每学期最多可选修{{ maxCredits }}学分的课程</li>
-                  <li>所选课程时间不能冲突</li>
-                  <li>选课截止日期: {{ selectionDeadline }}</li>
-                  <li>选课截止后将无法修改选课</li>
-                </ul>
-              </div>
-            </el-collapse-item>
-
-            <el-collapse-item title="常见问题" name="faq">
-              <div class="guide-content">
-                <div class="faq-item">
-                  <h4>Q: 如何解决选课时间冲突问题？</h4>
-                  <p>A: 可以调整课程选择，避免选择同一时间段的课程，或使用课程表预览功能查看时间安排。</p>
-                </div>
-
-                <div class="faq-item">
-                  <h4>Q: 选课成功后可以退选吗？</h4>
-                  <p>A: 可以，在选课截止日期前，您可以在已选课程列表中退选课程。</p>
-                </div>
-
-                <div class="faq-item">
-                  <h4>Q: 课程容量已满怎么办？</h4>
-                  <p>A: 您可以选择其他课程，或定期查看课程容量，部分学生会在截止前退选。</p>
-                </div>
-              </div>
-            </el-collapse-item>
-          </el-collapse>
-        </div>
-
-        <!-- 课程列表 -->
+      <div class="course-list-panel">
         <div class="course-list modern-card">
           <div class="panel-header">
             <h3>
@@ -160,18 +102,15 @@
               </div>
             </el-card>
 
-            <!-- 暂无课程提示 -->
             <div v-if="!filteredCourses.length && !searchQuery" class="no-courses">
               <el-empty description="暂无可选课程" />
             </div>
 
-            <!-- 搜索无结果提示 -->
             <div v-if="!filteredCourses.length && searchQuery" class="no-courses">
               <el-empty image="search" description="没有找到匹配的课程" />
             </div>
           </div>
 
-          <!-- 分页 -->
           <div class="pagination">
             <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange"
               :current-page="currentPage" :page-sizes="[5, 10, 15]" :page-size="pageSize"
@@ -181,73 +120,7 @@
         </div>
       </div>
 
-      <!-- 右侧：已选课程和课程表 -->
-      <div class="right-panel">
-        <!-- 已选课程 -->
-        <div class="selected-courses modern-card">
-          <div class="panel-header">
-            <h3>
-              <el-icon>
-                <Check />
-              </el-icon>
-              已选课程
-              <span class="credit-summary">({{ selectedCredits }}/{{ maxCredits }}学分)</span>
-            </h3>
-          </div>
-
-          <div class="selected-courses-list">
-            <el-card v-for="course in selectedCourses" :key="course.id" class="selected-course-card" shadow="hover">
-              <div class="course-header">
-                <h4>{{ course.name }}</h4>
-                <span class="course-code">{{ course.code }}</span>
-              </div>
-              <div class="course-info">
-                <div class="info-item">
-                  <el-icon>
-                    <User />
-                  </el-icon>
-                  <span>{{ course.teacher }}</span>
-                </div>
-                <div class="info-item">
-                  <el-icon>
-                    <Clock />
-                  </el-icon>
-                  <span>{{ course.time }}</span>
-                </div>
-                <div class="info-item">
-                  <el-icon>
-                    <Location />
-                  </el-icon>
-                  <span>{{ course.location }}</span>
-                </div>
-                <div class="info-item">
-                  <el-icon>
-                    <CreditCard />
-                  </el-icon>
-                  <span>{{ course.credits }}学分</span>
-                </div>
-              </div>
-              <div class="course-footer">
-                <el-button @click="deselectCourse(course.id)" type="danger" size="small">
-                  退选
-                </el-button>
-              </div>
-            </el-card>
-
-            <!-- 暂无已选课程提示 -->
-            <div v-if="!selectedCourses.length" class="no-selected-courses">
-              <el-empty description="您还没有选择任何课程" />
-            </div>
-          </div>
-
-          <div class="selection-actions" v-if="selectedCourses.length">
-            <el-button @click="confirmSelection" type="primary" size="small" :loading="selectionLoading">
-              确认选课
-            </el-button>
-          </div>
-        </div>
-
-        <!-- 课程表预览 -->
+      <div class="selected-courses-panel">
         <div class="timetable-preview modern-card">
           <div class="panel-header">
             <h3>
@@ -259,22 +132,18 @@
           </div>
 
           <div class="timetable-container">
-            <!-- 课程表头部 -->
             <div class="timetable-header">
               <div class="time-slot-header"></div>
               <div class="day-header" v-for="day in daysOfWeek" :key="day">{{ day }}</div>
             </div>
 
-            <!-- 课程表内容 -->
             <div class="timetable-grid">
-              <!-- 时间段行 -->
               <div class="time-row" v-for="(timeSlot, timeIndex) in timeSlots" :key="timeIndex">
                 <div class="time-label">{{ timeSlot }}</div>
-                <!-- 每天的时间段 -->
                 <div class="day-column" v-for="(day, dayIndex) in daysOfWeek" :key="dayIndex">
-                  <!-- 课程卡片 -->
                   <div class="course-block" v-for="course in selectedCourses"
-                    :key="course.id + '-' + dayIndex + '-' + timeIndex">
+                    :key="course.id + '-' + dayIndex + '-' + timeIndex"
+                    :style="{ top: course.schedule[0].timeSlot * 80 + 'px', height: '72px' }">
                     <div class="course-block-inner"
                       :style="{ backgroundColor: courseColors[course.id % courseColors.length] }">
                       <div class="course-name">{{ course.name }}</div>
@@ -283,11 +152,6 @@
                   </div>
                 </div>
               </div>
-            </div>
-
-            <!-- 暂无课程提示 -->
-            <div v-if="!selectedCourses.length" class="no-timetable">
-              <el-empty description="暂无课程安排" />
             </div>
           </div>
         </div>
@@ -302,8 +166,6 @@ import {
   DataAnalysis,
   Collection,
   Check,
-  CaretTop,
-  CaretBottom,
   Calendar,
   CreditCard,
   User,
@@ -313,24 +175,16 @@ import {
 } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 
-// 学期数据
 const currentSemester = ref('2023-2024-2')
 const semesters = ref([
   { value: '2023-2024-2', label: '2023-2024学年第二学期' },
   { value: '2023-2024-1', label: '2023-2024学年第一学期' }
 ])
 
-// 选课指南
-const activeGuide = ref(['guide'])
-
-// 悬停状态
 const hoveredStat = ref(null)
 
-// 配置参数
 const maxCredits = 25
-const selectionDeadline = '2023年7月30日'
 
-// 搜索和筛选
 const searchQuery = ref('')
 const filterCategory = ref('all')
 const categories = ref([
@@ -341,43 +195,36 @@ const categories = ref([
   { value: 'general', label: '通识课' }
 ])
 
-// 分页
 const currentPage = ref(1)
 const pageSize = ref(5)
 
-// 统计卡片数据
 const stats = computed(() => [
   {
     value: allCourses.value.length,
     label: '可选课程',
     icon: Collection,
-    color: '#6366f1',
-    trend: 5.2
+    color: '#6366f1'
   },
   {
     value: selectedCourses.value.length,
     label: '已选课程',
     icon: Check,
-    color: '#10b981',
-    trend: selectedCourses.value.length > 0 ? 12.8 : 0
+    color: '#10b981'
   },
   {
     value: `${selectedCredits.value}/${maxCredits}`,
     label: '已选学分',
     icon: CreditCard,
-    color: '#f59e0b',
-    trend: selectedCourses.value.length > 0 ? -3.5 : 0
+    color: '#f59e0b'
   },
   {
     value: '7天',
     label: '选课截止',
     icon: Calendar,
-    color: '#ef4444',
-    trend: 2.1
+    color: '#ef4444'
   }
 ])
 
-// 课程数据
 const allCourses = ref([
   {
     id: 1,
@@ -390,7 +237,7 @@ const allCourses = ref([
     capacityUsed: 75,
     category: 'compulsory',
     schedule: [
-      { day: 1, timeSlot: 0 } // 周一第1时间段
+      { day: 1, timeSlot: 0 }
     ]
   },
   {
@@ -404,7 +251,7 @@ const allCourses = ref([
     capacityUsed: 60,
     category: 'compulsory',
     schedule: [
-      { day: 2, timeSlot: 1 } // 周二第2时间段
+      { day: 2, timeSlot: 1 }
     ]
   },
   {
@@ -418,7 +265,7 @@ const allCourses = ref([
     capacityUsed: 85,
     category: 'elective',
     schedule: [
-      { day: 3, timeSlot: 2 } // 周三第3时间段
+      { day: 3, timeSlot: 2 }
     ]
   },
   {
@@ -432,7 +279,7 @@ const allCourses = ref([
     capacityUsed: 90,
     category: 'compulsory',
     schedule: [
-      { day: 4, timeSlot: 0 } // 周四第1时间段
+      { day: 4, timeSlot: 0 }
     ]
   },
   {
@@ -446,7 +293,7 @@ const allCourses = ref([
     capacityUsed: 50,
     category: 'compulsory',
     schedule: [
-      { day: 5, timeSlot: 1 } // 周五第2时间段
+      { day: 5, timeSlot: 1 }
     ]
   },
   {
@@ -460,7 +307,7 @@ const allCourses = ref([
     capacityUsed: 70,
     category: 'elective',
     schedule: [
-      { day: 2, timeSlot: 2 } // 周二第3时间段
+      { day: 2, timeSlot: 2 }
     ]
   },
   {
@@ -474,7 +321,7 @@ const allCourses = ref([
     capacityUsed: 65,
     category: 'compulsory',
     schedule: [
-      { day: 4, timeSlot: 2 } // 周四第3时间段
+      { day: 4, timeSlot: 2 }
     ]
   },
   {
@@ -488,36 +335,31 @@ const allCourses = ref([
     capacityUsed: 80,
     category: 'compulsory',
     schedule: [
-      { day: 1, timeSlot: 1 } // 周一第2时间段
+      { day: 1, timeSlot: 1 }
     ]
   }
 ])
 
-// 已选课程
 const selectedCourses = ref([])
 
-// 课程表数据
 const daysOfWeek = ref(['周一', '周二', '周三', '周四', '周五'])
 const timeSlots = ref(['08:00-09:40', '10:00-11:40', '14:00-15:40'])
 const courseColors = ref([
-  'rgba(99, 102, 241, 0.8)', // indigo
-  'rgba(16, 185, 129, 0.8)', // emerald
-  'rgba(245, 158, 11, 0.8)', // amber
-  'rgba(239, 68, 68, 0.8)',  // red
-  'rgba(139, 92, 246, 0.8)', // violet
-  'rgba(236, 72, 153, 0.8)'  // pink
+  'rgba(99, 102, 241, 0.8)',
+  'rgba(16, 185, 129, 0.8)',
+  'rgba(245, 158, 11, 0.8)',
+  'rgba(239, 68, 68, 0.8)',
+  'rgba(139, 92, 246, 0.8)',
+  'rgba(236, 72, 153, 0.8)'
 ])
 
-// 计算属性
 const filteredCourses = computed(() => {
   let filtered = allCourses.value
 
-  // 按分类筛选
   if (filterCategory.value !== 'all') {
     filtered = filtered.filter(course => course.category === filterCategory.value)
   }
 
-  // 按关键词搜索
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
     filtered = filtered.filter(course =>
@@ -527,7 +369,6 @@ const filteredCourses = computed(() => {
     )
   }
 
-  // 分页
   const start = (currentPage.value - 1) * pageSize.value
   const end = start + pageSize.value
   return filtered.slice(start, end)
@@ -537,13 +378,11 @@ const selectedCredits = computed(() => {
   return selectedCourses.value.reduce((total, course) => total + course.credits, 0)
 })
 
-// 鼠标位置
 const handleMouseMove = (e) => {
   document.documentElement.style.setProperty('--mouse-x', `${e.clientX}px`)
   document.documentElement.style.setProperty('--mouse-y', `${e.clientY}px`)
 }
 
-// 悬停效果
 const hoverStat = (index) => {
   hoveredStat.value = index
 }
@@ -554,15 +393,12 @@ const unhoverStat = (index) => {
   }
 }
 
-// 选课功能
 const selectCourse = (course) => {
-  // 检查学分限制
   if (selectedCredits.value + course.credits > maxCredits) {
     ElMessage.warning(`已达到学分上限(${maxCredits}学分)，无法选择更多课程`)
     return
   }
 
-  // 检查时间冲突
   const hasConflict = selectedCourses.value.some(selectedCourse => {
     return selectedCourse.schedule.some(s =>
       course.schedule.some(cs => s.day === cs.day && s.timeSlot === cs.timeSlot)
@@ -574,32 +410,20 @@ const selectCourse = (course) => {
     return
   }
 
-  // 添加到已选课程
   selectedCourses.value.push(course)
   ElMessage.success(`已成功选择课程：${course.name}`)
-}
-
-const deselectCourse = (courseId) => {
-  const courseIndex = selectedCourses.value.findIndex(c => c.id === courseId)
-  if (courseIndex !== -1) {
-    const course = selectedCourses.value[courseIndex]
-    selectedCourses.value.splice(courseIndex, 1)
-    ElMessage.success(`已成功退选课程：${course.name}`)
-  }
 }
 
 const isCourseSelected = (courseId) => {
   return selectedCourses.value.some(course => course.id === courseId)
 }
 
-// 容量颜色
 const capacityColor = (capacity) => {
-  if (capacity >= 90) return '#f56c6c' // 红色
-  if (capacity >= 70) return '#f59e0b' // 橙色
-  return '#67c23a' // 绿色
+  if (capacity >= 90) return '#f56c6c'
+  if (capacity >= 70) return '#f59e0b'
+  return '#67c23a'
 }
 
-// 分页处理
 const handleSizeChange = (newSize) => {
   pageSize.value = newSize
 }
@@ -608,64 +432,65 @@ const handleCurrentChange = (newPage) => {
   currentPage.value = newPage
 }
 
-// 确认选课
-const selectionLoading = ref(false)
-const confirmSelection = () => {
-  if (selectedCourses.value.length === 0) {
-    ElMessage.warning('请先选择课程')
-    return
-  }
-
-  selectionLoading.value = true
-
-  // 模拟API调用
-  setTimeout(() => {
-    selectionLoading.value = false
-    ElMessage.success('选课成功！')
-
-    // 模拟选课成功后更新课程状态
-    selectedCourses.value.forEach(course => {
-      const index = allCourses.value.findIndex(c => c.id === course.id)
-      if (index !== -1) {
-        allCourses.value[index].capacityUsed += 5
-      }
-    })
-
-    // 清空已选课程
-    selectedCourses.value = []
-  }, 1500)
-}
-
-// 页面加载完成后初始化
 onMounted(() => {
-  // 模拟从服务器获取数据的延迟
   setTimeout(() => {
-    // 可以在这里添加初始化逻辑
   }, 300)
 })
 </script>
 
 <style scoped lang="scss">
+:root {
+  --dark-bg: #1e293b;
+  --dark-card: rgba(51, 65, 85, 0.8);
+  --dark-card-hover: rgba(66, 84, 111, 0.8);
+  --dark-border: rgba(100, 116, 139, 0.3);
+  --dark-text-primary: #f8fafc;
+  --dark-text-secondary: #cbd5e1;
+  --dark-text-tertiary: #94a3b8;
+  --dark-input-bg: rgba(30, 41, 59, 0.7);
+  --dark-input-border: rgba(100, 116, 139, 0.5);
+  --dark-progress-bg: rgba(148, 163, 184, 0.2);
+}
+
 .course-selection-container {
-  max-width: 1400px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
   margin: 0 auto;
   padding: 24px;
   --mouse-x: 0;
   --mouse-y: 0;
 }
 
+.main-content {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
 .modern-card {
   position: relative;
   border-radius: 16px;
-  padding: 24px;
-  margin-bottom: 24px;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(226, 232, 240, 0.5);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  padding: 30px;
   transition: all 0.3s ease;
   overflow: hidden;
   z-index: 1;
+
+  .card-content {
+    position: relative;
+    z-index: 2;
+  }
+
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+
+  .dark & {
+    background: rgba(30, 41, 59, 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  }
 
   &::before {
     content: '';
@@ -685,33 +510,33 @@ onMounted(() => {
 
   &:hover {
     transform: translateY(-4px);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
-    border-color: rgba(199, 210, 254, 0.8);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
 
     &::before {
       opacity: 1;
     }
   }
 
-  .dark & {
-    background: rgba(30, 35, 45, 0.95);
-    border-color: rgba(74, 85, 104, 0.3);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
 
-    &::before {
-      background: radial-gradient(800px circle at var(--mouse-x) var(--mouse-y),
-          rgba(99, 102, 241, 0.15) 0%,
-          transparent 80%);
+    h2,
+    h3 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-primary);
     }
 
-    &:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
-      border-color: rgba(99, 102, 241, 0.5);
-
-      &::before {
-        opacity: 1;
-      }
+    .progress-indicator {
+      background-color: rgba(64, 158, 255, 0.1);
+      color: #409eff;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 14px;
     }
   }
 }
@@ -735,12 +560,10 @@ onMounted(() => {
       font-size: 22px;
       color: #409eff;
     }
-  }
 
-  .credit-summary {
-    margin-left: 8px;
-    font-size: 14px;
-    color: #64748b;
+    .dark & {
+      color: var(--dark-text-primary);
+    }
   }
 }
 
@@ -769,6 +592,25 @@ onMounted(() => {
         box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
       }
     }
+
+    .dark & .el-input__inner {
+      background-color: var(--dark-input-bg);
+      border: 1px solid var(--dark-input-border);
+      color: var(--dark-text-primary);
+
+      &::placeholder {
+        color: var(--dark-text-tertiary);
+      }
+
+      &:hover {
+        border-color: rgba(199, 210, 254, 0.5);
+      }
+
+      &:focus {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+      }
+    }
   }
 
   .modern-select {
@@ -790,6 +632,25 @@ onMounted(() => {
       &:focus {
         border-color: #6366f1;
         box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+      }
+    }
+
+    .dark & .el-input__inner {
+      background-color: var(--dark-input-bg);
+      border: 1px solid var(--dark-input-border);
+      color: var(--dark-text-primary);
+
+      &::placeholder {
+        color: var(--dark-text-tertiary);
+      }
+
+      &:hover {
+        border-color: rgba(199, 210, 254, 0.5);
+      }
+
+      &:focus {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
       }
     }
   }
@@ -820,12 +681,22 @@ onMounted(() => {
     position: relative;
     overflow: hidden;
     border: 1px solid rgba(226, 232, 240, 0.6);
-    cursor: pointer;
+
+    .dark & {
+      background: rgba(30, 41, 59, 0.9);
+      border-color: rgba(74, 85, 104, 0.4);
+    }
 
     &:hover {
       transform: translateY(-4px);
       box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
       border-color: rgba(199, 210, 254, 0.8);
+    }
+
+    .dark &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+      border-color: rgba(99, 102, 241, 0.5);
     }
 
     .stat-icon {
@@ -870,6 +741,10 @@ onMounted(() => {
         line-height: 1.2;
         margin-bottom: 0.25rem;
         font-feature-settings: "tnum";
+
+        .dark & {
+          color: var(--dark-text-primary);
+        }
       }
 
       .stat-label {
@@ -877,6 +752,10 @@ onMounted(() => {
         font-weight: 500;
         color: #64748b;
         line-height: 1.4;
+
+        .dark & {
+          color: var(--dark-text-secondary);
+        }
       }
     }
 
@@ -895,65 +774,6 @@ onMounted(() => {
   }
 }
 
-.selection-guide {
-  .guide-content {
-    padding: 0 16px;
-
-    h3 {
-      font-size: 15px;
-      margin: 16px 0 8px 0;
-      color: #1e293b;
-    }
-
-    ol,
-    ul {
-      padding-left: 20px;
-      margin: 8px 0;
-      font-size: 14px;
-      color: #4b5563;
-
-      li {
-        margin-bottom: 6px;
-        line-height: 1.6;
-      }
-    }
-
-    .faq-item {
-      margin-bottom: 16px;
-
-      h4 {
-        font-size: 14px;
-        margin: 0 0 8px 0;
-        color: #1e293b;
-      }
-
-      p {
-        font-size: 14px;
-        color: #4b5563;
-        margin: 0;
-        line-height: 1.6;
-      }
-    }
-  }
-}
-
-:deep(.el-collapse-item__header) {
-  font-weight: 600;
-  font-size: 16px;
-  padding: 0 16px;
-  height: 56px;
-  border-bottom: none;
-
-  .el-icon {
-    margin-right: 12px;
-    color: #409eff;
-  }
-}
-
-:deep(.el-collapse-item__content) {
-  padding-bottom: 16px;
-}
-
 .courses-container {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -962,21 +782,48 @@ onMounted(() => {
 }
 
 .course-card {
-  border-radius: 14px;
-  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  border-radius: 16px;
+  padding: 20px;
   transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(226, 232, 240, 0.6);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+  .dark & {
+    color: #fff;
+    background: rgba(51, 65, 85, 0.9);
+    border: 1px solid rgba(100, 116, 139, 0.3);
+  }
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    border-color: rgba(199, 210, 254, 0.8);
+  }
+
+  .dark &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    border-color: rgba(99, 102, 241, 0.5);
+  }
 
   .course-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 12px;
+    margin-bottom: 16px;
 
     h4 {
       margin: 0;
-      font-size: 16px;
+      font-size: 18px;
       font-weight: 600;
-      color: #1e293b;
+      color: #2c3e50;
+
+      .dark & {
+        color: var(--dark-text-primary);
+      }
     }
 
     .course-code {
@@ -985,24 +832,38 @@ onMounted(() => {
       background-color: rgba(226, 232, 240, 0.5);
       padding: 2px 8px;
       border-radius: 4px;
+
+      .dark & {
+        color: var(--dark-text-primary);
+        background-color: rgba(100, 116, 139, 0.2);
+      }
     }
   }
 
   .course-info {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 8px;
+    gap: 12px;
     margin-bottom: 16px;
 
     .info-item {
       display: flex;
       align-items: center;
-      font-size: 13px;
-      color: #4b5563;
+      font-size: 14px;
 
       .el-icon {
-        margin-right: 6px;
+        margin-right: 8px;
         color: #64748b;
+        width: 18px;
+        text-align: center;
+      }
+
+      span {
+        color: #4b5563;
+
+        .dark & {
+          color: var(--dark-text-primary);
+        }
       }
     }
 
@@ -1011,7 +872,11 @@ onMounted(() => {
       margin-top: 4px;
 
       .el-progress__text {
-        font-size: 11px !important;
+        font-size: 12px !important;
+
+        .dark & {
+          color: var(--dark-text-primary) !important;
+        }
       }
     }
   }
@@ -1022,73 +887,7 @@ onMounted(() => {
   }
 }
 
-.selected-courses-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.selected-course-card {
-  border-radius: 14px;
-  padding: 16px;
-  transition: all 0.3s ease;
-
-  .course-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-
-    h4 {
-      margin: 0;
-      font-size: 16px;
-      font-weight: 600;
-      color: #1e293b;
-    }
-
-    .course-code {
-      font-size: 12px;
-      color: #64748b;
-      background-color: rgba(226, 232, 240, 0.5);
-      padding: 2px 8px;
-      border-radius: 4px;
-    }
-  }
-
-  .course-info {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    margin-bottom: 16px;
-
-    .info-item {
-      display: flex;
-      align-items: center;
-      font-size: 13px;
-      color: #4b5563;
-
-      .el-icon {
-        margin-right: 6px;
-        color: #64748b;
-      }
-    }
-  }
-
-  .course-footer {
-    display: flex;
-    justify-content: flex-end;
-  }
-}
-
-.selection-actions {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.no-courses,
-.no-selected-courses,
-.no-timetable {
+.no-courses {
   padding: 40px 0;
   display: flex;
   justify-content: center;
@@ -1106,82 +905,120 @@ onMounted(() => {
 }
 
 .timetable-header {
-  display: grid;
-  grid-template-columns: 120px repeat(5, 1fr);
-  gap: 1px;
-  background-color: rgba(226, 232, 240, 0.5);
-  border-radius: 8px 8px 0 0;
-  padding: 8px;
-}
+  display: flex;
+  margin-bottom: 8px;
 
-.time-slot-header {
-  font-weight: 600;
-  color: #64748b;
-  text-align: center;
-}
+  .time-slot-header {
+    width: 100px;
+    font-weight: 500;
+    color: #64748b;
+  }
 
-.day-header {
-  font-weight: 600;
-  color: #64748b;
-  text-align: center;
+  .day-header {
+    flex: 1;
+    text-align: center;
+    font-weight: 500;
+    color: #64748b;
+    padding: 8px 0;
+  }
 }
 
 .timetable-grid {
-  display: grid;
-  grid-template-columns: 120px repeat(5, 1fr);
-  gap: 1px;
-  background-color: rgba(226, 232, 240, 0.5);
-}
-
-.time-row {
-  display: contents;
-}
-
-.time-label {
-  background-color: white;
-  padding: 12px;
-  text-align: center;
-  font-weight: 500;
-  color: #4b5563;
-}
-
-.day-column {
   position: relative;
-  min-height: 80px;
-  background-color: white;
-  padding: 4px;
+  min-height: 400px;
+
+  .time-row {
+    display: flex;
+    height: 80px;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.5);
+
+    .dark & {
+      border-bottom: 1px solid rgba(100, 116, 139, 0.2);
+    }
+
+    .time-label {
+      width: 100px;
+      display: flex;
+      align-items: center;
+      padding-left: 12px;
+      font-size: 14px;
+      color: #64748b;
+
+      .dark & {
+        color: var(--dark-text-primary);
+      }
+    }
+
+    .day-column {
+      flex: 1;
+      position: relative;
+      border-right: 1px solid rgba(226, 232, 240, 0.5);
+
+      .dark & {
+        border-right: 1px solid rgba(100, 116, 139, 0.2);
+      }
+
+      &:last-child {
+        border-right: none;
+      }
+    }
+  }
+
+  .course-block {
+    position: absolute;
+    width: calc(100% - 16px);
+    margin: 4px 8px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
+    opacity: 0.95;
+
+    &:hover {
+      opacity: 1;
+      transform: scale(1.02);
+      z-index: 10;
+    }
+
+    .course-block-inner {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      height: 100%;
+      padding: 8px 12px;
+
+      .course-name {
+        color: white;
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-bottom: 2px;
+      }
+
+      .course-location {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 12px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+  }
 }
 
-.course-block {
-  position: absolute;
-  width: calc(100% - 8px);
-  margin: 4px;
-  border-radius: 6px;
-  overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
-  transition: all 0.2s ease;
-}
+.dark-mode-toggle {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 100;
 
-.course-block-inner {
-  padding: 6px 8px;
-  color: white;
-  font-size: 12px;
-  min-height: 72px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
+  .el-switch__core {
+    background-color: rgba(100, 116, 139, 0.5);
+  }
 
-.course-name {
-  font-weight: 600;
-  margin-bottom: 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.course-location {
-  font-size: 11px;
-  opacity: 0.8;
+  .el-switch__core::after {
+    background-color: white;
+  }
 }
 </style>

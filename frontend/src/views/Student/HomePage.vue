@@ -334,10 +334,20 @@ onUnmounted(() => {
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
 
   .dark & {
-    background: rgba(30, 41, 59, 0.8);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    background: rgba(30, 41, 59, 0.9);
+    border-color: rgba(74, 85, 104, 0.4);
+  }
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    border-color: rgba(199, 210, 254, 0.8);
+  }
+
+  .dark &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    border-color: rgba(99, 102, 241, 0.5);
   }
 
   &::before {

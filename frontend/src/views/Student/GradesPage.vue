@@ -1,6 +1,5 @@
 <template>
   <div class="grades-dashboard" :class="{ 'dark': isDarkMode }" @mousemove="handleMouseMove">
-    <!-- 成绩概览卡片 -->
     <div class="grades-overview modern-card" ref="overviewCard">
       <div class="card-header">
         <h2>成绩概览</h2>
@@ -12,7 +11,6 @@
       </div>
 
       <div class="stats-container">
-        <!-- GPA卡片 -->
         <div class="stats-card">
           <div class="stat-header">
             <h3>平均绩点</h3>
@@ -32,7 +30,6 @@
           </div>
         </div>
 
-        <!-- 平均分卡片 -->
         <div class="stats-card">
           <div class="stat-header">
             <h3>平均分数</h3>
@@ -49,7 +46,6 @@
           </div>
         </div>
 
-        <!-- 学分卡片 -->
         <div class="stats-card">
           <div class="stat-header">
             <h3>学分完成情况</h3>
@@ -63,7 +59,6 @@
       </div>
     </div>
 
-    <!-- 详细成绩表格卡片 -->
     <div class="grades-table modern-card">
       <div class="card-header">
         <h2>详细成绩</h2>
@@ -103,7 +98,6 @@
       </div>
     </div>
 
-    <!-- 成绩趋势与分析卡片 -->
     <div class="grades-analysis modern-card">
       <div class="card-header">
         <h2>成绩趋势分析</h2>
@@ -132,10 +126,8 @@ import { User } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import Chart from 'chart.js/auto'
 
-// 暗色模式状态
 const isDarkMode = inject('isDarkMode', ref(false))
 
-// 学期数据
 const currentSemester = ref('2023-2024-2')
 const semesters = ref([
   { value: '2023-2024-2', label: '2023-2024学年第二学期' },
@@ -144,7 +136,6 @@ const semesters = ref([
   { value: '2022-2023-1', label: '2022-2023学年第一学期' }
 ])
 
-// 成绩数据
 const allGrades = ref([
   {
     id: 1,
@@ -208,17 +199,14 @@ const allGrades = ref([
   }
 ])
 
-// 图表引用
 const trendChartCanvas = ref(null)
 let trendChart = null
 
-// 搜索与筛选
 const searchKeyword = ref('')
 const filterType = ref('all')
 const currentPage = ref(1)
 const pageSize = ref(10)
 
-// 计算属性
 const filteredGrades = computed(() => {
   return allGrades.value
     .filter(grade =>
@@ -280,7 +268,6 @@ const scoreDistribution = ref([
   { label: '60以下', percentage: 5, color: '#909399' }
 ])
 
-// 初始化趋势图表
 const initTrendChart = () => {
   if (trendChartCanvas.value) {
     const ctx = trendChartCanvas.value.getContext('2d')
@@ -340,7 +327,6 @@ const initTrendChart = () => {
   }
 }
 
-// 监听暗色模式变化
 watch(isDarkMode, (newVal) => {
   if (trendChart) {
     trendChart.options.scales.y.grid.color = newVal
@@ -353,7 +339,6 @@ watch(isDarkMode, (newVal) => {
   }
 })
 
-// 方法
 const formatScore = (row) => {
   if (row.score >= 90) return `${row.score} (优秀)`
   if (row.score >= 80) return `${row.score} (良好)`
@@ -374,14 +359,11 @@ const handleCurrentChange = (page) => {
   currentPage.value = page
 }
 
-// 处理鼠标移动
 const handleMouseMove = (e) => {
-  // 直接更新CSS变量，避免响应式变量更新导致的重渲染
   document.documentElement.style.setProperty('--mouse-x', `${e.clientX}px`)
   document.documentElement.style.setProperty('--mouse-y', `${e.clientY}px`)
 }
 
-// 初始化
 onMounted(() => {
   initTrendChart()
 })
@@ -392,7 +374,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
-// 基础卡片样式
 .base-card {
   position: relative;
   border-radius: 16px;
@@ -401,7 +382,6 @@ onUnmounted(() => {
   overflow: hidden;
   z-index: 1;
 
-  // 卡片光影效果 - 使用微紫色
   &::before {
     content: '';
     position: absolute;
@@ -418,7 +398,6 @@ onUnmounted(() => {
     pointer-events: none;
   }
 
-  // 卡片悬停效果
   &:hover {
     transform: translateY(-4px);
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
@@ -428,7 +407,6 @@ onUnmounted(() => {
     }
   }
 
-  // 暗色模式适配
   .dark & {
     &::before {
       background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y),
@@ -443,13 +421,12 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   transition: background-color 0.3s ease;
-  gap: 30px; // 保持与系列设计一致的卡片间距
+  gap: 30px;
   padding: 0 15px;
   --mouse-x: 0;
   --mouse-y: 0;
 }
 
-// 主内容区域
 .dashboard-content {
   flex: 1;
   width: 100%;
@@ -459,7 +436,6 @@ onUnmounted(() => {
   grid-template-columns: 1fr;
 }
 
-// 现代化卡片样式 - 完全统一设计语言
 .modern-card {
   position: relative;
   border-radius: 16px;
@@ -468,18 +444,15 @@ onUnmounted(() => {
   overflow: hidden;
   z-index: 1;
 
-  // 卡片内部相对定位
   .card-content {
     position: relative;
     z-index: 2;
   }
 
-  // 浅色模式
   background: white;
   border: 1px solid rgba(0, 0, 0, 0.1);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
 
-  // 深色模式样式
   .dark & {
     background: rgba(30, 41, 59, 0.8);
     backdrop-filter: blur(12px);
@@ -487,7 +460,6 @@ onUnmounted(() => {
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
   }
 
-  // 卡片光影效果 - 微紫色
   &::before {
     content: '';
     position: absolute;
@@ -504,7 +476,6 @@ onUnmounted(() => {
     pointer-events: none;
   }
 
-  // 卡片悬停效果 - 与系列设计完全一致
   &:hover {
     transform: translateY(-4px);
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
@@ -514,7 +485,6 @@ onUnmounted(() => {
     }
   }
 
-  // 卡片头部
   .card-header {
     display: flex;
     justify-content: space-between;
@@ -539,12 +509,11 @@ onUnmounted(() => {
   }
 }
 
-// 成绩概览卡片
 .grades-overview {
   .stats-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 24px; // 保持与系列设计一致的内部卡片间距
+    gap: 24px;
 
     @media (max-width: 768px) {
       grid-template-columns: 1fr;
@@ -552,19 +521,29 @@ onUnmounted(() => {
   }
 
   .stats-card {
-    @extend .base-card; // 继承基础卡片样式
+    @extend .base-card;
     background: rgba(255, 255, 255, 0.9);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(226, 232, 240, 0.7);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
 
     .dark & {
-      background: rgba(30, 35, 45, 0.9);
-      border-color: rgba(59, 130, 246, 0.2);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+      background: rgba(30, 41, 59, 0.9);
+      border-color: rgba(74, 85, 104, 0.4);
     }
 
-    // 统计卡片特定样式
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+      border-color: rgba(199, 210, 254, 0.8);
+    }
+
+    .dark &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+      border-color: rgba(99, 102, 241, 0.5);
+    }
+
     .stat-header {
       display: flex;
       justify-content: space-between;
@@ -640,7 +619,6 @@ onUnmounted(() => {
   }
 }
 
-// 详细成绩表格卡片
 .grades-table {
   .table-actions {
     display: flex;
@@ -666,7 +644,6 @@ onUnmounted(() => {
   }
 }
 
-// 成绩趋势分析卡片
 .grades-analysis {
   .chart-type-selector {
     margin-bottom: 20px;
@@ -682,7 +659,6 @@ onUnmounted(() => {
   }
 }
 
-// 颜色变量 - 与系列设计保持一致
 :root {
   --text-primary: #303133;
   --text-secondary: #606266;

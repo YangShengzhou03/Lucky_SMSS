@@ -1,15 +1,6 @@
 <template>
   <div class="student-home" @mousemove="handleMouseMove">
-    <div v-if="loading" class="loading-container">
-      <el-skeleton :loading="true" class="welcome-skeleton" />
-      <div class="info-cards">
-        <el-skeleton :loading="true" class="card-skeleton" />
-        <el-skeleton :loading="true" class="card-skeleton" />
-        <el-skeleton :loading="true" class="card-skeleton" />
-      </div>
-      <el-skeleton :loading="true" class="announcement-skeleton" />
-    </div>
-    <div v-else-if="error" class="error-container">
+    <div v-if="error" class="error-container">
       <el-icon class="error-icon">
         <WarningFilled />
       </el-icon>
@@ -144,7 +135,7 @@ import {
   Trophy, Notebook, List, ArrowRight, StarFilled, Bell,
   WarningFilled, Plus
 } from '@element-plus/icons-vue'
-import { ElMessage, ElSkeleton, ElButton, ElLink } from 'element-plus'
+import { ElMessage, ElButton, ElLink } from 'element-plus'
 
 const student = ref(null)
 const announcements = ref(null)
@@ -170,7 +161,6 @@ const updateTodo = async (item) => {
   const originalState = item.completed
 
   try {
-    await new Promise(resolve => setTimeout(resolve, 500))
     ElMessage.success('待办事项已更新')
   } catch (err) {
     item.completed = originalState
@@ -227,8 +217,6 @@ const fetchData = async () => {
   error.value = null
 
   try {
-    await new Promise(resolve => setTimeout(resolve, 800))
-
     student.value = {
       name: '张三',
       id: '20230001',
@@ -407,8 +395,72 @@ onUnmounted(() => {
 
 .welcome-section {
   margin-bottom: 30px;
+  position: relative;
+  background: linear-gradient(135deg, #f6f7f9 0%, #f0f4ff 50%, #ffffff 100%);
+  border-radius: 16px;
+  padding: 30px;
+  overflow: hidden;
+
+  .dark & {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(to right,
+        transparent 0%,
+        rgba(255, 255, 255, 0.3) 50%,
+        transparent 100%);
+    transform: skewX(-25deg);
+    animation: shine 6s infinite;
+    z-index: 1;
+  }
+
+  .dark &::after {
+    background: linear-gradient(to right,
+        transparent 0%,
+        rgba(99, 102, 241, 0.3) 50%,
+        transparent 100%);
+  }
+
+  h2 {
+    position: relative;
+    z-index: 2;
+    font-size: 28px;
+    font-weight: 600;
+    margin: 0 0 10px;
+    color: var(--text-primary);
+
+    .username {
+      color: var(--el-color-primary);
+    }
+  }
+
+  .subtitle {
+    position: relative;
+    z-index: 2;
+    font-size: 16px;
+    color: var(--text-secondary);
+    margin: 0;
+  }
 }
 
+@keyframes shine {
+  0% {
+    left: -100%;
+  }
+
+  100% {
+    left: 150%;
+  }
+}
+
+/* 以下其他样式保持不变 */
 .score-card {
   .gpa {
     .value {

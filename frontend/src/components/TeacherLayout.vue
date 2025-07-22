@@ -15,15 +15,8 @@
           <!-- 中间搜索区域 -->
           <div class="nav-center">
             <div class="nav-search">
-              <el-input 
-                v-model="searchQuery" 
-                placeholder="搜索学生/课程..." 
-                size="small" 
-                class="search-input"
-                @keyup.enter="handleSearch" 
-                clearable
-                :class="{ 'focus-visible': isSearchFocused }"
-              >
+              <el-input v-model="searchQuery" placeholder="搜索学生/课程..." size="small" class="search-input"
+                @keyup.enter="handleSearch" clearable :class="{ 'focus-visible': isSearchFocused }">
                 <template #prefix>
                   <el-icon class="search-icon">
                     <Search />
@@ -36,12 +29,8 @@
           <!-- 右侧功能区 -->
           <div class="nav-right">
             <!-- 暗色模式切换 -->
-            <button 
-              class="dark-mode-toggle action-btn" 
-              @click="toggleDarkMode" 
-              aria-label="切换暗色模式"
-              :title="isDarkMode ? '切换至亮色模式' : '切换至暗色模式'"
-            >
+            <button class="dark-mode-toggle action-btn" @click="toggleDarkMode" aria-label="切换暗色模式"
+              :title="isDarkMode ? '切换至日间主题' : '切换至夜间主题'">
               <el-icon :size="20" :class="isDarkMode ? 'icon-moon' : 'icon-sun'">
                 <Sunny v-if="!isDarkMode" />
                 <Moon v-else />
@@ -51,12 +40,7 @@
             <!-- 通知中心 -->
             <div class="notification-center">
               <el-badge :value="unreadCount" max="99" :hidden="unreadCount === 0">
-                <button 
-                  class="notification-btn action-btn" 
-                  @click="toggleNotification"
-                  aria-label="通知中心"
-                  title="通知中心"
-                >
+                <button class="notification-btn action-btn" @click="toggleNotification" aria-label="通知中心" title="通知中心">
                   <el-icon :size="20">
                     <Bell />
                   </el-icon>
@@ -67,13 +51,8 @@
             <!-- 用户区域 -->
 
             <!-- 移动端菜单按钮 -->
-            <button 
-              class="mobile-menu-btn action-btn" 
-              v-if="isMobile && showSidebar" 
-              @click="toggleMobileSidebar"
-              aria-label="移动端菜单"
-              title="菜单"
-            >
+            <button class="mobile-menu-btn action-btn" v-if="isMobile && showSidebar" @click="toggleMobileSidebar"
+              aria-label="移动端菜单" title="菜单">
               <el-icon>
                 <Menu />
               </el-icon>
@@ -86,20 +65,11 @@
     <!-- 主体内容区 -->
     <div class="body-container">
       <!-- 侧边栏 -->
-      <aside 
-        v-if="showSidebar" 
-        class="sidebar" 
-        :class="{ 'sidebar-mobile-open': mobileSidebarOpen }"
-        :aria-hidden="!mobileSidebarOpen && isMobile"
-      >
-        <el-menu 
-          :default-active="activeMenuIndex" 
-          class="sidebar-menu" 
-          @select="handleMenuSelect" 
-          background-color="var(--sidebar-bg)"
-          text-color="var(--sidebar-text)" 
-          active-text-color="var(--primary-color)"
-        >
+      <aside v-if="showSidebar" class="sidebar" :class="{ 'sidebar-mobile-open': mobileSidebarOpen }"
+        :aria-hidden="!mobileSidebarOpen && isMobile">
+        <el-menu :default-active="activeMenuIndex" class="sidebar-menu" @select="handleMenuSelect"
+          background-color="var(--sidebar-bg)" text-color="var(--sidebar-text)"
+          active-text-color="var(--primary-color)">
           <el-menu-item index="1">
             <el-icon>
               <House />
@@ -185,14 +155,8 @@
     </div>
 
     <!-- 返回顶部按钮 -->
-    <el-backtop 
-      v-show="showBackToTop" 
-      class="back-to-top" 
-      :right="24" 
-      :bottom="24" 
-      :visibility-height="300"
-      :transition-duration="300"
-    >
+    <el-backtop v-show="showBackToTop" class="back-to-top" :right="24" :bottom="24" :visibility-height="300"
+      :transition-duration="300">
       <el-icon :size="20">
         <Top />
       </el-icon>
@@ -200,13 +164,8 @@
 
     <!-- 移动端底部导航 -->
     <nav class="mobile-bottom-nav" v-if="isMobile && showSidebar">
-      <button 
-        v-for="item in mobileNavItems" 
-        :key="item.index" 
-        @click="handleMobileNav(item)"
-        :class="{ 'active': route.path === item.path }"
-        :aria-current="route.path === item.path ? 'page' : undefined"
-      >
+      <button v-for="item in mobileNavItems" :key="item.index" @click="handleMobileNav(item)"
+        :class="{ 'active': route.path === item.path }" :aria-current="route.path === item.path ? 'page' : undefined">
         <el-icon :size="20">
           <component :is="item.icon" />
         </el-icon>
@@ -224,6 +183,7 @@ import {
   Menu, Search, Bell, Moon, Sunny, Warning, Top, House,
   UserFilled, ChatLineRound
 } from '@element-plus/icons-vue'
+import { provideDarkMode } from '@/composables/useDarkMode'
 
 // 路由和路由实例
 const router = useRouter()
@@ -243,7 +203,6 @@ const showBackToTop = ref(false)
 const currentPageName = ref('')
 const searchQuery = ref('')
 const isSearchFocused = ref(false)
-const isDarkMode = ref(false)
 const notificationVisible = ref(false)
 const mobileSidebarOpen = ref(false)
 const isMobile = ref(false)
@@ -343,8 +302,8 @@ const closeDropdowns = (e) => {
 
 
   // 关闭移动端侧边栏
-  if (isMobile.value && mobileSidebarOpen.value && sidebarEl && mobileMenuBtn && 
-      !sidebarEl.contains(e.target) && !mobileMenuBtn.contains(e.target)) {
+  if (isMobile.value && mobileSidebarOpen.value && sidebarEl && mobileMenuBtn &&
+    !sidebarEl.contains(e.target) && !mobileMenuBtn.contains(e.target)) {
     mobileSidebarOpen.value = false
     document.body.style.overflow = ''
   }
@@ -358,17 +317,8 @@ const handleSearch = () => {
   }
 }
 
-// 暗色模式切换
-const toggleDarkMode = () => {
-  isDarkMode.value = !isDarkMode.value
-  localStorage.setItem('isDarkMode', isDarkMode.value)
-  // 添加暗色模式切换动画效果
-  const appContainer = document.querySelector('.app-container')
-  appContainer.classList.add('dark-mode-transition')
-  setTimeout(() => {
-    appContainer.classList.remove('dark-mode-transition')
-  }, 300)
-}
+// 主题状态
+const { isDarkMode, toggleDarkMode } = provideDarkMode()
 
 // 通知中心切换
 const toggleNotification = () => {
@@ -404,10 +354,10 @@ onMounted(() => {
   document.addEventListener('click', closeDropdowns)
   window.addEventListener('scroll', handleScroll)
   window.addEventListener('resize', checkScreenSize)
-  
+
   // 初始化检查屏幕尺寸
   checkScreenSize()
-  
+
   // 初始化页面加载状态
   setPageLoading(true)
   setTimeout(() => {
@@ -444,7 +394,7 @@ onUnmounted(() => {
   --gray-700: #374151;
   --gray-800: #1f2937;
   --gray-900: #111827;
-  --teacher-color: #b910b9;
+  --student-color: #10b981;
   --white: #ffffff;
   --sidebar-bg: var(--white);
   --sidebar-text: var(--gray-600);
@@ -559,7 +509,7 @@ onUnmounted(() => {
   top: -11px;
   right: -24px;
   font-size: 10px;
-  background: var(--teacher-color);
+  background: var(--student-color);
   color: var(--white);
   padding: 2px 6px;
   border-radius: 10px;
@@ -683,6 +633,84 @@ onUnmounted(() => {
 
 .notification-center {
   position: relative;
+}
+
+.user-area {
+  position: relative;
+}
+
+.user-btn {
+  width: 40px;
+  height: 40px;
+}
+
+.user-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--primary-color);
+}
+
+.user-avatar-big {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--primary-color);
+}
+
+.user-info {
+  padding: 16px;
+}
+
+.user-detail {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.user-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--gray-800);
+}
+
+.user-id {
+  font-size: 12px;
+  color: var(--gray-500);
+}
+
+.user-role {
+  font-size: 12px;
+  color: var(--gray-600);
+}
+
+.user-menu {
+  border: none;
+}
+
+:deep(.user-menu .el-menu-item) {
+  height: 40px;
+  line-height: 40px;
+  font-size: 14px;
+  color: var(--gray-600);
+  transition: var(--transition);
+
+  &:hover {
+    color: var(--primary-color);
+    background-color: var(--gray-50);
+  }
+}
+
+:deep(.user-menu .el-menu-item.is-active) {
+  color: var(--primary-color);
+  background-color: var(--primary-light);
+}
+
+.logout-item {
+  color: var(--danger-color) !important;
 }
 
 .body-container {
@@ -878,23 +906,14 @@ onUnmounted(() => {
   max-width: 400px;
 }
 
-.back-to-top {
-  background: var(--primary-color) !important;
-  color: white !important;
-  width: 44px !important;
-  height: 44px !important;
-  box-shadow: var(--shadow-md) !important;
-  transition: var(--transition) !important;
-  border-radius: 50% !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
 }
 
-.back-to-top:hover {
-  background: var(--primary-dark) !important;
-  transform: translateY(-3px) scale(1.05) !important;
-  box-shadow: var(--shadow-lg) !important;
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 
 .mobile-bottom-nav {

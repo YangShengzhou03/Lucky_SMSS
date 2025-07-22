@@ -543,21 +543,22 @@ onUnmounted(() => {
   position: relative;
   z-index: 1;
   padding: 40px;
-  background: rgba(0, 255, 98, 0.1);
-  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
   border-radius: var(--border-radius);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  transition: all 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+  transition: all 0.4s cubic-bezier(0.16, 0.77, 0.21, 0.99);
 
   &:hover {
-    transform: translateY(-5px) perspective(500px) rotateX(1deg);
-    background: rgba(0, 255, 98, 0.15);
-    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.2),
-      0 0 10px rgba(0, 255, 98, 0.3);
-    border-color: rgba(0, 255, 98, 0.4);
+    transform: translateY(-6px);
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15),
+      0 0 15px rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
   }
 }
+
 
 .hero-title {
   font-size: clamp(2rem, 5vw, 3.5rem);

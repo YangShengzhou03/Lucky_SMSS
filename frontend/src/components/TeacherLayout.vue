@@ -395,6 +395,7 @@ onUnmounted(() => {
   --gray-800: #1f2937;
   --gray-900: #111827;
   --student-color: #10b981;
+  --teacher-color: #b910b9;;
   --white: #ffffff;
   --sidebar-bg: var(--white);
   --sidebar-text: var(--gray-600);
@@ -509,7 +510,7 @@ onUnmounted(() => {
   top: -11px;
   right: -24px;
   font-size: 10px;
-  background: var(--student-color);
+  background: var(--teacher-color);
   color: var(--white);
   padding: 2px 6px;
   border-radius: 10px;

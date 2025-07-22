@@ -8,9 +8,8 @@
       <el-button type="primary" @click="fetchData">重试</el-button>
     </div>
     <div v-else>
-      <!-- 欢迎区域 -->
       <div class="welcome-section">
-        <div class="welcome-card" :class="{ 'skeleton-loading': !teacher }">
+        <div class="welcome-card">
           <div class="avatar-container">
             <el-avatar :size="80" :src="teacher?.avatar">
               <span class="avatar-text">{{ teacher?.name?.charAt(0) || 'T' }}</span>
@@ -34,9 +33,7 @@
         </div>
       </div>
 
-      <!-- 信息卡片区域 -->
       <div class="info-cards">
-        <!-- 教学情况卡片 -->
         <div class="info-card teaching-card">
           <div class="card-header">
             <h3><el-icon>
@@ -48,7 +45,7 @@
           </div>
           <div class="card-content">
             <div class="stats-grid">
-              <div class="stat-item" :class="{ 'skeleton-loading': !teacher }">
+              <div class="stat-item">
                 <div class="stat-icon">
                   <el-icon>
                     <Collection />
@@ -59,7 +56,7 @@
                   <div class="stat-label">本学期课程</div>
                 </div>
               </div>
-              <div class="stat-item" :class="{ 'skeleton-loading': !teacher }">
+              <div class="stat-item">
                 <div class="stat-icon">
                   <el-icon>
                     <User />
@@ -70,7 +67,7 @@
                   <div class="stat-label">学生总数</div>
                 </div>
               </div>
-              <div class="stat-item highlight" :class="{ 'skeleton-loading': !teacher }">
+              <div class="stat-item">
                 <div class="stat-icon">
                   <el-icon>
                     <DataLine />
@@ -81,7 +78,7 @@
                   <div class="stat-label">平均评分</div>
                 </div>
               </div>
-              <div class="stat-item highlight" :class="{ 'skeleton-loading': !teacher }">
+              <div class="stat-item">
                 <div class="stat-icon">
                   <el-icon>
                     <TrendCharts />
@@ -96,7 +93,6 @@
           </div>
         </div>
 
-        <!-- 今日课程卡片 -->
         <div class="info-card schedule-card">
           <div class="card-header">
             <h3><el-icon>
@@ -108,7 +104,7 @@
           </div>
           <div class="card-content">
             <template v-if="hasClassToday">
-              <div class="class-info" :class="{ 'skeleton-loading': !teacher }">
+              <div class="class-info">
                 <div class="class-time">
                   <el-icon>
                     <Clock />
@@ -155,7 +151,6 @@
           </div>
         </div>
 
-        <!-- 待办事项卡片 -->
         <div class="info-card task-card">
           <div class="card-header">
             <h3><el-icon>
@@ -176,8 +171,7 @@
             <div class="task-list">
               <template v-if="teacher?.tasks?.length">
                 <div class="task-item" v-for="item in filteredTasks" :key="item.id"
-                  :class="{ 'urgent': isUrgent(item.dueDate), 'completed': item.completed }"
-                  :style="item.completed ? 'opacity: 0.7' : ''">
+                  :class="{ 'urgent': isUrgent(item.dueDate), 'completed': item.completed }">
                   <el-checkbox v-model="item.completed" @change="updateTask(item)" />
                   <div class="task-content">
                     <div class="task-main">
@@ -228,7 +222,6 @@
         </div>
       </div>
 
-      <!-- 公告卡片 -->
       <div class="announcements-card">
         <div class="card-header">
           <h3><el-icon>
@@ -245,7 +238,7 @@
             <div class="announcement-list">
               <template v-if="announcements?.length">
                 <div class="announcement-item" v-for="item in announcements" :key="item.id"
-                  @click="viewAnnouncement(item)" :class="{ 'skeleton-loading': !teacher }">
+                  @click="viewAnnouncement(item)">
                   <div class="announcement-badge" :class="item.type">
                     <el-icon v-if="item.type === 'important'">
                       <WarningFilled />
@@ -292,7 +285,6 @@
       </div>
     </div>
 
-    <!-- 添加任务对话框 -->
     <el-dialog v-model="taskDialogVisible" title="添加新任务" width="500px">
       <el-form :model="newTaskForm" label-width="80px">
         <el-form-item label="任务内容" required>
@@ -334,7 +326,6 @@ import {
   ElDropdown, ElDropdownMenu, ElDropdownItem, ElScrollbar
 } from 'element-plus'
 
-// 数据状态
 const teacher = ref(null)
 const announcements = ref(null)
 const loading = ref(true)
@@ -347,7 +338,6 @@ const newTaskForm = ref({
   important: false
 })
 
-// 计算属性
 const pendingTasksCount = computed(() => {
   return teacher.value?.tasks?.filter(task => !task.completed).length || 0
 })
@@ -377,7 +367,6 @@ const nextClassStatus = computed(() => {
   return nextClassSoon.value ? '即将上课' : '今日有课'
 })
 
-// 日期快捷选项
 const dateShortcuts = [
   {
     text: '今天',
@@ -401,15 +390,11 @@ const dateShortcuts = [
   },
 ]
 
-// 数据获取方法
 const fetchData = async () => {
   loading.value = true
   error.value = null
 
   try {
-    // 模拟API请求延迟
-    await new Promise(resolve => setTimeout(resolve, 1000))
-
     teacher.value = {
       name: '张明华',
       id: 'T2023001',
@@ -520,16 +505,10 @@ const fetchData = async () => {
   }
 }
 
-// 任务管理方法
 const updateTask = async (item) => {
   const originalState = item.completed
-
   try {
-    // 添加任务状态变更动画
-    item.completed = !originalState
-    await new Promise(resolve => setTimeout(resolve, 300))
-
-    ElMessage.success(`任务"${item.text}"已${item.completed ? '完成' : '恢复待办'}`)
+    ElMessage.success(`任务"${item.text}"已${item.completed ? '完成' : '待办'}`)
   } catch (err) {
     item.completed = originalState
     ElMessage.error('更新失败，请重试')
@@ -537,7 +516,10 @@ const updateTask = async (item) => {
   }
 }
 
-// 格式化方法
+const viewAnnouncement = (item) => {
+  ElMessage.info(`查看公告: ${item.title}`)
+}
+
 const formatDate = (dateString) => {
   if (!dateString) return '--'
   const date = new Date(dateString)
@@ -548,7 +530,6 @@ const formatCourseTime = (timeString) => {
   return timeString?.replace('-', ' - ') || '--'
 }
 
-// 任务状态判断
 const isUrgent = (dueDate) => {
   return dueDate?.includes('天') || dueDate?.includes('明天')
 }
@@ -560,7 +541,6 @@ const getDueTagType = (dueDate) => {
   return 'info'
 }
 
-// 添加新任务
 const showAddTaskDialog = () => {
   taskDialogVisible.value = true
 }
@@ -580,14 +560,12 @@ const addNewTask = () => {
     completed: false
   }
 
-  // 添加新任务时的动画效果
   teacher.value.tasks.unshift(newTask)
   ElMessage.success('任务添加成功')
   resetTaskForm()
   taskDialogVisible.value = false
 }
 
-// 日期格式化
 const formatDueDate = (date) => {
   if (!date) return ''
   if (typeof date === 'string') return date
@@ -603,7 +581,6 @@ const formatDueDate = (date) => {
   return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
 }
 
-// 重置表单
 const resetTaskForm = () => {
   newTaskForm.value = {
     text: '',
@@ -613,54 +590,31 @@ const resetTaskForm = () => {
   }
 }
 
-// 禁用过去的日期
 const disabledDate = (date) => {
   return date < new Date(new Date().setHours(0, 0, 0, 0))
 }
 
-// 任务操作
 const handleTaskCommand = (command, task) => {
   if (command === 'edit') {
     ElMessage.info(`编辑任务: ${task.text}`)
   } else if (command === 'delete') {
-    // 添加删除动画
-    const index = teacher.value.tasks.findIndex(t => t.id === task.id)
-    if (index !== -1) {
-      teacher.value.tasks.splice(index, 1)
-      ElMessage.success('任务已删除')
-    }
+    teacher.value.tasks = teacher.value.tasks.filter(t => t.id !== task.id)
+    ElMessage.success('任务已删除')
   }
 }
 
-// 导航方法
 const navigateToSchedule = () => ElMessage.info('跳转到课表页面')
 const navigateToTeaching = () => ElMessage.info('跳转到教学情况页面')
 const navigateToClass = (classId) => ElMessage.info(`进入课堂: ${classId}`)
 const viewClassMaterials = (classId) => ElMessage.info(`查看教学资料: ${classId}`)
 const navigateToAnnouncements = () => ElMessage.info('跳转到公告列表')
-const viewAnnouncement = (item) => ElMessage.info(`查看公告: ${item.title}`)
 
-// 生命周期钩子
 onMounted(() => {
   fetchData()
-})
-
-// 鼠标位置跟踪（用于卡片的动态光效）
-document.addEventListener('mousemove', (e) => {
-  document.documentElement.style.setProperty('--mouse-x', `${e.clientX}px`)
-  document.documentElement.style.setProperty('--mouse-y', `${e.clientY}px`)
 })
 </script>
 
 <style scoped lang="scss">
-:root {
-  --text-primary: #303133;
-  --text-secondary: #606266;
-  --text-tertiary: #909399;
-  --bg-light: #f5f7fa;
-  --border-color: #ebeef5;
-}
-
 .teacher-home {
   min-height: 100vh;
   display: flex;
@@ -668,13 +622,10 @@ document.addEventListener('mousemove', (e) => {
   padding: 0 15px;
   max-width: 1400px;
   margin: 0 auto;
-
-  /* 卡片悬浮效果变量 */
   --mouse-x: 0;
   --mouse-y: 0;
 }
 
-/* 基础卡片样式 */
 .card-base {
   position: relative;
   border-radius: 16px;
@@ -685,6 +636,11 @@ document.addEventListener('mousemove', (e) => {
   background: white;
   border: 1px solid rgba(0, 0, 0, 0.08);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+
+  .dark & {
+    background: rgba(30, 41, 59, 0.9);
+    border-color: rgba(74, 85, 104, 0.4);
+  }
 
   &::before {
     content: '';
@@ -707,6 +663,10 @@ document.addEventListener('mousemove', (e) => {
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
     border-color: rgba(199, 210, 254, 0.8);
 
+    .dark & {
+      border-color: rgba(99, 102, 241, 0.5);
+    }
+
     &::before {
       opacity: 1;
     }
@@ -721,7 +681,7 @@ document.addEventListener('mousemove', (e) => {
     h3 {
       margin: 0;
       font-size: 18px;
-      font-weight: 600;
+      font-weight: 6px;
       color: var(--text-primary);
 
       .el-icon {
@@ -732,7 +692,6 @@ document.addEventListener('mousemove', (e) => {
   }
 }
 
-/* 欢迎区域 */
 .welcome-section {
   margin-bottom: 30px;
 
@@ -745,7 +704,10 @@ document.addEventListener('mousemove', (e) => {
     position: relative;
     overflow: hidden;
 
-    /* 渐变光效 */
+    .dark & {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    }
+
     &::after {
       content: '';
       position: absolute;
@@ -760,6 +722,13 @@ document.addEventListener('mousemove', (e) => {
       transform: skewX(-25deg);
       animation: shine 6s infinite;
       z-index: 1;
+    }
+
+    .dark &::after {
+      background: linear-gradient(to right,
+          transparent 0%,
+          rgba(99, 102, 241, 0.3) 50%,
+          transparent 100%);
     }
 
     @keyframes shine {
@@ -805,7 +774,7 @@ document.addEventListener('mousemove', (e) => {
 
       h2 {
         font-size: 24px;
-        font-weight: 600;
+        font-weight: 6px;
         margin: 0 0 8px;
         color: var(--text-primary);
 
@@ -829,6 +798,10 @@ document.addEventListener('mousemove', (e) => {
       border-left: 1px solid rgba(0, 0, 0, 0.08);
       z-index: 2;
 
+      .dark & {
+        border-left-color: rgba(255, 255, 255, 0.1);
+      }
+
       .stat-item {
         text-align: center;
 
@@ -850,7 +823,6 @@ document.addEventListener('mousemove', (e) => {
   }
 }
 
-/* 信息卡片区域 */
 .info-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -858,7 +830,6 @@ document.addEventListener('mousemove', (e) => {
   margin-bottom: 30px;
 }
 
-/* 教学情况卡片 */
 .teaching-card {
   @extend .card-base;
 
@@ -875,9 +846,17 @@ document.addEventListener('mousemove', (e) => {
       border-radius: 8px;
       transition: all 0.2s ease;
 
+      .dark & {
+        background-color: rgba(30, 41, 59, 0.5);
+      }
+
       &:hover {
         background-color: #f1f5f9;
         transform: translateY(-2px);
+
+        .dark & {
+          background-color: rgba(30, 41, 59, 0.8);
+        }
       }
 
       .stat-icon {
@@ -900,7 +879,7 @@ document.addEventListener('mousemove', (e) => {
       .stat-content {
         .stat-value {
           font-size: 18px;
-          font-weight: 600;
+          font-weight: 6px;
           color: var(--text-primary);
           margin-bottom: 2px;
         }
@@ -911,25 +890,9 @@ document.addEventListener('mousemove', (e) => {
         }
       }
     }
-
-    /* 突出显示的统计项 */
-    .stat-item.highlight {
-      background-color: rgba(64, 158, 255, 0.05);
-
-      .stat-icon {
-        background-color: rgba(64, 158, 255, 0.2);
-      }
-
-      .stat-value {
-        font-size: 20px;
-        font-weight: 700;
-        color: var(--el-color-primary);
-      }
-    }
   }
 }
 
-/* 今日课程卡片 */
 .schedule-card {
   @extend .card-base;
 
@@ -939,7 +902,7 @@ document.addEventListener('mousemove', (e) => {
       align-items: center;
       font-size: 14px;
       color: var(--el-color-primary);
-      font-weight: 500;
+      font-weight: 5px;
       margin-bottom: 10px;
 
       .el-icon {
@@ -955,7 +918,7 @@ document.addEventListener('mousemove', (e) => {
 
     .class-name {
       font-size: 18px;
-      font-weight: 600;
+      font-weight: 6px;
       color: var(--text-primary);
       margin-bottom: 12px;
     }
@@ -990,7 +953,6 @@ document.addEventListener('mousemove', (e) => {
   }
 }
 
-/* 待办事项卡片 */
 .task-card {
   @extend .card-base;
 
@@ -1019,6 +981,10 @@ document.addEventListener('mousemove', (e) => {
       padding: 12px 15px;
       border-bottom: 1px dashed rgba(0, 0, 0, 0.08);
       transition: all 0.2s ease;
+
+      .dark & {
+        border-bottom-color: rgba(255, 255, 255, 0.1);
+      }
 
       &:hover {
         transform: translateX(3px);
@@ -1105,7 +1071,6 @@ document.addEventListener('mousemove', (e) => {
   }
 }
 
-/* 公告卡片 */
 .announcements-card {
   @extend .card-base;
   padding: 0;
@@ -1138,6 +1103,10 @@ document.addEventListener('mousemove', (e) => {
       cursor: pointer;
       border-bottom: 1px dashed rgba(0, 0, 0, 0.08);
       transition: all 0.2s ease;
+
+      .dark & {
+        border-bottom-color: rgba(255, 255, 255, 0.1);
+      }
 
       &:hover {
         transform: translateX(5px);
@@ -1182,7 +1151,7 @@ document.addEventListener('mousemove', (e) => {
 
         .announcement-title {
           font-size: 14px;
-          font-weight: 500;
+          font-weight: 5px;
           color: var(--text-primary);
           margin-bottom: 6px;
           line-height: 1.4;
@@ -1219,40 +1188,6 @@ document.addEventListener('mousemove', (e) => {
   }
 }
 
-/* 骨架屏样式 */
-.skeleton-loading {
-  position: relative;
-  overflow: hidden;
-  background-color: #f2f3f5;
-
-  &::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    transform: translateX(-100%);
-    background: linear-gradient(90deg,
-        rgba(255, 255, 255, 0) 0,
-        rgba(255, 255, 255, 0.2) 20%,
-        rgba(255, 255, 255, 0.5) 60%,
-        rgba(255, 255, 255, 0));
-    animation: shimmer 2s infinite;
-  }
-
-  @keyframes shimmer {
-    100% {
-      transform: translateX(100%);
-    }
-  }
-
-  * {
-    visibility: hidden;
-  }
-}
-
-/* 响应式设计 */
 @media (max-width: 768px) {
   .welcome-card {
     flex-direction: column;
@@ -1279,17 +1214,6 @@ document.addEventListener('mousemove', (e) => {
 
   .info-cards {
     grid-template-columns: 1fr;
-  }
-}
-
-/* 中屏幕适配 */
-@media (max-width: 1024px) {
-  .info-cards {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .announcements-card {
-    margin-top: 15px;
   }
 }
 </style>

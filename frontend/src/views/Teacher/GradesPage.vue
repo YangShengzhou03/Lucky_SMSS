@@ -1,133 +1,169 @@
 <template>
   <div class="grades-dashboard" :class="{ 'dark': isDarkMode }" @mousemove="handleMouseMove">
-    <div class="grades-overview modern-card" ref="overviewCard">
+    <!-- 第一张卡片：成绩统计概览 -->
+    <div class="grades-stats modern-card">
       <div class="card-header">
-        <h2>成绩概览</h2>
-        <div class="semester-selector">
-          <el-select v-model="currentSemester" placeholder="选择学期" size="small">
-            <el-option v-for="item in semesters" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
-        </div>
+        <h2>成绩统计概览</h2>
       </div>
-
       <div class="stats-container">
-        <div class="stats-card">
+        <div class="stats-card" :class="{ 'high-light': selectedCourse && selectedClass }">
           <div class="stat-header">
-            <h3>平均绩点</h3>
-            <div class="stat-value">{{ gpa || '0.00' }}</div>
+            <h3>当前课程平均分</h3>
+            <div class="stat-value">{{ courseAverageScore || '0' }}</div>
           </div>
-          <div class="stat-meta">
-            <div class="meta-item">
+          <div class="stat-trend">
+            <span v-if="courseAverageScoreTrend > 0" class="trend-up">
               <el-icon>
-                <User />
+                <ArrowUp />
               </el-icon>
-              <span>班级排名: {{ rank || '--' }}/{{ classSize || '--' }}</span>
-            </div>
-            <div class="stat-progress">
-              <el-progress :percentage="gpaPercentage" :stroke-width="6" :color="progressColor" />
-              <div class="progress-text">超过班级 {{ gpaPercentage }}% 的同学</div>
+              {{ courseAverageScoreTrend.toFixed(1) }}%
+            </span>
+            <span v-else-if="courseAverageScoreTrend < 0" class="trend-down">
+              <el-icon>
+                <ArrowDown />
+              </el-icon>
+              {{ Math.abs(courseAverageScoreTrend).toFixed(1) }}%
+            </span>
+            <span v-else>持平</span>
+            <span class="text-sm ml-2">vs 上学期</span>
+          </div>
+        </div>
+
+        <div class="stats-card" :class="{ 'high-light': selectedCourse && selectedClass }">
+          <div class="stat-header">
+            <h3>及格率</h3>
+            <div class="stat-value">{{ coursePassRate || '0%' }}</div>
+          </div>
+          <div class="stat-progress">
+            <el-progress :percentage="coursePassRateValue" :stroke-width="6" :color="coursePassRateColor" />
+          </div>
+        </div>
+
+        <div class="stats-card" :class="{ 'high-light': selectedCourse && selectedClass }">
+          <div class="stat-header">
+            <h3>最高分/最低分</h3>
+            <div class="stat-value">{{ courseMaxScore || '0' }}/{{ courseMinScore || '0' }}</div>
+          </div>
+          <div class="stat-meta">
+            <div class="text-sm text-secondary">
+              {{ courseMaxStudent || '暂无数据' }} / {{ courseMinStudent || '暂无数据' }}
             </div>
           </div>
         </div>
 
-        <div class="stats-card">
+        <div class="stats-card" :class="{ 'high-light': selectedCourse && selectedClass }">
           <div class="stat-header">
-            <h3>平均分数</h3>
-            <div class="stat-value">{{ avgScore || '0' }}</div>
+            <h3>待提交成绩</h3>
+            <div class="stat-value">{{ pendingGradesCount || '0' }}</div>
           </div>
           <div class="stat-meta">
-            <div class="score-distribution">
-              <div class="distribution-item" v-for="(item, index) in scoreDistribution" :key="index">
-                <div class="distribution-bar" :style="{ height: `${item.percentage}%`, backgroundColor: item.color }">
-                </div>
-                <div class="distribution-label">{{ item.label }}</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="stats-card">
-          <div class="stat-header">
-            <h3>学分完成情况</h3>
-            <div class="stat-value">{{ completedCredits || '0' }}/{{ totalCredits || '0' }}</div>
-          </div>
-          <div class="stat-meta">
-            <el-progress :percentage="creditPercentage" :stroke-width="6" :color="creditColor" />
-            <div class="progress-text">已完成 {{ creditPercentage }}% 的毕业学分要求</div>
+            <el-button @click="checkPendingGrades" type="text" size="small" class="mt-2">
+              查看详情
+            </el-button>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="grades-table modern-card">
+    <!-- 第二张卡片：成绩管理（重新设计布局） -->
+    <div class="grades-management modern-card">
+      <!-- 卡片头部 -->
       <div class="card-header">
-        <h2>详细成绩</h2>
-        <div class="table-actions">
-          <el-input v-model="searchKeyword" placeholder="搜索课程名称" prefix-icon="Search" size="small"
+        <h2>成绩管理</h2>
+      </div>
+
+      <!-- 筛选与操作区 -->
+      <div class="management-controls">
+        <!-- 顶部筛选区 -->
+        <div class="filters-section">
+          <div class="filter-group">
+            <el-select v-model="selectedCourse" placeholder="选择课程" size="small">
+              <el-option v-for="course in courses" :key="course.id" :label="course.name" :value="course.id" />
+            </el-select>
+            <el-select v-model="selectedClass" placeholder="选择班级" size="small">
+              <el-option v-for="classItem in classes" :key="classItem.id" :label="classItem.name"
+                :value="classItem.id" />
+            </el-select>
+            <el-select v-model="currentSemester" placeholder="选择学期" size="small">
+              <el-option v-for="item in semesters" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
+          </div>
+
+          <div class="action-buttons">
+            <el-button @click="importGrades" type="primary" size="small" class="btn-import">
+              <el-icon>
+                <Upload />
+              </el-icon> 导入成绩
+            </el-button>
+            <el-button @click="exportGrades" type="success" size="small" class="btn-export">
+              <el-icon>
+                <Download />
+              </el-icon> 导出成绩
+            </el-button>
+            <el-button @click="submitGrades" type="danger" size="small" class="btn-submit" :loading="isSubmitting">
+              提交成绩
+            </el-button>
+          </div>
+        </div>
+
+        <!-- 搜索与筛选区 -->
+        <div class="search-section">
+          <el-input v-model="searchKeyword" placeholder="搜索学生姓名" prefix-icon="Search" size="small"
             class="search-input" />
           <el-select v-model="filterType" placeholder="筛选类型" size="small" class="filter-select">
-            <el-option label="全部课程" value="all" />
-            <el-option label="必修课" value="required" />
-            <el-option label="选修课" value="elective" />
-            <el-option label="实践课" value="practical" />
+            <el-option label="全部学生" value="all" />
+            <el-option label="及格" value="pass" />
+            <el-option label="不及格" value="fail" />
+            <el-option label="待提交" value="pending" />
           </el-select>
         </div>
       </div>
 
-      <el-table :data="filteredGrades" border stripe class="grades-data-table" style="width: 100%">
-        <el-table-column prop="courseName" label="课程名称" min-width="200" />
-        <el-table-column prop="courseCode" label="课程代码" width="120" />
-        <el-table-column prop="courseType" label="课程类型" width="100" />
-        <el-table-column prop="credits" label="学分" width="80" />
-        <el-table-column prop="score" label="成绩" width="100" :formatter="formatScore" />
-        <el-table-column prop="gpa" label="绩点" width="80" />
-        <el-table-column prop="semester" label="学期" width="120" />
-        <el-table-column label="操作" width="100">
-          <template #default="scope">
-            <el-button type="text" size="small" @click="viewDetails(scope.row)">
-              详情
-            </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
+      <!-- 表格内容区 -->
+      <div class="table-container">
+        <el-table :data="filteredGrades" border stripe class="grades-data-table" style="width: 100%">
+          <el-table-column prop="studentId" label="学号" width="120" />
+          <el-table-column prop="studentName" label="学生姓名" width="100" />
+          <el-table-column prop="courseName" label="课程名称" min-width="150" />
+          <el-table-column prop="courseType" label="课程类型" width="100" />
+          <el-table-column prop="credits" label="学分" width="80" />
+          <el-table-column label="成绩" width="150">
+            <template #default="scope">
+              <el-input-number v-model="scope.row.score" :min="0" :max="100" size="small"
+                @change="handleScoreChange(scope.row)" />
+            </template>
+          </el-table-column>
+          <el-table-column label="绩点" width="80" :formatter="formatGPA" />
+          <el-table-column label="状态" width="100" :formatter="formatStatus" />
+          <el-table-column label="操作" width="100">
+            <template #default="scope">
+              <el-button type="text" size="small" @click="viewDetails(scope.row)">
+                详情
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
 
+      <!-- 分页控件 -->
       <div class="pagination" v-if="filteredGrades.length > 0">
         <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="currentPage"
           :page-sizes="[5, 10, 20]" :page-size="pageSize" :total="filteredGrades.length"
           layout="total, sizes, prev, pager, next" small />
       </div>
     </div>
-
-    <div class="grades-analysis modern-card">
-      <div class="card-header">
-        <h2>成绩趋势分析</h2>
-        <div class="chart-type-selector">
-          <el-radio-group v-model="chartType">
-            <el-radio-button label="gpa">绩点趋势</el-radio-button>
-            <el-radio-button label="score">分数趋势</el-radio-button>
-            <el-radio-button label="credit">学分趋势</el-radio-button>
-          </el-radio-group>
-        </div>
-      </div>
-
-      <div class="chart-container">
-        <div class="trend-chart">
-          <canvas ref="trendChartCanvas"></canvas>
-        </div>
-      </div>
-    </div>
-
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, inject, watch } from 'vue'
-import { User } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
-import Chart from 'chart.js/auto'
+import { ref, computed, onMounted, inject, watch } from 'vue'
+import { Upload, Download, ArrowUp, ArrowDown } from '@element-plus/icons-vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 
 const isDarkMode = inject('isDarkMode', ref(false))
 
+const selectedCourse = ref(null)
+const selectedClass = ref(null)
 const currentSemester = ref('2023-2024-2')
 const semesters = ref([
   { value: '2023-2024-2', label: '2023-2024学年第二学期' },
@@ -136,219 +172,330 @@ const semesters = ref([
   { value: '2022-2023-1', label: '2022-2023学年第一学期' }
 ])
 
+const courses = ref([
+  { id: 1, name: '数据结构与算法' },
+  { id: 2, name: '计算机网络' },
+  { id: 3, name: '操作系统' },
+  { id: 4, name: '人工智能导论' },
+  { id: 5, name: '高等数学（下）' },
+  { id: 6, name: '线性代数' }
+])
+
+const classes = ref([
+  { id: 1, name: '计算机科学与技术1班' },
+  { id: 2, name: '计算机科学与技术2班' },
+  { id: 3, name: '软件工程1班' },
+  { id: 4, name: '软件工程2班' }
+])
+
 const allGrades = ref([
   {
     id: 1,
+    studentId: '2023001',
+    studentName: '张三',
+    courseId: 1,
     courseName: '数据结构与算法',
-    courseCode: 'CS101',
     courseType: '必修课',
     credits: 4,
     score: 85,
-    gpa: 3.7,
-    semester: '2023-2024-2'
+    semester: '2023-2024-2',
+    classId: 1,
+    submitted: true
   },
   {
     id: 2,
-    courseName: '计算机网络',
-    courseCode: 'CS102',
+    studentId: '2023002',
+    studentName: '李四',
+    courseId: 1,
+    courseName: '数据结构与算法',
     courseType: '必修课',
-    credits: 3,
+    credits: 4,
     score: 78,
-    gpa: 2.8,
-    semester: '2023-2024-2'
+    semester: '2023-2024-2',
+    classId: 1,
+    submitted: true
   },
   {
     id: 3,
-    courseName: '操作系统',
-    courseCode: 'CS103',
+    studentId: '2023003',
+    studentName: '王五',
+    courseId: 1,
+    courseName: '数据结构与算法',
     courseType: '必修课',
     credits: 4,
-    score: 92,
-    gpa: 4.0,
-    semester: '2023-2024-2'
+    score: null,
+    semester: '2023-2024-2',
+    classId: 1,
+    submitted: false
   },
   {
     id: 4,
-    courseName: '人工智能导论',
-    courseCode: 'CS104',
-    courseType: '选修课',
-    credits: 3,
-    score: 88,
-    gpa: 3.9,
-    semester: '2023-2024-2'
+    studentId: '2023004',
+    studentName: '赵六',
+    courseId: 1,
+    courseName: '数据结构与算法',
+    courseType: '必修课',
+    credits: 4,
+    score: 92,
+    semester: '2023-2024-2',
+    classId: 2,
+    submitted: true
   },
   {
     id: 5,
-    courseName: '高等数学（下）',
-    courseCode: 'MATH102',
+    studentId: '2023005',
+    studentName: '钱七',
+    courseId: 1,
+    courseName: '数据结构与算法',
     courseType: '必修课',
-    credits: 5,
-    score: 76,
-    gpa: 2.6,
-    semester: '2023-2024-1'
+    credits: 4,
+    score: 88,
+    semester: '2023-2024-2',
+    classId: 2,
+    submitted: true
   },
   {
     id: 6,
-    courseName: '线性代数',
-    courseCode: 'MATH103',
+    studentId: '2023006',
+    studentName: '孙八',
+    courseId: 1,
+    courseName: '数据结构与算法',
     courseType: '必修课',
     credits: 4,
-    score: 82,
-    gpa: 3.3,
-    semester: '2023-2024-1'
+    score: 59,
+    semester: '2023-2024-2',
+    classId: 2,
+    submitted: true
   }
 ])
-
-const trendChartCanvas = ref(null)
-let trendChart = null
 
 const searchKeyword = ref('')
 const filterType = ref('all')
 const currentPage = ref(1)
 const pageSize = ref(10)
+const isSubmitting = ref(false)
 
 const filteredGrades = computed(() => {
-  return allGrades.value
-    .filter(grade =>
-      grade.courseName.toLowerCase().includes(searchKeyword.value.toLowerCase())
-    )
-    .filter(grade =>
-      filterType.value === 'all' || grade.courseType === filterType.value
-    )
-})
+  let grades = allGrades.value
 
-const currentSemesterGrades = computed(() => {
-  return allGrades.value.filter(grade => grade.semester === currentSemester.value)
-})
-
-const gpa = computed(() => {
-  if (currentSemesterGrades.value.length === 0) return 0
-  const totalCredits = currentSemesterGrades.value.reduce((sum, grade) => sum + grade.credits, 0)
-  const totalPoints = currentSemesterGrades.value.reduce((sum, grade) => sum + (grade.gpa * grade.credits), 0)
-  return (totalPoints / totalCredits).toFixed(2)
-})
-
-const avgScore = computed(() => {
-  if (currentSemesterGrades.value.length === 0) return 0
-  const totalScore = currentSemesterGrades.value.reduce((sum, grade) => sum + grade.score, 0)
-  return Math.round(totalScore / currentSemesterGrades.value.length)
-})
-
-const rank = ref(12)
-const classSize = ref(45)
-const gpaPercentage = computed(() => {
-  return Math.round((1 - (rank.value / classSize.value)) * 100)
-})
-
-const completedCredits = ref(68)
-const totalCredits = ref(140)
-const creditPercentage = computed(() => {
-  return Math.round((completedCredits.value / totalCredits.value) * 100)
-})
-
-const progressColor = computed(() => {
-  const progress = gpaPercentage.value
-  if (progress < 30) return '#ef4444'
-  if (progress < 60) return '#f59e0b'
-  return '#10b981'
-})
-
-const creditColor = computed(() => {
-  const progress = creditPercentage.value
-  if (progress < 30) return '#ef4444'
-  if (progress < 60) return '#f59e0b'
-  return '#10b981'
-})
-
-const scoreDistribution = ref([
-  { label: '90-100', percentage: 25, color: '#67c23a' },
-  { label: '80-89', percentage: 35, color: '#409eff' },
-  { label: '70-79', percentage: 25, color: '#e6a23c' },
-  { label: '60-69', percentage: 10, color: '#f56c6c' },
-  { label: '60以下', percentage: 5, color: '#909399' }
-])
-
-const initTrendChart = () => {
-  if (trendChartCanvas.value) {
-    const ctx = trendChartCanvas.value.getContext('2d')
-
-    const data = [
-      { semester: '2022-2023-1', gpa: 3.2, score: 80, credits: 28 },
-      { semester: '2022-2023-2', gpa: 3.5, score: 84, credits: 32 },
-      { semester: '2023-2024-1', gpa: 3.4, score: 82, credits: 30 },
-      { semester: '2023-2024-2', gpa: 3.6, score: 86, credits: 28 }
-    ]
-
-    trendChart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: data.map(item => item.semester),
-        datasets: [{
-          label: '绩点趋势',
-          data: data.map(item => item.gpa),
-          borderColor: '#409eff',
-          backgroundColor: isDarkMode.value ? 'rgba(64, 158, 255, 0.1)' : 'rgba(64, 158, 255, 0.2)',
-          tension: 0.4,
-          borderWidth: 2,
-          pointBackgroundColor: '#fff',
-          pointBorderColor: '#409eff',
-          pointRadius: 4,
-          pointHoverRadius: 6
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          y: {
-            beginAtZero: false,
-            min: 2.5,
-            max: 4.0,
-            ticks: {
-              stepSize: 0.5
-            },
-            grid: {
-              color: isDarkMode.value ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)'
-            }
-          },
-          x: {
-            grid: {
-              display: false
-            }
-          }
-        },
-        plugins: {
-          legend: {
-            display: false
-          }
-        }
-      }
-    })
+  // 筛选课程
+  if (selectedCourse.value) {
+    grades = grades.filter(grade => grade.courseId === selectedCourse.value)
   }
+
+  // 筛选班级
+  if (selectedClass.value) {
+    grades = grades.filter(grade => grade.classId === selectedClass.value)
+  }
+
+  // 筛选学期
+  if (currentSemester.value) {
+    grades = grades.filter(grade => grade.semester === currentSemester.value)
+  }
+
+  // 搜索学生姓名
+  if (searchKeyword.value) {
+    grades = grades.filter(grade =>
+      grade.studentName.toLowerCase().includes(searchKeyword.value.toLowerCase())
+    )
+  }
+
+  // 筛选及格/不及格/待提交
+  if (filterType.value === 'pass') {
+    grades = grades.filter(grade => grade.score >= 60)
+  } else if (filterType.value === 'fail') {
+    grades = grades.filter(grade => grade.score < 60 && grade.score !== null)
+  } else if (filterType.value === 'pending') {
+    grades = grades.filter(grade => grade.score === null || !grade.submitted)
+  }
+
+  return grades
+})
+
+// 当前课程统计
+const courseGrades = computed(() => {
+  if (!selectedCourse.value || !selectedClass.value) return []
+
+  return allGrades.value.filter(grade =>
+    grade.courseId === selectedCourse.value &&
+    grade.classId === selectedClass.value &&
+    grade.semester === currentSemester.value
+  )
+})
+
+const courseAverageScore = computed(() => {
+  if (courseGrades.value.length === 0) return 0
+  const validScores = courseGrades.value.filter(g => g.score !== null)
+  if (validScores.length === 0) return 0
+
+  const sum = validScores.reduce((total, grade) => total + grade.score, 0)
+  return (sum / validScores.length).toFixed(1)
+})
+
+// 模拟与上学期对比数据
+const courseAverageScoreTrend = computed(() => {
+  if (courseGrades.value.length === 0) return 0
+  // 随机生成-5到5之间的趋势值
+  return (Math.random() * 10 - 5).toFixed(1) * 1
+})
+
+const coursePassRate = computed(() => {
+  if (courseGrades.value.length === 0) return '0%'
+  const validScores = courseGrades.value.filter(g => g.score !== null)
+  if (validScores.length === 0) return '0%'
+
+  const passCount = validScores.filter(grade => grade.score >= 60).length
+  return ((passCount / validScores.length) * 100).toFixed(1) + '%'
+})
+
+const coursePassRateValue = computed(() => {
+  if (courseGrades.value.length === 0) return 0
+  const validScores = courseGrades.value.filter(g => g.score !== null)
+  if (validScores.length === 0) return 0
+
+  const passCount = validScores.filter(grade => grade.score >= 60).length
+  return Math.round((passCount / validScores.length) * 100)
+})
+
+const coursePassRateColor = computed(() => {
+  const rate = coursePassRateValue.value
+  if (rate < 60) return '#ef4444'
+  if (rate < 85) return '#f59e0b'
+  return '#10b981'
+})
+
+const courseMaxScore = computed(() => {
+  const validScores = courseGrades.value.filter(g => g.score !== null)
+  if (validScores.length === 0) return 0
+  return Math.max(...validScores.map(grade => grade.score))
+})
+
+const courseMinScore = computed(() => {
+  const validScores = courseGrades.value.filter(g => g.score !== null)
+  if (validScores.length === 0) return 0
+  return Math.min(...validScores.map(grade => grade.score))
+})
+
+const courseMaxStudent = computed(() => {
+  const validScores = courseGrades.value.filter(g => g.score !== null)
+  if (validScores.length === 0) return ''
+
+  const maxScore = Math.max(...validScores.map(grade => grade.score))
+  const maxStudent = validScores.find(grade => grade.score === maxScore)
+  return maxStudent ? maxStudent.studentName : ''
+})
+
+const courseMinStudent = computed(() => {
+  const validScores = courseGrades.value.filter(g => g.score !== null)
+  if (validScores.length === 0) return ''
+
+  const minScore = Math.min(...validScores.map(grade => grade.score))
+  const minStudent = validScores.find(grade => grade.score === minScore)
+  return minStudent ? minStudent.studentName : ''
+})
+
+const pendingGradesCount = computed(() => {
+  if (courseGrades.value.length === 0) return 0
+  return courseGrades.value.filter(grade => grade.score === null || !grade.submitted).length
+})
+
+const formatGPA = (row) => {
+  if (row.score === null || row.score === undefined) return '-'
+  if (row.score >= 90) return 4.0
+  if (row.score >= 85) return 3.7
+  if (row.score >= 80) return 3.3
+  if (row.score >= 75) return 3.0
+  if (row.score >= 70) return 2.7
+  if (row.score >= 65) return 2.3
+  if (row.score >= 60) return 1.0
+  return 0
 }
 
-watch(isDarkMode, (newVal) => {
-  if (trendChart) {
-    trendChart.options.scales.y.grid.color = newVal
-      ? 'rgba(255, 255, 255, 0.1)'
-      : 'rgba(0, 0, 0, 0.05)'
-    trendChart.data.datasets[0].backgroundColor = newVal
-      ? 'rgba(64, 158, 255, 0.1)'
-      : 'rgba(64, 158, 255, 0.2)'
-    trendChart.update()
-  }
-})
+const formatStatus = (row) => {
+  if (row.score === null || row.score === undefined) return '未录入'
+  if (row.score >= 60) return '及格'
+  return '不及格'
+}
 
-const formatScore = (row) => {
-  if (row.score >= 90) return `${row.score} (优秀)`
-  if (row.score >= 80) return `${row.score} (良好)`
-  if (row.score >= 70) return `${row.score} (中等)`
-  if (row.score >= 60) return `${row.score} (及格)`
-  return `${row.score} (不及格)`
+const handleScoreChange = (row) => {
+  // 更新成绩后可以做一些验证或其他操作
+  console.log(`成绩更新: ${row.studentName} - ${row.courseName}: ${row.score}`)
+  row.submitted = false // 成绩修改后重置提交状态
 }
 
 const viewDetails = (row) => {
-  ElMessage.info(`查看课程详情: ${row.courseName}`)
+  ElMessage.info(`查看 ${row.studentName} 的 ${row.courseName} 成绩详情`)
+  // 这里可以添加查看详情的逻辑
+}
+
+const importGrades = () => {
+  ElMessage.info('导入成绩功能')
+  // 这里可以添加导入成绩的逻辑
+}
+
+const exportGrades = () => {
+  if (!selectedCourse.value || !selectedClass.value) {
+    ElMessage.warning('请先选择课程和班级')
+    return
+  }
+
+  ElMessage.success(`导出 ${currentSemester.value} 学期 ${selectedCourse.value} 课程 ${selectedClass.value} 班级的成绩数据`)
+  // 这里可以添加导出成绩的逻辑
+}
+
+const submitGrades = () => {
+  if (!selectedCourse.value || !selectedClass.value) {
+    ElMessage.warning('请先选择课程和班级')
+    return
+  }
+
+  const unsubmittedGrades = courseGrades.value.filter(grade => grade.score === null || !grade.submitted)
+
+  if (unsubmittedGrades.length > 0) {
+    ElMessageBox.confirm(
+      `还有 ${unsubmittedGrades.length} 名学生的成绩未提交，确定要提交吗？`,
+      '提示',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }
+    ).then(() => {
+      proceedSubmit()
+    }).catch(() => {
+      // 用户取消操作
+    })
+  } else {
+    ElMessage.info('所有成绩已提交')
+  }
+}
+
+const proceedSubmit = () => {
+  isSubmitting.value = true
+
+  // 模拟提交成绩到服务器
+  setTimeout(() => {
+    isSubmitting.value = false
+
+    // 更新提交状态
+    courseGrades.value.forEach(grade => {
+      if (grade.score !== null) {
+        grade.submitted = true
+      }
+    })
+
+    ElMessage.success('成绩提交成功！')
+  }, 1500)
+}
+
+const checkPendingGrades = () => {
+  if (!selectedCourse.value || !selectedClass.value) {
+    ElMessage.warning('请先选择课程和班级')
+    return
+  }
+
+  filterType.value = 'pending'
+
 }
 
 const handleSizeChange = (size) => {
@@ -365,15 +512,51 @@ const handleMouseMove = (e) => {
 }
 
 onMounted(() => {
-  initTrendChart()
+  // 初始化时默认选择第一个课程和班级
+  if (courses.value.length > 0) {
+    selectedCourse.value = courses.value[0].id
+  }
+
+  if (classes.value.length > 0) {
+    selectedClass.value = classes.value[0].id
+  }
 })
 
-onUnmounted(() => {
-  if (trendChart) trendChart.destroy()
+watch(isDarkMode, (newVal) => {
+  // 深色模式切换时的处理
+  console.log('深色模式切换:', newVal)
 })
 </script>
 
 <style scoped lang="scss">
+:root {
+  --text-primary: #303133;
+  --text-secondary: #606266;
+  --text-tertiary: #909399;
+  --text-highlight: #409eff;
+  --border-color: #ebeef5;
+  --card-bg: white;
+  --card-hover-bg: #f5f7fa;
+  --trend-up: #10b981;
+  --trend-down: #ef4444;
+  --shadow-light: 0 4px 12px rgba(0, 0, 0, 0.05);
+  --shadow-medium: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+.dark {
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.7);
+  --text-tertiary: rgba(255, 255, 255, 0.5);
+  --text-highlight: #64748b;
+  --border-color: rgba(255, 255, 255, 0.1);
+  --card-bg: rgba(30, 41, 59, 0.8);
+  --card-hover-bg: rgba(51, 65, 85, 0.8);
+  --trend-up: #22c55e;
+  --trend-down: #ef4444;
+  --shadow-light: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --shadow-medium: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
 .base-card {
   position: relative;
   border-radius: 16px;
@@ -400,11 +583,11 @@ onUnmounted(() => {
 
   &:hover {
     transform: translateY(-4px);
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+    box-shadow: var(--shadow-medium);
+  }
 
-    &::before {
-      opacity: 1;
-    }
+  &:hover::before {
+    opacity: 1;
   }
 
   .dark & {
@@ -416,7 +599,6 @@ onUnmounted(() => {
   }
 }
 
-
 .grades-dashboard {
   display: flex;
   flex-direction: column;
@@ -425,16 +607,12 @@ onUnmounted(() => {
   padding: 0 15px;
   --mouse-x: 0;
   --mouse-y: 0;
+
+  .dark & {
+    background-color: #1e293b;
+  }
 }
 
-.dashboard-content {
-  flex: 1;
-  width: 100%;
-  max-width: 1400px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: 1fr;
-}
 
 .modern-card {
   position: relative;
@@ -454,10 +632,20 @@ onUnmounted(() => {
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
 
   .dark & {
-    background: rgba(30, 41, 59, 0.8);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    background: rgba(30, 41, 59, 0.9);
+    border-color: rgba(74, 85, 104, 0.4);
+  }
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    border-color: rgba(199, 210, 254, 0.8);
+  }
+
+  .dark &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    border-color: rgba(99, 102, 241, 0.5);
   }
 
   &::before {
@@ -491,7 +679,6 @@ onUnmounted(() => {
     align-items: center;
     margin-bottom: 20px;
 
-    h2,
     h3 {
       margin: 0;
       font-size: 20px;
@@ -509,123 +696,168 @@ onUnmounted(() => {
   }
 }
 
-.grades-overview {
+
+.grades-stats {
   .stats-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     gap: 24px;
 
-    @media (max-width: 768px) {
-      grid-template-columns: 1fr;
-    }
-  }
+    .stats-card {
+      @extend .base-card;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(226, 232, 240, 0.7);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
 
-  .stats-card {
-    @extend .base-card;
-    background: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(226, 232, 240, 0.7);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
-
-    .dark & {
-      background: rgba(30, 41, 59, 0.9);
-      border-color: rgba(74, 85, 104, 0.4);
-    }
-
-    &:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-      border-color: rgba(199, 210, 254, 0.8);
-    }
-
-    .dark &:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-      border-color: rgba(99, 102, 241, 0.5);
-    }
-
-    .stat-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-
-      h3 {
-        margin: 0;
-        font-size: 16px;
-        font-weight: 500;
-        color: var(--text-secondary);
+      .dark & {
+        background: rgba(30, 41, 59, 0.9);
+        border-color: rgba(74, 85, 104, 0.4);
       }
 
-      .stat-value {
-        font-size: 28px;
-        font-weight: 700;
-        color: var(--text-primary);
+      &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        border-color: rgba(199, 210, 254, 0.8);
       }
-    }
 
-    .stat-meta {
-      .meta-item {
+      .dark &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        border-color: rgba(99, 102, 241, 0.5);
+      }
+
+      .stat-header {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 16px;
+
+        h3 {
+          margin: 0;
+          font-size: 16px;
+          font-weight: 500;
+          color: var(--text-secondary);
+        }
+
+        .stat-value {
+          font-size: 32px;
+          font-weight: 700;
+          color: var(--text-primary);
+          margin-top: 8px;
+        }
+      }
+
+      .stat-trend {
         display: flex;
         align-items: center;
-        gap: 8px;
-        margin-bottom: 12px;
-        color: var(--text-secondary);
         font-size: 14px;
 
-        .el-icon {
-          color: #409eff;
+        .trend-up {
+          color: var(--trend-up);
+          display: flex;
+          align-items: center;
+        }
+
+        .trend-down {
+          color: var(--trend-down);
+          display: flex;
+          align-items: center;
+        }
+
+        .text-sm {
+          font-size: 12px;
+          color: var(--text-tertiary);
         }
       }
 
       .stat-progress {
         margin-top: 16px;
-
-        .progress-text {
-          margin-top: 8px;
-          font-size: 13px;
-          color: var(--text-secondary);
-          text-align: center;
-        }
       }
 
-      .score-distribution {
-        display: flex;
-        justify-content: space-around;
-        align-items: flex-end;
-        height: 120px;
-        margin-top: 16px;
+      .stat-meta {
+        margin-top: 8px;
 
-        .distribution-item {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          width: 20px;
-
-          .distribution-bar {
-            width: 100%;
-            border-radius: 4px 4px 0 0;
-            transition: height 0.5s ease;
-          }
-
-          .distribution-label {
-            margin-top: 8px;
-            font-size: 12px;
-            color: var(--text-secondary);
-          }
+        .text-sm {
+          font-size: 14px;
+          color: var(--text-tertiary);
         }
       }
     }
   }
 }
 
-.grades-table {
-  .table-actions {
+/* 重新设计的成绩管理卡片样式 */
+.grades-management {
+  .management-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .filters-section {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+
+    .dark & {
+      background-color: rgba(42, 53, 71, 0.5);
+    }
+
+    .filter-group {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    .el-select {
+      min-width: 180px;
+      transition: all 0.2s ease;
+
+      &:hover {
+        .el-input__wrapper {
+          border-color: #6366f1;
+        }
+      }
+    }
+
+    .el-button {
+      transition: all 0.2s ease;
+
+      &:hover {
+        transform: translateY(-2px);
+      }
+    }
+  }
+
+  .search-section {
     display: flex;
     gap: 12px;
+    align-items: center;
 
     .search-input {
-      width: 240px;
+      flex: 1;
+      max-width: 320px;
+      transition: all 0.2s ease;
+
+      .el-input__wrapper {
+        transition: all 0.2s ease;
+      }
+
+      &:hover .el-input__wrapper {
+        border-color: #6366f1;
+      }
     }
 
     .filter-select {
@@ -633,39 +865,53 @@ onUnmounted(() => {
     }
   }
 
+  .table-container {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+
+    &:hover {
+      border-color: rgba(99, 102, 241, 0.3);
+    }
+  }
+
   .grades-data-table {
-    margin-top: 20px;
+    margin: 0;
+    border-radius: 12px;
+    border-collapse: separate;
+
+    .el-table__header-wrapper {
+      background-color: rgba(245, 247, 250, 0.8);
+
+      .dark & {
+        background-color: rgba(42, 53, 71, 0.8);
+      }
+    }
+
+    .el-table__body tr {
+      transition: all 0.2s ease;
+
+      &:hover>td {
+        background-color: rgba(99, 102, 241, 0.05);
+      }
+    }
+
+    .el-table__body tr.el-table__row--current>td {
+      background-color: rgba(99, 102, 241, 0.1);
+    }
+
+    .el-input-number {
+      width: 100%;
+    }
   }
 
   .pagination {
     margin-top: 20px;
     display: flex;
     justify-content: flex-end;
+    padding: 10px 0;
   }
-}
-
-.grades-analysis {
-  .chart-type-selector {
-    margin-bottom: 20px;
-  }
-
-  .chart-container {
-    height: 350px;
-
-    .trend-chart {
-      width: 100%;
-      height: 100%;
-    }
-  }
-}
-
-:root {
-  --text-primary: #303133;
-  --text-secondary: #606266;
-}
-
-.dark {
-  --text-primary: #ffffff;
-  --text-secondary: rgba(255, 255, 255, 0.7);
 }
 </style>

@@ -1,35 +1,26 @@
 <template>
   <div class="register-page">
-    <!-- 背景粒子动画 -->
     <div class="particles" id="register-particles"></div>
 
-    <!-- 注册容器 -->
     <div class="register-container">
-
-      <!-- 注册卡片 -->
       <div class="register-card">
-        <!-- 卡片头部 -->
         <div class="card-header">
           <h2 class="welcome-text">创建账户</h2>
           <p class="register-subtitle">加入Lucky SMS学生管理系统</p>
         </div>
 
-        <!-- 注册表单 -->
         <el-form ref="registerFormRef" :model="registerForm" :rules="registerRules" class="register-form"
           @keyup.enter="handleRegister">
-          <!-- 用户名输入 -->
           <el-form-item prop="username" class="form-item">
             <el-input v-model="registerForm.username" placeholder="设置用户名" size="large" :prefix-icon="User" clearable
               class="custom-input" />
           </el-form-item>
 
-          <!-- 手机号输入 -->
           <el-form-item prop="phone" class="form-item">
             <el-input v-model="registerForm.phone" placeholder="输入手机号" size="large" :prefix-icon="Phone" clearable
               class="custom-input" maxlength="11" />
           </el-form-item>
 
-          <!-- 验证码 -->
           <el-form-item prop="captcha" class="form-item">
             <div class="captcha-container">
               <el-input v-model="registerForm.captcha" placeholder="输入验证码" size="large" :prefix-icon="Key"
@@ -41,7 +32,6 @@
             </div>
           </el-form-item>
 
-          <!-- 用户协议 -->
           <el-form-item prop="agreement" class="form-item agreement-item">
             <el-checkbox v-model="registerForm.agreement">
               我已阅读并同意
@@ -51,14 +41,12 @@
             </el-checkbox>
           </el-form-item>
 
-          <!-- 注册按钮 -->
           <el-button type="primary" size="large" class="register-btn" @click="handleRegister"
             :loading="registerLoading">
             <span v-if="!registerLoading">立即注册</span>
             <span v-else>注册中...</span>
           </el-button>
 
-          <!-- 已有账号 -->
           <div class="login-link">
             已有账号?
             <el-link type="primary" @click="$router.push('/login')" :underline="false" class="login-text">
@@ -72,15 +60,11 @@
 </template>
 
 <script setup>
-// -------------------- 依赖导入 --------------------
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue';
 import { ElMessage } from 'element-plus';
 import { User, Key, Phone } from '@element-plus/icons-vue';
 import router from '@/router';
 
-// -------------------- 常量与状态 --------------------
-
-// 表单数据，和 el-form 绑定
 const registerForm = reactive({
   username: '',
   phone: '',
@@ -88,7 +72,6 @@ const registerForm = reactive({
   agreement: false
 });
 
-// 校验规则，建议提取为常量，避免每次组件创建都生成新对象
 const USERNAME_RULES = [
   { required: true, message: '请输入用户名', trigger: 'blur' },
   { min: 3, max: 20, message: '用户名长度在3-20个字符之间', trigger: 'blur' },
@@ -112,7 +95,6 @@ const AGREEMENT_RULES = [
   }
 ];
 
-// 组合校验规则
 const registerRules = reactive({
   username: USERNAME_RULES,
   phone: PHONE_RULES,
@@ -120,26 +102,16 @@ const registerRules = reactive({
   agreement: AGREEMENT_RULES
 });
 
-// 表单引用
 const registerFormRef = ref(null);
-
-// 注册按钮 loading 状态
 const registerLoading = ref(false);
-
-// 验证码倒计时
 const captchaCooldown = ref(0);
 let captchaTimer = null;
 
-// 计算属性：验证码按钮文本
 const captchaBtnText = computed(() =>
   captchaCooldown.value > 0 ? `${captchaCooldown.value}秒后重试` : '获取验证码'
 );
 
-// -------------------- 方法定义 --------------------
-
-// 发送验证码，先校验手机号格式
 const sendCaptcha = () => {
-  // 校验手机号格式，防止无效请求
   const phoneValid = PHONE_RULES.every(rule => {
     if (rule.required && !registerForm.phone) {
       ElMessage.warning(rule.message);
@@ -153,23 +125,19 @@ const sendCaptcha = () => {
   });
   if (!phoneValid) return;
 
-  // 启动倒计时，防止重复发送
   captchaCooldown.value = 60;
   captchaTimer = setInterval(() => {
     captchaCooldown.value--;
     if (captchaCooldown.value <= 0) clearInterval(captchaTimer);
   }, 1000);
 
-  // 实际项目应调用后端接口，这里仅做提示
   ElMessage.success(`验证码已发送至 ${registerForm.phone}`);
 };
 
-// 注册处理
 const handleRegister = async () => {
   registerLoading.value = true;
 
   try {
-    // 这里应调用后端注册接口
     await new Promise(resolve => setTimeout(resolve, 1000));
     ElMessage.success('注册成功！');
     router.push('/teacher')
@@ -180,7 +148,6 @@ const handleRegister = async () => {
   }
 };
 
-// 粒子动画初始化，页面更有科技感
 onMounted(() => {
   if (window.particlesJS) {
     window.particlesJS('register-particles', {
@@ -217,7 +184,6 @@ onMounted(() => {
   }
 });
 
-// 组件卸载时清理定时器，防止内存泄漏
 onUnmounted(() => {
   if (captchaTimer) clearInterval(captchaTimer);
 });

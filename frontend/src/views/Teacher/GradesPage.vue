@@ -4,6 +4,13 @@
     <div class="grades-stats modern-card">
       <div class="card-header">
         <h2>成绩统计概览</h2>
+        <div v-if="selectedCourse && selectedClass" class="header-actions">
+          <el-button @click="refreshStats" type="text" size="small" class="refresh-btn">
+            <el-icon :size="16">
+              <Refresh />
+            </el-icon> 刷新数据
+          </el-button>
+        </div>
       </div>
       <div class="stats-container">
         <div class="stats-card" :class="{ 'high-light': selectedCourse && selectedClass }">
@@ -13,13 +20,13 @@
           </div>
           <div class="stat-trend">
             <span v-if="courseAverageScoreTrend > 0" class="trend-up">
-              <el-icon>
+              <el-icon :size="16">
                 <ArrowUp />
               </el-icon>
               {{ courseAverageScoreTrend.toFixed(1) }}%
             </span>
             <span v-else-if="courseAverageScoreTrend < 0" class="trend-down">
-              <el-icon>
+              <el-icon :size="16">
                 <ArrowDown />
               </el-icon>
               {{ Math.abs(courseAverageScoreTrend).toFixed(1) }}%
@@ -57,7 +64,7 @@
             <div class="stat-value">{{ pendingGradesCount || '0' }}</div>
           </div>
           <div class="stat-meta">
-            <el-button @click="checkPendingGrades" type="text" size="small" class="mt-2">
+            <el-button @click="checkPendingGrades" type="text" size="small" class="view-details-btn">
               查看详情
             </el-button>
           </div>
@@ -65,11 +72,16 @@
       </div>
     </div>
 
-    <!-- 第二张卡片：成绩管理（重新设计布局） -->
+    <!-- 第二张卡片：成绩管理 -->
     <div class="grades-management modern-card">
       <!-- 卡片头部 -->
       <div class="card-header">
         <h2>成绩管理</h2>
+        <div v-if="selectedCourse && selectedClass" class="header-info">
+          <span class="selected-info">
+            当前：{{ getCourseName(selectedCourse) }} - {{ getClassName(selectedClass) }}
+          </span>
+        </div>
       </div>
 
       <!-- 筛选与操作区 -->
@@ -77,7 +89,7 @@
         <!-- 顶部筛选区 -->
         <div class="filters-section">
           <div class="filter-group">
-            <el-select v-model="selectedCourse" placeholder="选择课程" size="small">
+            <el-select v-model="selectedCourse" placeholder="选择课程" size="small" @change="resetClassSelection">
               <el-option v-for="course in courses" :key="course.id" :label="course.name" :value="course.id" />
             </el-select>
             <el-select v-model="selectedClass" placeholder="选择班级" size="small">
@@ -90,17 +102,19 @@
           </div>
 
           <div class="action-buttons">
-            <el-button @click="importGrades" type="primary" size="small" class="btn-import">
-              <el-icon>
+            <el-button @click="importGrades" type="primary" size="small" class="btn-import" :disabled="!selectedCourse">
+              <el-icon :size="16">
                 <Upload />
               </el-icon> 导入成绩
             </el-button>
-            <el-button @click="exportGrades" type="success" size="small" class="btn-export">
-              <el-icon>
+            <el-button @click="exportGrades" type="success" size="small" class="btn-export"
+              :disabled="!selectedCourse || !selectedClass">
+              <el-icon :size="16">
                 <Download />
               </el-icon> 导出成绩
             </el-button>
-            <el-button @click="submitGrades" type="danger" size="small" class="btn-submit" :loading="isSubmitting">
+            <el-button @click="submitGrades" type="danger" size="small" class="btn-submit" :loading="isSubmitting"
+              :disabled="!selectedCourse || !selectedClass">
               提交成绩
             </el-button>
           </div>
@@ -108,8 +122,8 @@
 
         <!-- 搜索与筛选区 -->
         <div class="search-section">
-          <el-input v-model="searchKeyword" placeholder="搜索学生姓名" prefix-icon="Search" size="small"
-            class="search-input" />
+          <el-input v-model="searchKeyword" placeholder="搜索学生姓名" prefix-icon="Search" size="small" class="search-input"
+            clearable />
           <el-select v-model="filterType" placeholder="筛选类型" size="small" class="filter-select">
             <el-option label="全部学生" value="all" />
             <el-option label="及格" value="pass" />
@@ -121,7 +135,8 @@
 
       <!-- 表格内容区 -->
       <div class="table-container">
-        <el-table :data="filteredGrades" stripe class="grades-data-table" style="width: 100%">
+        <el-table :data="filteredGrades" stripe class="grades-data-table" style="width: 100%"
+          :empty-text="getEmptyText()" border>
           <el-table-column prop="studentId" label="学号" width="120" />
           <el-table-column prop="studentName" label="学生姓名" width="100" />
           <el-table-column prop="courseName" label="课程名称" min-width="150" />
@@ -130,14 +145,21 @@
           <el-table-column label="成绩" width="150">
             <template #default="scope">
               <el-input-number v-model="scope.row.score" :min="0" :max="100" size="small"
-                @change="handleScoreChange(scope.row)" />
+                @change="handleScoreChange(scope.row)" :disabled="scope.row.submitted"
+                :placeholder="scope.row.submitted ? '已提交' : '请输入'" />
             </template>
           </el-table-column>
           <el-table-column label="绩点" width="80" :formatter="formatGPA" />
-          <el-table-column label="状态" width="100" :formatter="formatStatus" />
+          <el-table-column label="状态" width="100">
+            <template #default="scope">
+              <el-tag :type="getStatusTagType(scope.row)" size="small">
+                {{ formatStatus(scope.row) }}
+              </el-tag>
+            </template>
+          </el-table-column>
           <el-table-column label="操作" width="100">
             <template #default="scope">
-              <el-button type="text" size="small" @click="viewDetails(scope.row)">
+              <el-button type="text" size="small" @click="viewDetails(scope.row)" class="operation-btn">
                 详情
               </el-button>
             </template>
@@ -148,23 +170,48 @@
       <!-- 分页控件 -->
       <div class="pagination" v-if="filteredGrades.length > 0">
         <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="currentPage"
-          :page-sizes="[5, 10, 20]" :page-size="pageSize" :total="filteredGrades.length"
-          layout="total, sizes, prev, pager, next" small />
+          :page-sizes="[5, 10, 20]" :page-size="pageSize" layout="total, sizes, prev, pager, next"
+          :total="filteredGrades.length" small>
+        </el-pagination>
       </div>
     </div>
+
+    <!-- 批量提交确认对话框 -->
+    <el-dialog v-model="confirmSubmitVisible" title="提交成绩确认" @close="confirmSubmitVisible = false">
+      <p>确定要提交以下成绩数据吗？</p>
+      <ul class="submit-details">
+        <li>课程：{{ getCourseName(selectedCourse) }}</li>
+        <li>班级：{{ getClassName(selectedClass) }}</li>
+        <li>学期：{{ getSemesterName(currentSemester) }}</li>
+        <li>学生总数：{{ courseGrades.value.length }}人</li>
+        <li v-if="pendingGradesCount > 0" class="warning-item">
+          <el-icon :size="16" class="warning-icon">
+            <WarningFilled />
+          </el-icon>
+          待提交成绩：{{ pendingGradesCount }}人
+        </li>
+      </ul>
+      <template #footer>
+        <el-button @click="confirmSubmitVisible = false">取消</el-button>
+        <el-button type="primary" @click="proceedSubmit" :loading="isSubmitting">确认提交</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, inject, watch } from 'vue'
-import { Upload, Download, ArrowUp, ArrowDown } from '@element-plus/icons-vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ref, computed, inject, watch, onMounted } from 'vue'
+import { Upload, Download, ArrowUp, ArrowDown, WarningFilled, Refresh } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
 
+// 深色模式状态
 const isDarkMode = inject('isDarkMode', ref(false))
 
+// 课程与班级数据
 const selectedCourse = ref(null)
 const selectedClass = ref(null)
 const currentSemester = ref('2023-2024-2')
+
 const semesters = ref([
   { value: '2023-2024-2', label: '2023-2024学年第二学期' },
   { value: '2023-2024-1', label: '2023-2024学年第一学期' },
@@ -188,6 +235,7 @@ const classes = ref([
   { id: 4, name: '软件工程2班' }
 ])
 
+// 成绩数据
 const allGrades = ref([
   {
     id: 1,
@@ -252,7 +300,7 @@ const allGrades = ref([
     score: 88,
     semester: '2023-2024-2',
     classId: 2,
-    submitted: true
+    submitted: false
   },
   {
     id: 6,
@@ -265,16 +313,19 @@ const allGrades = ref([
     score: 59,
     semester: '2023-2024-2',
     classId: 2,
-    submitted: true
+    submitted: false
   }
 ])
 
+// 搜索与筛选
 const searchKeyword = ref('')
 const filterType = ref('all')
 const currentPage = ref(1)
 const pageSize = ref(10)
 const isSubmitting = ref(false)
+const confirmSubmitVisible = ref(false)
 
+// 筛选成绩数据
 const filteredGrades = computed(() => {
   let grades = allGrades.value
 
@@ -323,6 +374,7 @@ const courseGrades = computed(() => {
   )
 })
 
+// 统计数据计算
 const courseAverageScore = computed(() => {
   if (courseGrades.value.length === 0) return 0
   const validScores = courseGrades.value.filter(g => g.score !== null)
@@ -332,10 +384,9 @@ const courseAverageScore = computed(() => {
   return (sum / validScores.length).toFixed(1)
 })
 
-// 模拟与上学期对比数据
 const courseAverageScoreTrend = computed(() => {
   if (courseGrades.value.length === 0) return 0
-  // 随机生成-5到5之间的趋势值
+  // 模拟与上学期对比数据
   return (Math.random() * 10 - 5).toFixed(1) * 1
 })
 
@@ -399,6 +450,22 @@ const pendingGradesCount = computed(() => {
   return courseGrades.value.filter(grade => grade.score === null || !grade.submitted).length
 })
 
+// 辅助函数
+const getCourseName = (courseId) => {
+  const course = courses.value.find(c => c.id === courseId)
+  return course ? course.name : '未知课程'
+}
+
+const getClassName = (classId) => {
+  const classItem = classes.value.find(c => c.id === classId)
+  return classItem ? classItem.name : '未知班级'
+}
+
+const getSemesterName = (semesterValue) => {
+  const semester = semesters.value.find(s => s.value === semesterValue)
+  return semester ? semester.label : '未知学期'
+}
+
 const formatGPA = (row) => {
   if (row.score === null || row.score === undefined) return '-'
   if (row.score >= 90) return 4.0
@@ -417,10 +484,36 @@ const formatStatus = (row) => {
   return '不及格'
 }
 
+const getStatusTagType = (row) => {
+  if (row.score === null || row.score === undefined) return 'info'
+  if (row.score >= 60) return 'success'
+  return 'danger'
+}
+
+const getEmptyText = () => {
+  if (!selectedCourse.value || !selectedClass.value) {
+    return '请选择课程和班级'
+  }
+  if (searchKeyword.value) {
+    return '未找到匹配的学生'
+  }
+  if (filterType.value !== 'all') {
+    return `没有符合条件的${filterType.value === 'pass' ? '及格' : filterType.value === 'fail' ? '不及格' : '待提交'}学生`
+  }
+  return '暂无成绩数据'
+}
+
+// 事件处理函数
 const handleScoreChange = (row) => {
   // 更新成绩后可以做一些验证或其他操作
   console.log(`成绩更新: ${row.studentName} - ${row.courseName}: ${row.score}`)
   row.submitted = false // 成绩修改后重置提交状态
+
+  // 添加简单的验证
+  if (row.score !== null && (row.score < 0 || row.score > 100)) {
+    ElMessage.warning('成绩必须在0-100之间')
+    row.score = null
+  }
 }
 
 const viewDetails = (row) => {
@@ -439,7 +532,7 @@ const exportGrades = () => {
     return
   }
 
-  ElMessage.success(`导出 ${currentSemester.value} 学期 ${selectedCourse.value} 课程 ${selectedClass.value} 班级的成绩数据`)
+  ElMessage.success(`导出 ${getSemesterName(currentSemester.value)} ${getCourseName(selectedCourse.value)} ${getClassName(selectedClass.value)} 的成绩数据`)
   // 这里可以添加导出成绩的逻辑
 }
 
@@ -449,25 +542,7 @@ const submitGrades = () => {
     return
   }
 
-  const unsubmittedGrades = courseGrades.value.filter(grade => grade.score === null || !grade.submitted)
-
-  if (unsubmittedGrades.length > 0) {
-    ElMessageBox.confirm(
-      `还有 ${unsubmittedGrades.length} 名学生的成绩未提交，确定要提交吗？`,
-      '提示',
-      {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }
-    ).then(() => {
-      proceedSubmit()
-    }).catch(() => {
-      // 用户取消操作
-    })
-  } else {
-    ElMessage.info('所有成绩已提交')
-  }
+  confirmSubmitVisible.value = true
 }
 
 const proceedSubmit = () => {
@@ -476,6 +551,7 @@ const proceedSubmit = () => {
   // 模拟提交成绩到服务器
   setTimeout(() => {
     isSubmitting.value = false
+    confirmSubmitVisible.value = false
 
     // 更新提交状态
     courseGrades.value.forEach(grade => {
@@ -495,11 +571,18 @@ const checkPendingGrades = () => {
   }
 
   filterType.value = 'pending'
+}
 
+const resetClassSelection = () => {
+  // 当选择课程变化时，重置班级选择
+  selectedClass.value = null
+  // 重置页码
+  currentPage.value = 1
 }
 
 const handleSizeChange = (size) => {
   pageSize.value = size
+  currentPage.value = 1 // 重置页码
 }
 
 const handleCurrentChange = (page) => {
@@ -511,15 +594,21 @@ const handleMouseMove = (e) => {
   document.documentElement.style.setProperty('--mouse-y', `${e.clientY}px`)
 }
 
+const refreshStats = () => {
+  ElMessage.info('数据已刷新')
+  // 实际应用中这里会调用API重新获取数据
+}
+
 onMounted(() => {
-  // 初始化时默认选择第一个课程和班级
+  // 初始化时默认选择第一个课程
   if (courses.value.length > 0) {
     selectedCourse.value = courses.value[0].id
   }
+})
 
-  if (classes.value.length > 0) {
-    selectedClass.value = classes.value[0].id
-  }
+watch([selectedCourse, selectedClass, currentSemester], () => {
+  // 重置页码
+  currentPage.value = 1
 })
 
 watch(isDarkMode, (newVal) => {
@@ -679,11 +768,21 @@ watch(isDarkMode, (newVal) => {
     align-items: center;
     margin-bottom: 20px;
 
-    h3 {
+    h2 {
       margin: 0;
-      font-size: 20px;
+      font-size: 22px;
       font-weight: 600;
       color: var(--text-primary);
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .header-info {
+      color: var(--text-secondary);
+      font-size: 14px;
     }
 
     .progress-indicator {
@@ -763,11 +862,6 @@ watch(isDarkMode, (newVal) => {
           display: flex;
           align-items: center;
         }
-
-        .text-sm {
-          font-size: 12px;
-          color: var(--text-tertiary);
-        }
       }
 
       .stat-progress {
@@ -775,126 +869,59 @@ watch(isDarkMode, (newVal) => {
       }
 
       .stat-meta {
-        margin-top: 8px;
-
-        .text-sm {
-          font-size: 14px;
-          color: var(--text-tertiary);
-        }
+        margin-top: 16px;
+        color: var(--text-tertiary);
       }
     }
   }
 }
 
-/* 重新设计的成绩管理卡片样式 */
+
 .grades-management {
   .management-controls {
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    margin-bottom: 20px;
-  }
+    gap: 20px;
+    margin-bottom: 24px;
 
-  .filters-section {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-    padding: 16px;
-    background: transparent;
-    border-radius: 12px;
-    border: 1px solid var(--border-color);
-
-    .filter-group {
+    .filters-section {
       display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+
+      .filter-group {
+        display: flex;
+        gap: 15px;
+      }
+
+      .action-buttons {
+        display: flex;
+        gap: 10px;
+      }
     }
 
-    .action-buttons {
+    .search-section {
       display: flex;
-      gap: 10px;
-    }
+      justify-content: space-between;
+      align-items: center;
 
-    .el-select {
-      min-width: 180px;
-      transition: all 0.2s ease;
-
-      &:hover {
-        .el-input__wrapper {
-          border-color: #6366f1;
-        }
-      }
-    }
-
-    .el-button {
-      transition: all 0.2s ease;
-
-      &:hover {
-        transform: translateY(-2px);
-      }
-    }
-  }
-
-  .search-section {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-
-    .search-input {
-      flex: 1;
-      max-width: 320px;
-      transition: all 0.2s ease;
-
-      .el-input__wrapper {
-        transition: all 0.2s ease;
+      .search-input {
+        width: 240px;
       }
 
-      &:hover .el-input__wrapper {
-        border-color: #6366f1;
+      .filter-select {
+        width: 160px;
       }
-    }
-
-    .filter-select {
-      width: 150px;
-    }
-  }
-
-  .table-container {
-    position: relative;
-    border-radius: 8px;
-    overflow: hidden;
-    border: 1px solid var(--border-color);
-    transition: all 0.3s ease;
-
-    &:hover {
-      border-color: rgba(99, 102, 241, 0.3);
     }
   }
 
   .grades-data-table {
-    margin: 0;
-    border-collapse: separate;
-
-    .el-table__header-wrapper {
-      background-color: rgba(245, 247, 250, 0.8);
+    .el-table__header th {
+      background-color: rgba(245, 247, 250, 0.7);
 
       .dark & {
-        background-color: rgba(42, 53, 71, 0.8);
+        background-color: rgba(51, 65, 85, 0.7);
       }
-    }
-
-    .el-table__body tr {
-      transition: all 0.2s ease;
-
-      &:hover>td {
-        background-color: rgba(99, 102, 241, 0.05);
-      }
-    }
-
-    .el-table__body tr.el-table__row--current>td {
-      background-color: rgba(99, 102, 241, 0.1);
     }
 
     .el-input-number {
@@ -906,7 +933,87 @@ watch(isDarkMode, (newVal) => {
     margin-top: 20px;
     display: flex;
     justify-content: flex-end;
-    padding: 10px 0;
+  }
+}
+
+
+.submit-details {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  li {
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+
+    .warning-icon {
+      margin-right: 8px;
+      color: #f59e0b;
+    }
+
+    .warning-item {
+      color: #f59e0b;
+    }
+  }
+}
+
+
+.btn-import {
+  background-color: #409eff;
+  border-color: #409eff;
+  color: white;
+
+  &:hover {
+    background-color: #66b1ff;
+    border-color: #66b1ff;
+  }
+}
+
+.btn-export {
+  background-color: #52c41a;
+  border-color: #52c41a;
+  color: white;
+
+  &:hover {
+    background-color: #73d13d;
+    border-color: #73d13d;
+  }
+}
+
+.btn-submit {
+  background-color: #ff4d4f;
+  border-color: #ff4d4f;
+  color: white;
+
+  &:hover {
+    background-color: #ff7875;
+    border-color: #ff7875;
+  }
+}
+
+
+.operation-btn {
+  color: #409eff;
+
+  &:hover {
+    color: #66b1ff;
+  }
+}
+
+.view-details-btn {
+  color: #409eff;
+
+  &:hover {
+    color: #66b1ff;
+  }
+}
+
+.refresh-btn {
+  color: #909399;
+
+  &:hover {
+    color: #606266;
   }
 }
 </style>

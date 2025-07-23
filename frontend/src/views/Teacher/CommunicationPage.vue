@@ -1,22 +1,9 @@
 <template>
-    <div class="doubao-communication-container">
-        <!-- 顶部导航栏 -->
-        <div class="doubao-header">
-            <div class="doubao-logo">
-                <span class="doubao-icon">豆包</span>
-                <span class="doubao-title">交流</span>
-            </div>
-            <div class="doubao-user-menu">
-                <el-avatar size="small" src="https://picsum.photos/id/64/200/200" alt="用户头像"></el-avatar>
-                <span class="doubao-username">教师用户</span>
-            </div>
-        </div>
-
-        <!-- 主内容区 -->
-        <div class="doubao-main-content">
-            <!-- 对话历史列表 -->
-            <div class="doubao-chat-history">
-                <div class="doubao-search-box">
+    <div class="edu-communication-container">
+        <div class="edu-main-content modern-card">
+            <!-- 联系人列表区域 -->
+            <div class="edu-contact-list">
+                <div class="edu-search-box">
                     <el-input v-model="searchQuery" placeholder="搜索对话" clearable prefix-icon="Search">
                         <template #prefix>
                             <el-icon>
@@ -25,30 +12,30 @@
                         </template>
                     </el-input>
                 </div>
-                
-                <div class="doubao-chat-items">
-                    <div v-for="(chat, index) in filteredChats" :key="index" 
-                         :class="['doubao-chat-item', { 'active': currentChatIndex === index }]"
-                         @click="selectChat(index)">
+
+                <div class="edu-contact-items">
+                    <div v-for="(chat, index) in filteredChats" :key="index"
+                        :class="['edu-contact-item base-card', { 'active': currentChatIndex === index }]"
+                        @click="selectChat(index)"
+                        @mousemove="handleMouseMove($event, $el)">
                         <el-avatar size="40" :src="chat.avatar" :alt="chat.name"></el-avatar>
-                        <div class="doubao-chat-info">
-                            <div class="doubao-chat-header">
-                                <h3 class="doubao-chat-name">{{ chat.name }}</h3>
-                                <span class="doubao-chat-time">{{ chat.time }}</span>
+                        <div class="edu-contact-info">
+                            <div class="edu-contact-header">
+                                <h3 class="edu-contact-name">{{ chat.name }}</h3>
+                                <span class="edu-contact-time">{{ chat.time }}</span>
                             </div>
-                            <p class="doubao-chat-preview">{{ chat.preview }}</p>
+                            <p class="edu-contact-preview">{{ chat.preview }}</p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 聊天内容区 -->
-            <div class="doubao-chat-container">
-                <!-- 聊天头部 -->
-                <div class="doubao-chat-header">
+            <!-- 聊天内容区域 -->
+            <div class="edu-chat-container" @mousemove="handleMouseMove($event, $el)">
+                <div class="edu-chat-header">
                     <h2>{{ currentChat ? currentChat.name : '选择一个对话' }}</h2>
-                    <div class="doubao-chat-actions">
-                        <el-button type="text" icon="More">
+                    <div class="edu-chat-actions">
+                        <el-button type="text" icon="More" class="operation-btn">
                             <el-icon>
                                 <More />
                             </el-icon>
@@ -56,31 +43,62 @@
                     </div>
                 </div>
 
-                <!-- 聊天消息区 -->
-                <div class="doubao-messages" ref="messageContainer">
-                    <div v-if="!currentChat" class="doubao-empty-chat">
+                <div class="edu-messages" ref="messageContainer">
+                    <div v-if="!currentChat" class="edu-empty-chat">
                         <el-empty description="请选择一个对话开始交流"></el-empty>
                     </div>
-                    
+
                     <div v-else>
                         <!-- 系统消息 -->
-                        <div class="doubao-system-message" v-if="currentChat.systemMessage">
+                        <div class="edu-system-message" v-if="currentChat.systemMessage">
                             <p>{{ currentChat.systemMessage }}</p>
                         </div>
-                        
-                        <!-- 用户消息 -->
-                        <div v-for="(message, msgIndex) in currentChat.messages" :key="msgIndex" 
-                             :class="['doubao-message', message.type === 'user' ? 'doubao-user-message' : 'doubao-bot-message']">
-                            <el-avatar v-if="message.type === 'bot'" size="36" src="https://picsum.photos/id/237/200/200" alt="豆包头像"></el-avatar>
-                            <el-avatar v-else size="36" src="https://picsum.photos/id/64/200/200" alt="用户头像"></el-avatar>
-                            
-                            <div class="doubao-message-content">
-                                <div class="doubao-message-bubble" v-html="formatMessage(message.content)"></div>
-                                <span class="doubao-message-time">{{ message.time }}</span>
+
+                        <!-- 消息区域 -->
+                        <div v-for="(message, msgIndex) in currentChat.messages" :key="msgIndex"
+                            :class="['edu-message', message.type === 'user' ? 'edu-user-message' : 'edu-bot-message']">
+                            <el-avatar v-if="message.type === 'bot'" size="36"
+                                src="https://picsum.photos/id/237/200/200" alt="师生头像"></el-avatar>
+
+                            <div class="edu-message-content">
+                                <div class="edu-message-bubble" v-html="formatMessage(message.content)"></div>
+                                <span class="edu-message-time">{{ message.time }}</span>
                             </div>
+
+                            <el-avatar v-if="message.type === 'user'" size="36"
+                                src="https://picsum.photos/id/64/200/200" alt="用户头像"></el-avatar>
                         </div>
                     </div>
-                
+                </div>
+
+                <!-- 消息输入区域 -->
+                <div class="edu-input-area" v-if="currentChat">
+                    <el-input v-model="newMessage" type="textarea" :autosize="{ minRows: 2, maxRows: 4 }"
+                        placeholder="输入消息..." @keyup.enter.exact.prevent="sendMessage" class="edu-message-input">
+                        <template #append>
+                            <el-button :disabled="!newMessage.trim()" type="primary" @click="sendMessage" class="btn-submit">
+                                发送
+                            </el-button>
+                        </template>
+                    </el-input>
+
+                    <div class="edu-input-actions">
+                        <el-button type="text" icon="Picture" class="operation-btn">
+                            <el-icon>
+                                <Picture />
+                            </el-icon>
+                        </el-button>
+                        <el-button type="text" icon="VideoCamera" class="operation-btn">
+                            <el-icon>
+                                <VideoCamera />
+                            </el-icon>
+                        </el-button>
+                        <el-button type="text" icon="File" class="operation-btn">
+                            <el-icon>
+                                <File />
+                            </el-icon>
+                        </el-button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -89,22 +107,24 @@
 
 <script setup>
 import { ref, onMounted, nextTick, computed } from 'vue'
-import { 
-    Search, 
-    More
+import {
+    Search,
+    More,
+    Picture,
+    VideoCamera,
+    File
 } from '@element-plus/icons-vue'
 
-// 模拟对话数据
 const chatHistory = ref([
     {
         id: 1,
-        name: '豆包助手',
+        name: '师生助手',
         avatar: 'https://picsum.photos/id/237/200/200',
         time: '10:25',
-        preview: '你好！我是豆包助手，有什么可以帮助你的吗？',
-        systemMessage: '今天10:20: 豆包助手加入了对话',
+        preview: '你好！我是师生助手，有什么可以帮助你的吗？',
+        systemMessage: '今天10:20: 师生助手加入了对话',
         messages: [
-            { type: 'bot', content: '你好！我是豆包助手，有什么可以帮助你的吗？', time: '10:25' },
+            { type: 'bot', content: '你好！我是师生助手，有什么可以帮助你的吗？', time: '10:25' },
             { type: 'user', content: '你好，我想咨询一下教学计划的制定方法', time: '10:27' },
             { type: 'bot', content: '制定教学计划需要考虑以下几个方面：<br>1. 明确教学目标和学习成果<br>2. 设计合理的教学内容和进度安排<br>3. 选择合适的教学方法和评估方式<br>4. 准备必要的教学资源<br><br>你需要我为你详细解释哪一部分呢？', time: '10:30' },
             { type: 'user', content: '请详细解释一下如何设计教学内容和进度安排', time: '10:32' }
@@ -119,7 +139,7 @@ const chatHistory = ref([
         systemMessage: '昨天16:30: 王老师邀请你查看课程安排',
         messages: [
             { type: 'bot', content: '李老师，你好！下学期的课程安排已经出来了，请查收附件。如有疑问，请随时联系我。', time: '昨天 16:45' },
-            { type: 'bot', content: '<el-link href="#" @click.stop="() => ElMessage.info(\'下载课程安排\')">下学期课程安排.xlsx</el-link>', time: '昨天 16:45' },
+            { type: 'bot', content: '<a href="#" class="view-details-btn" @click.prevent="downloadFile">下学期课程安排.xlsx</a>', time: '昨天 16:45' },
             { type: 'user', content: '收到，谢谢！我会尽快确认', time: '昨天 16:50' }
         ]
     },
@@ -141,36 +161,82 @@ const chatHistory = ref([
 const searchQuery = ref('')
 const currentChatIndex = ref(0)
 const messageContainer = ref(null)
+const newMessage = ref('')
 
-// 计算属性 - 过滤对话列表
 const filteredChats = computed(() => {
     if (!searchQuery.value.trim()) return chatHistory.value
-    
+
     const query = searchQuery.value.toLowerCase().trim()
-    return chatHistory.value.filter(chat => 
-        chat.name.toLowerCase().includes(query) || 
+    return chatHistory.value.filter(chat =>
+        chat.name.toLowerCase().includes(query) ||
         chat.preview.toLowerCase().includes(query)
     )
 })
 
-// 当前选中的对话
 const currentChat = computed(() => {
     if (currentChatIndex.value === null || !chatHistory.value.length) return null
     return chatHistory.value[currentChatIndex.value]
 })
 
-// 选择对话
 const selectChat = (index) => {
     currentChatIndex.value = index
     scrollToBottom()
 }
 
-// 格式化消息内容（支持HTML）
 const formatMessage = (content) => {
     return content
 }
 
-// 滚动到底部
+const sendMessage = () => {
+    if (!currentChat.value || !newMessage.value.trim()) return
+
+    const message = {
+        type: 'user',
+        content: newMessage.value.trim(),
+        time: formatTime(new Date())
+    }
+
+    currentChat.value.messages.push(message)
+    currentChat.value.preview = message.content.length > 30 ?
+        message.content.substring(0, 30) + '...' : message.content
+    currentChat.value.time = message.time
+    newMessage.value = ''
+    scrollToBottom()
+
+    if (currentChat.value.id === 1) {
+        setTimeout(() => {
+            const replies = [
+                "非常感谢你的提问，我会尽快为你解答。",
+                "我正在查看相关资料，请稍等片刻。",
+                "这个问题很好，我认为可以从以下几个方面来考虑...",
+                "根据最新的教学指南，我们应该...",
+                "我已经将你的问题记录下来，会在下次会议上提出讨论。"
+            ]
+
+            const randomReply = replies[Math.floor(Math.random() * replies.length)]
+
+            const botMessage = {
+                type: 'bot',
+                content: randomReply,
+                time: formatTime(new Date())
+            }
+
+            currentChat.value.messages.push(botMessage)
+            currentChat.value.preview = randomReply.length > 30 ?
+                randomReply.substring(0, 30) + '...' : randomReply
+            currentChat.value.time = botMessage.time
+
+            scrollToBottom()
+        }, 800)
+    }
+}
+
+const formatTime = (date) => {
+    const hours = date.getHours().toString().padStart(2, '0')
+    const minutes = date.getMinutes().toString().padStart(2, '0')
+    return `${hours}:${minutes}`
+}
+
 const scrollToBottom = () => {
     nextTick(() => {
         if (messageContainer.value) {
@@ -179,349 +245,425 @@ const scrollToBottom = () => {
     })
 }
 
+const handleMouseMove = (e, el) => {
+    const rect = el.getBoundingClientRect()
+    const x = e.clientX - rect.left
+    const y = e.clientY - rect.top
+    el.style.setProperty('--mouse-x', `${x}px`)
+    el.style.setProperty('--mouse-y', `${y}px`)
+}
+
 onMounted(() => {
     scrollToBottom()
 })
 </script>
 
 <style scoped lang="scss">
-.doubao-communication-container {
+:root {
+  --text-primary: #303133;
+  --text-secondary: #606266;
+  --text-tertiary: #909399;
+  --text-highlight: #409eff;
+  --border-color: #ebeef5;
+  --card-bg: white;
+  --card-hover-bg: #f5f7fa;
+  --trend-up: #10b981;
+  --trend-down: #ef4444;
+  --shadow-light: 0 4px 12px rgba(0, 0, 0, 0.05);
+  --shadow-medium: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+.dark {
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.7);
+  --text-tertiary: rgba(255, 255, 255, 0.5);
+  --text-highlight: #64748b;
+  --border-color: rgba(255, 255, 255, 0.1);
+  --card-bg: rgba(30, 41, 59, 0.8);
+  --card-hover-bg: rgba(51, 65, 85, 0.8);
+  --trend-up: #22c55e;
+  --trend-down: #ef4444;
+  --shadow-light: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --shadow-medium: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.base-card {
+  position: relative;
+  border-radius: 16px;
+  padding: 24px;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  z-index: 1;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y),
+        rgba(99, 102, 241, 0.05) 0%,
+        transparent 80%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-medium);
+  }
+
+  &:hover::before {
+    opacity: 1;
+  }
+
+  .dark & {
+    &::before {
+      background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y),
+          rgba(99, 102, 241, 0.08) 0%,
+          transparent 80%);
+    }
+  }
+}
+
+.modern-card {
+  position: relative;
+  border-radius: 16px;
+  padding: 0;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  z-index: 1;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-light);
+
+  .card-content {
+    position: relative;
+    z-index: 2;
+  }
+
+  .dark & {
+    background: var(--card-bg);
+    border-color: var(--border-color);
+  }
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-medium);
+    border-color: rgba(199, 210, 254, 0.8);
+  }
+
+  .dark &:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-medium);
+    border-color: rgba(99, 102, 241, 0.5);
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y),
+        rgba(99, 102, 241, 0.08) 0%,
+        transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-medium);
+
+    &::before {
+      opacity: 1;
+    }
+  }
+}
+
+.edu-communication-container {
     display: flex;
     flex-direction: column;
-    height: 100vh;
     overflow: hidden;
+    background: transparent;
+    padding: 15px;
+    height: 100%;
+    min-height: 600px;
 }
 
-.doubao-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    height: 60px;
-    padding: 0 20px;
-    background-color: #f8fafc;
-    border-bottom: 1px solid #e2e8f0;
-    
-    .dark & {
-        background-color: #1e293b;
-        border-color: #334155;
-    }
-    
-    .doubao-logo {
-        display: flex;
-        align-items: center;
-        
-        .doubao-icon {
-            font-size: 24px;
-            font-weight: bold;
-            color: #6366f1;
-            margin-right: 8px;
-        }
-        
-        .doubao-title {
-            font-size: 18px;
-            color: #334155;
-            
-            .dark & {
-                color: #f8fafc;
-            }
-        }
-    }
-    
-    .doubao-user-menu {
-        display: flex;
-        align-items: center;
-        
-        .doubao-username {
-            margin-left: 8px;
-            color: #334155;
-            
-            .dark & {
-                color: #f8fafc;
-            }
-        }
-    }
-}
-
-.doubao-main-content {
+.edu-main-content {
     display: flex;
     flex: 1;
     overflow: hidden;
+    border-radius: 16px;
+    height: 100%;
 }
 
-.doubao-chat-history {
+.edu-contact-list {
     flex: 0 0 320px;
-    border-right: 1px solid #e2e8f0;
+    border-right: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
-    
-    .dark & {
-        border-color: #334155;
-    }
-    
-    .doubao-search-box {
-        padding: 12px;
-        border-bottom: 1px solid #e2e8f0;
-        
-        .dark & {
-            border-color: #334155;
-        }
-        
+    background-color: var(--card-bg);
+
+    .edu-search-box {
+        padding: 16px;
+        border-bottom: 1px solid var(--border-color);
+
         .el-input {
-            --el-input-bg-color: rgba(248, 250, 252, 0.8);
-            --el-input-border-color: #e2e8f0;
-            
-            .dark & {
-                --el-input-bg-color: rgba(30, 41, 59, 0.8);
-                --el-input-border-color: #334155;
-                --el-input-text-color: #f8fafc;
-            }
+            border-radius: 18px;
         }
     }
-    
-    .doubao-chat-items {
+
+    .edu-contact-items {
         flex: 1;
         overflow-y: auto;
-        padding: 8px 0;
-        
-        .doubao-chat-item {
+        padding: 0 8px;
+
+        .edu-contact-item {
             display: flex;
             padding: 12px;
             cursor: pointer;
-            transition: background-color 0.2s ease;
-            
+            transition: all 0.2s ease;
+            margin: 4px 8px;
+
             &:hover {
-                background-color: rgba(241, 245, 249, 0.5);
+                transform: translateY(-2px);
             }
-            
+
             &.active {
-                background-color: rgba(99, 102, 241, 0.1);
-                
-                .doubao-chat-name {
-                    color: #6366f1;
+                .edu-contact-name {
+                    color: var(--text-highlight);
+                    font-weight: 600;
                 }
             }
-            
-            .doubao-chat-info {
+
+            .edu-contact-info {
                 margin-left: 12px;
                 flex: 1;
                 overflow: hidden;
-                
-                .doubao-chat-header {
+
+                .edu-contact-header {
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
-                    
-                    .doubao-chat-name {
+
+                    .edu-contact-name {
                         font-size: 15px;
                         font-weight: 500;
-                        color: #1e293b;
+                        color: var(--text-primary);
                         white-space: nowrap;
                         overflow: hidden;
                         text-overflow: ellipsis;
-                        
-                        .dark & {
-                            color: #f8fafc;
-                        }
                     }
-                    
-                    .doubao-chat-time {
+
+                    .edu-contact-time {
                         font-size: 12px;
-                        color: #94a3b8;
-                        
-                        .dark & {
-                            color: #64748b;
-                        }
+                        color: var(--text-tertiary);
                     }
                 }
-                
-                .doubao-chat-preview {
+
+                .edu-contact-preview {
                     font-size: 13px;
-                    color: #64748b;
+                    color: var(--text-secondary);
                     margin-top: 4px;
                     white-space: nowrap;
                     overflow: hidden;
                     text-overflow: ellipsis;
-                    
-                    .dark & {
-                        color: #94a3b8;
-                    }
                 }
             }
         }
     }
 }
 
-.doubao-chat-container {
+.edu-chat-container {
     flex: 1;
     display: flex;
     flex-direction: column;
+    background-color: var(--card-bg);
 }
 
-.doubao-chat-header {
+.edu-chat-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    height: 60px;
-    padding: 0 20px;
-    border-bottom: 1px solid #e2e8f0;
-    
-    .dark & {
-        border-color: #334155;
-        background-color: #1e293b;
-    }
-    
+    height: 64px;
+    padding: 0 24px;
+    border-bottom: 1px solid var(--border-color);
+
     h2 {
         font-size: 18px;
-        font-weight: 500;
-        color: #1e293b;
-        
-        .dark & {
-            color: #f8fafc;
-        }
+        font-weight: 600;
+        color: var(--text-primary);
     }
 }
 
-.doubao-messages {
+.edu-messages {
     flex: 1;
     overflow-y: auto;
     padding: 20px;
-    background-color: #f8fafc;
-    
-    .dark & {
-        background-color: #0f172a;
-    }
-    
-    .doubao-empty-chat {
+    background-color: var(--card-hover-bg);
+    display: flex;
+    flex-direction: column;
+
+    .edu-empty-chat {
         height: 100%;
         display: flex;
         align-items: center;
         justify-content: center;
     }
-    
-    .doubao-system-message {
+
+    .edu-system-message {
         text-align: center;
-        margin-bottom: 16px;
-        
+        margin-bottom: 24px;
+
         p {
             display: inline-block;
-            background-color: #e2e8f0;
-            color: #64748b;
+            background-color: rgba(64, 158, 255, 0.1);
+            color: var(--text-highlight);
             font-size: 12px;
-            padding: 4px 12px;
-            border-radius: 12px;
-            
-            .dark & {
-                background-color: #1e293b;
-                color: #94a3b8;
-            }
+            padding: 6px 16px;
+            border-radius: 16px;
         }
     }
-    
-    .doubao-message {
+
+    .edu-message {
         display: flex;
-        margin-bottom: 16px;
-        
-        .doubao-message-content {
-            max-width: 70%;
-            margin: 0 12px;
-            
-            .doubao-message-bubble {
-                padding: 10px 16px;
-                border-radius: 16px;
+        margin-bottom: 24px;
+        align-items: flex-start;
+
+        .edu-message-content {
+            max-width: 75%;
+            display: flex;
+            flex-direction: column;
+
+            .edu-message-bubble {
+                padding: 12px 16px;
                 font-size: 14px;
                 line-height: 1.6;
-                position: new;
-                
-                img {
-                    max-width: 100%;
-                    border-radius: 8px;
-                }
-                
-                a {
-                    color: #6366f1;
-                    text-decoration: underline;
-                    
+                position: relative;
+                border-radius: 8px;
+
+                .view-details-btn {
+                    color: var(--text-highlight);
+                    text-decoration: none;
+                    cursor: pointer;
+
                     &:hover {
-                        color: #4f46e5;
+                        text-decoration: underline;
                     }
                 }
             }
-            
-            .doubao-message-time {
+
+            .edu-message-time {
                 font-size: 12px;
-                color: #94a3b8;
-                margin-top: 4px;
+                color: var(--text-tertiary);
+                margin-top: 6px;
                 display: block;
-                text-align: right;
             }
         }
     }
-    
-    .doubao-user-message {
+
+    .edu-user-message {
         justify-content: flex-end;
-        
-        .doubao-message-bubble {
-            background-color: #6366f1;
-            color: white;
+
+        .edu-message-content {
+            align-items: flex-end;
+            margin-right: 12px;
+
+            .edu-message-bubble {
+                background-color: var(--text-highlight);
+                color: white;
+                border-radius: 12px 12px 0 12px;
+            }
         }
     }
-    
-    .doubao-bot-message {
+
+    .edu-bot-message {
         justify-content: flex-start;
-        
-        .doubao-message-bubble {
-            background-color: white;
-            color: #1e293b;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-            
-            .dark & {
-                background-color: #1e293b;
-                color: #f8fafc;
+
+        .edu-message-content {
+            align-items: flex-start;
+            margin-left: 12px;
+
+            .edu-message-bubble {
+                background-color: var(--card-bg);
+                color: var(--text-primary);
+                box-shadow: var(--shadow-light);
+                border-radius: 12px 12px 12px 0;
             }
         }
     }
 }
 
-.doubao-input-area {
-    padding: 16px;
-    border-top: 1px solid #e2e8f0;
-    background-color: white;
-    
-    .dark & {
-        border-color: #334155;
-        background-color: #1e293b;
-    }
-    
-    .doubao-message-input {
-        --el-input-bg-color: rgba(248, 250, 252, 0.8);
-        --el-input-border-color: #e2e8f0;
-        
-        .dark & {
-            --el-input-bg-color: rgba(30, 41, 59, 0.8);
-            --el-input-border-color: #334155;
-            --el-input-text-color: #f8fafc;
+.edu-input-area {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border-color);
+    background-color: var(--card-bg);
+
+    .edu-message-input {
+        .el-textarea__inner {
+            border-radius: 8px;
+            padding: 12px 16px;
+        }
+
+        .el-input-group__append {
+            background-color: var(--text-highlight);
+            border: none;
+            border-radius: 0 8px 8px 0;
+
+            .el-button {
+                color: white;
+            }
         }
     }
-    
-    .doubao-input-actions {
+
+    .edu-input-actions {
         display: flex;
-        margin-top: 8px;
-        
+        margin-top: 12px;
+
         .el-button {
-            color: #64748b;
-            
+            color: var(--text-secondary);
+            margin-right: 16px;
+
             &:hover {
-                color: #6366f1;
-            }
-            
-            .dark & {
-                color: #94a3b8;
-                
-                &:hover {
-                    color: #818cf8;
-                }
+                color: var(--text-highlight);
             }
         }
     }
+}
+
+.operation-btn {
+  color: var(--text-highlight);
+
+  &:hover {
+    color: #66b1ff;
+  }
+}
+
+.view-details-btn {
+  color: var(--text-highlight);
+
+  &:hover {
+    color: #66b1ff;
+  }
+}
+
+.btn-submit {
+  background-color: var(--text-highlight);
+  border-color: var(--text-highlight);
+  color: white;
+
+  &:hover {
+    background-color: #66b1ff;
+    border-color: #66b1ff;
+  }
 }
 </style>

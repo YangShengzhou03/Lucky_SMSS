@@ -1,10 +1,8 @@
 <template>
   <div class="app-container" :class="{ 'dark-mode': isDarkMode }">
-    <!-- 顶部导航栏 -->
     <header class="top-nav">
       <div class="container">
         <div class="nav-content">
-          <!-- 左侧Logo区域 -->
           <div class="nav-left">
             <div class="nav-logo">
               <span class="logo-text">Lucky SMS</span>
@@ -12,7 +10,6 @@
             </div>
           </div>
 
-          <!-- 中间搜索区域 -->
           <div class="nav-center">
             <div class="nav-search">
               <el-input v-model="searchQuery" placeholder="搜索课程/成绩/图书..." size="small" class="search-input"
@@ -26,9 +23,7 @@
             </div>
           </div>
 
-          <!-- 右侧功能区 -->
           <div class="nav-right">
-            <!-- 日夜主题切换 -->
             <button class="dark-mode-toggle action-btn" @click="toggleDarkMode" aria-label="切换暗色模式"
               :title="isDarkMode ? '切换至日间主题' : '切换至夜间主题'">
               <el-icon :size="20" :class="isDarkMode ? 'icon-moon' : 'icon-sun'">
@@ -37,7 +32,6 @@
               </el-icon>
             </button>
 
-            <!-- 通知中心 -->
             <div class="notification-center">
               <el-badge :value="unreadCount" max="99" :hidden="unreadCount === 0">
                 <button class="notification-btn action-btn" @click="toggleNotification" aria-label="通知中心" title="通知中心">
@@ -48,9 +42,6 @@
               </el-badge>
             </div>
 
-            <!-- 用户区域 -->
-
-            <!-- 移动端菜单按钮 -->
             <button class="mobile-menu-btn action-btn" v-if="isMobile && showSidebar" @click="toggleMobileSidebar"
               aria-label="移动端菜单" title="菜单">
               <el-icon>
@@ -62,9 +53,7 @@
       </div>
     </header>
 
-    <!-- 主体内容区 -->
     <div class="body-container">
-      <!-- 侧边栏 -->
       <aside v-if="showSidebar" class="sidebar" :class="{ 'sidebar-mobile-open': mobileSidebarOpen }"
         :aria-hidden="!mobileSidebarOpen && isMobile">
         <el-menu :default-active="activeMenuIndex" class="sidebar-menu" @select="handleMenuSelect"
@@ -115,9 +104,7 @@
         </el-menu>
       </aside>
 
-      <!-- 主内容区 -->
       <main class="main-content">
-        <!-- 面包屑导航 -->
         <div class="breadcrumb-container">
           <el-breadcrumb separator="/" class="breadcrumb">
             <el-breadcrumb-item :to="{ path: '/' }">Lucky-SMS</el-breadcrumb-item>
@@ -125,15 +112,12 @@
           </el-breadcrumb>
         </div>
 
-        <!-- 路由视图容器 -->
         <div class="router-view-container">
-          <!-- 加载状态 -->
           <div class="content-loading" v-if="isLoading">
             <el-spinner size="40" type="ball-clip-rotate" />
             <div v-loading="isLoading"></div>
           </div>
 
-          <!-- 错误状态 -->
           <div class="content-error" v-else-if="hasError">
             <el-icon size="60" class="error-icon">
               <Warning />
@@ -144,7 +128,6 @@
             </el-button>
           </div>
 
-          <!-- 主内容路由视图 -->
           <router-view v-else v-slot="{ Component }">
             <transition name="fade" mode="out-in">
               <component :is="Component" />
@@ -154,7 +137,6 @@
       </main>
     </div>
 
-    <!-- 移动端底部导航 -->
     <nav class="mobile-bottom-nav" v-if="isMobile && showSidebar">
       <button v-for="item in mobileNavItems" :key="item.index" @click="handleMobileNav(item)"
         :class="{ 'active': route.path === item.path }" :aria-current="route.path === item.path ? 'page' : undefined">
@@ -176,14 +158,11 @@ import {
 } from '@element-plus/icons-vue'
 import { provideDarkMode } from '@/composables/useDarkMode'
 
-// 路由和路由实例
 const router = useRouter()
 const route = useRoute()
 
-// 主题状态
 const { isDarkMode, toggleDarkMode } = provideDarkMode()
 
-// 移动端导航项配置
 const mobileNavItems = [
   { index: '1', icon: Notebook, text: '学籍', path: '/status' },
   { index: '2', icon: Histogram, text: '成绩', path: '/grades' },
@@ -191,7 +170,6 @@ const mobileNavItems = [
   { index: '4', icon: Reading, text: '图书', path: '/library' }
 ]
 
-// 状态管理
 const showBackToTop = ref(false)
 const currentPageName = ref('')
 const searchQuery = ref('')
@@ -205,37 +183,31 @@ const hasError = ref(false)
 const errorMessage = ref('')
 const unreadCount = ref(3)
 
-// 页面加载状态控制
 const setPageLoading = (loading, errorMsg = '') => {
   isLoading.value = loading
   hasError.value = !loading && !!errorMsg
   errorMessage.value = errorMsg || '加载失败，请重试'
 }
 
-// 控制侧边栏显示
 const showSidebar = computed(() => {
   return !['/login', '/register'].includes(route.path)
 })
 
-// 计算当前激活的菜单索引
 const activeMenuIndex = computed(() => {
   const routeMap = {
-    '/student': '1',          // 首页
-    '/student/status': '2',   // 学籍信息
-    '/student/grades': '3',   // 成绩查询
-    '/student/schedule': '4', // 课表查询
-    '/student/library': '5',  // 图书借阅
-    '/student/course': '6',   // 选课系统
-    '/student/settings': '7'  // 系统设置
+    '/student': '1',
+    '/student/status': '2',
+    '/student/grades': '3',
+    '/student/schedule': '4',
+    '/student/library': '5',
+    '/student/course': '6',
+    '/student/settings': '7'
   }
-  // 使用当前路径查找对应的菜单索引，找不到则返回首页'1'
   return routeMap[route.path] || '1'
 })
 
-// 监听路由变化
 watch(route, (newRoute) => {
   setPageLoading(true)
-  // 模拟加载延迟
   const timer = setTimeout(() => {
     const pageTitles = {
       '/student': '首页',
@@ -254,33 +226,28 @@ watch(route, (newRoute) => {
   }, 500)
 }, { immediate: true })
 
-// 监听滚动事件，控制返回顶部按钮显示
 const handleScroll = () => {
   showBackToTop.value = window.scrollY > 300
 }
 
-// 移动端导航处理
 const handleMobileNav = (item) => {
   router.push(item.path)
 }
 
-// 移动端侧边栏切换
 const toggleMobileSidebar = () => {
   mobileSidebarOpen.value = !mobileSidebarOpen.value
-  // 控制页面滚动锁定
   document.body.style.overflow = mobileSidebarOpen.value ? 'hidden' : ''
 }
 
-// 侧边栏菜单选择处理
 const handleMenuSelect = (index) => {
   const routeMap = {
-    '1': '/student',          // 首页
-    '2': '/student/status',   // 学籍信息
-    '3': '/student/grades',   // 成绩查询
-    '4': '/student/schedule', // 课表查询
-    '5': '/student/library',  // 图书借阅
-    '6': '/student/course',   // 选课系统
-    '7': '/student/settings'  // 系统设置
+    '1': '/student',
+    '2': '/student/status',
+    '3': '/student/grades',
+    '4': '/student/schedule',
+    '5': '/student/library',
+    '6': '/student/course',
+    '7': '/student/settings'
   }
   if (routeMap[index]) {
     router.push(routeMap[index])
@@ -291,24 +258,20 @@ const handleMenuSelect = (index) => {
   }
 }
 
-// 点击外部关闭下拉菜单
 const closeDropdowns = (e) => {
   const userMenuEl = document.querySelector('.user-area .el-popover')
   const notificationEl = document.querySelector('.notification-center .el-popover')
   const sidebarEl = document.querySelector('.sidebar')
   const mobileMenuBtn = document.querySelector('.mobile-menu-btn')
 
-  // 关闭用户菜单
   if (userMenuVisible.value && userMenuEl && !userMenuEl.contains(e.target)) {
     userMenuVisible.value = false
   }
 
-  // 关闭通知菜单
   if (notificationVisible.value && notificationEl && !notificationEl.contains(e.target)) {
     notificationVisible.value = false
   }
 
-  // 关闭移动端侧边栏
   if (isMobile.value && mobileSidebarOpen.value && sidebarEl && mobileMenuBtn &&
     !sidebarEl.contains(e.target) && !mobileMenuBtn.contains(e.target)) {
     mobileSidebarOpen.value = false
@@ -316,31 +279,23 @@ const closeDropdowns = (e) => {
   }
 }
 
-// 搜索处理
 const handleSearch = () => {
   if (searchQuery.value.trim()) {
     console.log('搜索:', searchQuery.value)
-    // 这里可以添加实际的搜索逻辑
   }
 }
 
-// 通知中心切换
 const toggleNotification = () => {
   notificationVisible.value = !notificationVisible.value
 }
 
-// 用户菜单切换
-
-// 重试加载
 const retry = () => {
   setPageLoading(true)
-  // 模拟重新加载
   setTimeout(() => {
     setPageLoading(false)
   }, 1000)
 }
 
-// 检查屏幕尺寸
 const checkScreenSize = () => {
   isMobile.value = window.innerWidth < 768
   if (isMobile.value) {
@@ -348,17 +303,11 @@ const checkScreenSize = () => {
   }
 }
 
-// 生命周期钩子
 onMounted(() => {
-  // 添加事件监听器
   document.addEventListener('click', closeDropdowns)
   window.addEventListener('scroll', handleScroll)
   window.addEventListener('resize', checkScreenSize)
-
-  // 初始化检查屏幕尺寸
   checkScreenSize()
-
-  // 初始化页面加载状态
   setPageLoading(true)
   setTimeout(() => {
     setPageLoading(false)
@@ -366,7 +315,6 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  // 移除事件监听器
   document.removeEventListener('click', closeDropdowns)
   window.removeEventListener('scroll', handleScroll)
   window.removeEventListener('resize', checkScreenSize)
@@ -374,7 +322,6 @@ onUnmounted(() => {
 </script>
 
 <style lang="scss">
-/* 全局样式定义 */
 :root {
   --primary-color: #4361ee;
   --primary-light: #e0e7ff;
@@ -426,15 +373,9 @@ onUnmounted(() => {
   --sidebar-bg: #111827;
   --sidebar-text: var(--gray-400);
 }
-
-/* 暗色模式切换动画 */
-.dark-mode-transition {
-  transition: all 0.3s ease-in-out;
-}
 </style>
 
 <style scoped lang="scss">
-/* 组件样式 */
 * {
   margin: 0;
   padding: 0;
@@ -720,7 +661,6 @@ onUnmounted(() => {
   height: calc(100vh - 72px);
 }
 
-/* 侧边栏样式 */
 .sidebar {
   width: 220px;
   background: var(--sidebar-bg);
@@ -836,7 +776,6 @@ onUnmounted(() => {
   font-weight: 500;
 }
 
-/* 面包屑第一个屑 */
 .breadcrumb :deep(.el-breadcrumb__inner) {
   color: var(--gray-600);
   transition: var(--transition);

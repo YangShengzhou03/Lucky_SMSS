@@ -1,7 +1,5 @@
-<!-- frontend\src\components\IndexLayout.vue -->
 <template>
   <div class="app-container">
-    <!-- 顶部导航 -->
     <div class="top-nav">
       <div class="container">
         <div class="nav-content">
@@ -22,10 +20,7 @@
     </div>
 
     <div v-if="isHomePage">
-
-      <!-- 主要内容 -->
       <main>
-        <!-- 英雄区域 -->
         <section id="home" class="hero">
           <div class="particles" id="particles-js"></div>
           <div class="hero-content">
@@ -47,7 +42,6 @@
           </div>
         </section>
 
-        <!-- 核心功能 -->
         <section id="features" class="features">
           <div class="container">
             <h2 class="section-title">核心功能</h2>
@@ -67,7 +61,6 @@
           </div>
         </section>
 
-        <!-- 价格方案 -->
         <section id="pricing" class="pricing">
           <div class="container">
             <h2 class="section-title">价格方案</h2>
@@ -103,13 +96,10 @@
           </div>
         </section>
       </main>
-
     </div>
 
-    <!-- 路由出口：登录/注册页面在这里显示 -->
     <router-view v-else />
 
-    <!-- 页脚 -->
     <footer class="footer">
       <div class="container">
         <div class="footer-content">
@@ -179,7 +169,6 @@
       </div>
     </footer>
 
-    <!-- 返回顶部 -->
     <transition name="fade">
       <el-button v-show="showBackToTop" class="back-to-top" type="primary" :icon="ArrowUp" @click="scrollToTop" />
     </transition>
@@ -193,27 +182,20 @@ import {
   Location, Phone, Message, ChatDotRound,
   Opportunity, Link, User
 } from '@element-plus/icons-vue'
-// 引入路由相关依赖
 import { useRoute, useRouter } from 'vue-router';
 
 const router = useRouter()
-
-const showBackToTop = ref(false)
-
 const route = useRoute();
-
-// 控制首页内容是否显示：根路径时显示，其他路径隐藏
+const showBackToTop = ref(false)
 const isHomePage = ref(true);
 
-// 监听路由变化，切换显示状态
 watch(
   () => route.path,
   (newPath) => {
-    isHomePage.value = newPath === '/'; // 只有根路径显示首页内容
+    isHomePage.value = newPath === '/';
   }
 );
 
-// 核心功能数据
 const features = [
   {
     id: 1,
@@ -235,7 +217,6 @@ const features = [
   }
 ]
 
-// 价格方案数据
 const pricingPlans = [
   {
     id: 1,
@@ -273,12 +254,10 @@ const pricingPlans = [
       '专属客户经理',
       '高级安全保障',
       '定制化解决方案'
-    ],
-    recommended: true
+    ]
   }
 ]
 
-// 方法
 const scrollToSection = (sectionId) => {
   const element = document.getElementById(sectionId)
   if (element) {
@@ -309,10 +288,8 @@ const handleRegister = () => {
   router.push('/register')
 }
 
-// 生命周期
 onMounted(() => {
   window.addEventListener('scroll', handleScroll)
-  // 初始化粒子动画
   if (window.particlesJS) {
     window.particlesJS('particles-js', {
       particles: {
@@ -337,7 +314,6 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
-  // 清理粒子动画
   if (window.pJSDom && window.pJSDom.length > 0) {
     window.pJSDom[0].pJS.fn.vendors.destroypJS()
     window.pJSDom = []
@@ -346,7 +322,6 @@ onUnmounted(() => {
 </script>
 
 <style>
-/* CSS 变量 */
 :root {
   --primary-color: #3b82f6;
   --primary-light: #93c5fd;
@@ -376,7 +351,6 @@ onUnmounted(() => {
   --transition: all 0.3s ease;
 }
 
-/* 基础样式 */
 .app-container {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   line-height: 1.6;
@@ -422,25 +396,17 @@ onUnmounted(() => {
   border-radius: 2px;
 }
 
-/* 顶部导航 */
 .top-nav {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   padding: 16px 0;
   box-shadow: var(--shadow-md);
   border-bottom: 1px solid var(--gray-100);
-
-  /* 强化粘性定位 */
   position: sticky;
-  /* 核心：粘性定位 */
   top: 0;
-  /* 必须设置 top 值，否则 sticky 不生效 */
   z-index: 9999;
-  /* 提高层级，避免被其他元素覆盖 */
   width: 100%;
-  /* 确保宽度占满屏幕 */
   left: 0;
-  /* 固定左侧位置 */
 }
 
 .nav-content {
@@ -509,12 +475,6 @@ onUnmounted(() => {
   opacity: 0.9;
 }
 
-.btn-text {
-  position: relative;
-  z-index: 1;
-}
-
-/* 英雄区域 */
 .hero {
   height: 90vh;
   min-height: 600px;
@@ -549,16 +509,15 @@ onUnmounted(() => {
   border: 1px solid rgba(255, 255, 255, 0.3);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   transition: all 0.4s cubic-bezier(0.16, 0.77, 0.21, 0.99);
-
-  &:hover {
-    transform: translateY(-6px);
-    background: rgba(255, 255, 255, 0.15);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15),
-      0 0 15px rgba(255, 255, 255, 0.2);
-    border-color: rgba(255, 255, 255, 0.5);
-  }
 }
 
+.hero-content:hover {
+  transform: translateY(-6px);
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15),
+    0 0 15px rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+}
 
 .hero-title {
   font-size: clamp(2rem, 5vw, 3.5rem);
@@ -569,11 +528,6 @@ onUnmounted(() => {
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.title-line {
-  display: inline-block;
-}
-
-/* 英雄字体 */
 .hero-subtitle-accent {
   color: var(--success-light);
   white-space: nowrap;
@@ -628,7 +582,6 @@ onUnmounted(() => {
   box-shadow: var(--shadow-lg);
 }
 
-/* 核心功能 */
 .features {
   padding: 120px 0;
   background: var(--white);
@@ -732,7 +685,6 @@ onUnmounted(() => {
   line-height: 1.7;
 }
 
-/* 价格方案 */
 .pricing {
   padding: 120px 0;
   background: var(--gray-50);
@@ -872,7 +824,7 @@ onUnmounted(() => {
 
 .plan-title {
   font-size: 24px;
-  font-weight: 600;
+  font-weight: 6 00;
   margin-bottom: 16px;
   position: relative;
   z-index: 1;
@@ -935,7 +887,6 @@ onUnmounted(() => {
   box-shadow: var(--shadow-md);
 }
 
-/* 页脚 */
 .footer {
   background: var(--gray-900);
   color: var(--white);
@@ -1035,7 +986,6 @@ onUnmounted(() => {
   font-size: 16px;
 }
 
-/* 返回顶部*/
 .back-to-top {
   position: fixed;
   bottom: 40px;
@@ -1066,7 +1016,6 @@ onUnmounted(() => {
   opacity: 0;
 }
 
-/* 响应式设计 */
 @media (max-width: 768px) {
   .hero-title {
     font-size: clamp(1.8rem, 5vw, 2.5rem);

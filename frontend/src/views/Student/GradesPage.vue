@@ -56,6 +56,7 @@
             <div class="progress-text">已完成 {{ creditPercentage }}% 的毕业学分要求</div>
           </div>
         </div>
+
       </div>
     </div>
 
@@ -116,7 +117,6 @@
         </div>
       </div>
     </div>
-
   </div>
 </template>
 
@@ -374,49 +374,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
-.base-card {
-  position: relative;
-  border-radius: 16px;
-  padding: 24px;
-  transition: all 0.3s ease;
-  overflow: hidden;
-  z-index: 1;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y),
-        rgba(99, 102, 241, 0.05) 0%,
-        transparent 80%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    z-index: -1;
-    pointer-events: none;
-  }
-
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
-
-    &::before {
-      opacity: 1;
-    }
-  }
-
-  .dark & {
-    &::before {
-      background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y),
-          rgba(99, 102, 241, 0.08) 0%,
-          transparent 80%);
-    }
-  }
-}
-
-
 .grades-dashboard {
   display: flex;
   flex-direction: column;
@@ -427,15 +384,6 @@ onUnmounted(() => {
   --mouse-y: 0;
 }
 
-.dashboard-content {
-  flex: 1;
-  width: 100%;
-  max-width: 1400px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: 1fr;
-}
-
 .modern-card {
   position: relative;
   border-radius: 16px;
@@ -443,12 +391,6 @@ onUnmounted(() => {
   transition: all 0.3s ease;
   overflow: hidden;
   z-index: 1;
-
-  .card-content {
-    position: relative;
-    z-index: 2;
-  }
-
   background: white;
   border: 1px solid rgba(0, 0, 0, 0.1);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
@@ -498,14 +440,6 @@ onUnmounted(() => {
       font-weight: 600;
       color: var(--text-primary);
     }
-
-    .progress-indicator {
-      background-color: rgba(64, 158, 255, 0.1);
-      color: #409eff;
-      padding: 6px 12px;
-      border-radius: 999px;
-      font-size: 14px;
-    }
   }
 }
 
@@ -521,7 +455,12 @@ onUnmounted(() => {
   }
 
   .stats-card {
-    @extend .base-card;
+    position: relative;
+    border-radius: 16px;
+    padding: 24px;
+    transition: all 0.3s ease;
+    overflow: hidden;
+    z-index: 1;
     background: rgba(255, 255, 255, 0.9);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(226, 232, 240, 0.7);

@@ -1,19 +1,13 @@
 <template>
   <div class="login-page">
-    <!-- 背景粒子动画 -->
     <div class="particles" id="login-particles"></div>
 
-    <!-- 登录容器 -->
     <div class="login-container">
-
-      <!-- 登录卡片 -->
       <div class="login-card">
-        <!-- 右上角二维码图标 - 仅在非二维码模式下显示 -->
         <div v-if="!showQRCode" class="qr-corner" @click="toggleQRCode" :class="{ active: showQRCode }">
           <img src="@/assets/images/login-qr-code.png" alt="扫码登录" class="qr-icon">
         </div>
 
-        <!-- 表单内容 -->
         <transition name="fade">
           <div class="form-content" v-if="!showQRCode">
             <div class="card-header">
@@ -23,19 +17,16 @@
 
             <el-form ref="loginFormRef" :model="loginForm" :rules="loginRules" class="login-form"
               @keyup.enter="handleLogin">
-              <!-- 用户名输入 -->
               <el-form-item prop="username" class="form-item">
                 <el-input v-model="loginForm.username" placeholder="输入用户名" size="large" :prefix-icon="User" clearable
                   class="custom-input" />
               </el-form-item>
 
-              <!-- 密码输入 -->
               <el-form-item prop="password" class="form-item">
                 <el-input v-model="loginForm.password" placeholder="输入密码" size="large" :prefix-icon="Lock" clearable
                   show-password class="custom-input" />
               </el-form-item>
 
-              <!-- 记住我 & 忘记密码 -->
               <div class="login-options">
                 <el-checkbox v-model="loginForm.remember">记住我</el-checkbox>
                 <el-link type="primary" :underline="false" class="forgot-password">
@@ -43,13 +34,11 @@
                 </el-link>
               </div>
 
-              <!-- 登录按钮 -->
               <el-button type="primary" size="large" class="login-btn" @click="handleLogin" :loading="loginLoading">
                 <span v-if="!loginLoading">登录</span>
                 <span v-else>登录中...</span>
               </el-button>
 
-              <!-- 没有账号 -->
               <div class="register-link">
                 没有账号?
                 <el-link type="primary" @click="$router.push('/register')" :underline="false" class="register-text">
@@ -60,22 +49,18 @@
           </div>
         </transition>
 
-        <!-- 二维码内容 -->
         <transition name="fade">
           <div class="qr-content" v-if="showQRCode">
             <div class="qr-card">
-              <!-- 二维码容器 -->
               <div class="qr-code-container">
                 <img src="@/assets/images/login-qr-code.svg" alt="扫码登录" class="qr-image">
               </div>
 
-              <!-- 标题和说明文字 -->
               <div class="qr-text-container">
                 <h3>扫码登录</h3>
                 <p>使用Lucky SMS APP扫描二维码</p>
               </div>
 
-              <!-- 返回按钮 -->
               <el-button type="text" class="back-btn" @click="toggleQRCode">
                 <el-icon>
                   <ArrowLeft />
@@ -125,7 +110,6 @@ const toggleQRCode = () => {
 const handleLogin = async () => {
   loginLoading.value = true;
   try {
-    // 登录请求
     await new Promise(resolve => setTimeout(resolve, 1000));
     ElMessage.success('登录成功！');
     router.push('/student');
@@ -136,7 +120,6 @@ const handleLogin = async () => {
   }
 };
 
-// 初始化粒子动画
 onMounted(() => {
   if (window.particlesJS) {
     window.particlesJS('login-particles', {
@@ -221,7 +204,6 @@ onMounted(() => {
   transform: translateY(-2px);
 }
 
-/* 右上角二维码图标样式 */
 .qr-corner {
   position: absolute;
   top: 0;
@@ -352,7 +334,6 @@ onMounted(() => {
   transform: translateX(2px);
 }
 
-/* 二维码内容样式 */
 .qr-content {
   position: absolute;
   top: 0;
@@ -377,7 +358,6 @@ onMounted(() => {
   justify-content: center;
 }
 
-/* 二维码容器 */
 .qr-code-container {
   width: 200px;
   height: 200px;
@@ -422,7 +402,6 @@ onMounted(() => {
   color: #3b82f6;
 }
 
-/* 过渡动画 */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.3s ease;

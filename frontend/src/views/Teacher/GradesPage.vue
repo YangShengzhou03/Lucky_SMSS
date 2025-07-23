@@ -802,13 +802,9 @@ watch(isDarkMode, (newVal) => {
     align-items: center;
     gap: 16px;
     padding: 16px;
-    background-color: rgba(255, 255, 255, 0.5);
+    background: transparent;
     border-radius: 12px;
     border: 1px solid var(--border-color);
-
-    .dark & {
-      background-color: rgba(42, 53, 71, 0.5);
-    }
 
     .filter-group {
       display: flex;

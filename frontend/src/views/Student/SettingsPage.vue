@@ -246,7 +246,6 @@ const beforeAvatarUpload = (file) => {
   background: var(--bg-color);
   --mouse-x: 0;
   --mouse-y: 0;
-  min-height: 100vh;
 }
 
 .personal-center-content {

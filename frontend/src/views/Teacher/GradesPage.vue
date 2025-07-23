@@ -121,7 +121,7 @@
 
       <!-- 表格内容区 -->
       <div class="table-container">
-        <el-table :data="filteredGrades" border stripe class="grades-data-table" style="width: 100%">
+        <el-table :data="filteredGrades" stripe class="grades-data-table" style="width: 100%">
           <el-table-column prop="studentId" label="学号" width="120" />
           <el-table-column prop="studentName" label="学生姓名" width="100" />
           <el-table-column prop="courseName" label="课程名称" min-width="150" />
@@ -863,7 +863,7 @@ watch(isDarkMode, (newVal) => {
 
   .table-container {
     position: relative;
-    border-radius: 12px;
+    border-radius: 8px;
     overflow: hidden;
     border: 1px solid var(--border-color);
     transition: all 0.3s ease;
@@ -875,7 +875,6 @@ watch(isDarkMode, (newVal) => {
 
   .grades-data-table {
     margin: 0;
-    border-radius: 12px;
     border-collapse: separate;
 
     .el-table__header-wrapper {

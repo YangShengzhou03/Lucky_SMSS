@@ -14,7 +14,7 @@
             </el-upload>
             <div class="user-info">
               <h2 class="username">{{ userProfile.name }}</h2>
-              <p class="student-id">学号: {{ userProfile.studentId }}</p>
+              <p class="teacher-id">教师编号: {{ userProfile.teacherId }}</p>
             </div>
           </div>
           <el-button type="primary" size="small" @click="editProfile" class="edit-button" round>
@@ -71,7 +71,7 @@
           </div>
 
           <div class="info-group">
-            <h3 class="info-title">教育信息</h3>
+            <h3 class="info-title">教学信息</h3>
             <div class="info-grid">
               <div class="info-item">
                 <el-icon class="item-icon">
@@ -79,7 +79,7 @@
                 </el-icon>
                 <div class="item-content">
                   <p class="item-label">学院</p>
-                  <p class="item-value">{{ userProfile.college }}</p>
+                  <p class="item-value">{{ userProfile.department }}</p>
                 </div>
               </div>
 
@@ -88,8 +88,28 @@
                   <Collection />
                 </el-icon>
                 <div class="item-content">
-                  <p class="item-label">班级</p>
-                  <p class="item-value">{{ userProfile.class }}</p>
+                  <p class="item-label">职称</p>
+                  <p class="item-value">{{ userProfile.title }}</p>
+                </div>
+              </div>
+
+              <div class="info-item">
+                <el-icon class="item-icon">
+                  <Document />
+                </el-icon>
+                <div class="item-content">
+                  <p class="item-label">教授课程</p>
+                  <p class="item-value">{{ userProfile.courses.join(', ') }}</p>
+                </div>
+              </div>
+
+              <div class="info-item">
+                <el-icon class="item-icon">
+                  <Medal />
+                </el-icon>
+                <div class="item-content">
+                  <p class="item-label">办公室</p>
+                  <p class="item-value">{{ userProfile.office }}</p>
                 </div>
               </div>
             </div>
@@ -103,7 +123,7 @@
           <el-icon class="title-icon">
             <Setting />
           </el-icon>
-          <span>账户设置</span>
+          <span>教师功能</span>
         </div>
 
         <div class="actions-grid">
@@ -127,38 +147,40 @@
 <script setup>
 import { ref, reactive } from 'vue'
 import {
-  Plus, User, Edit, ArrowRight, Lock,
-  Calendar, Notification, Phone, Setting, Bell,
-  FirstAidKit, QuestionFilled, School, Collection
+  Plus, User, Edit, ArrowRight,
+  Calendar, Notification, Phone, Setting, School, Collection,
+  Document, Medal
 } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 
 // 首先定义所有函数
 const editProfile = () => ElMessage.info('编辑个人信息功能将在未来版本中实现')
-const changePassword = () => ElMessage.info('修改密码功能将在未来版本中实现')
-const notificationSettings = () => ElMessage.info('通知设置功能将在未来版本中实现')
-const securitySettings = () => ElMessage.info('安全设置功能将在未来版本中实现')
-const helpCenter = () => ElMessage.info('帮助中心功能将在未来版本中实现')
+const courseManagement = () => ElMessage.info('课程管理功能将在未来版本中实现')
+const gradeManagement = () => ElMessage.info('成绩管理功能将在未来版本中实现')
+const studentManagement = () => ElMessage.info('学生管理功能将在未来版本中实现')
+const teachingPlan = () => ElMessage.info('教学计划功能将在未来版本中实现')
 
 // 然后定义 quickActions 数组
 const quickActions = [
-  { name: '修改密码', icon: Lock, handler: changePassword },
-  { name: '通知设置', icon: Bell, handler: notificationSettings },
-  { name: '安全设置', icon: FirstAidKit, handler: securitySettings },
-  { name: '帮助中心', icon: QuestionFilled, handler: helpCenter }
+  { name: '课程管理', icon: Document, handler: courseManagement },
+  { name: '成绩管理', icon: Medal, handler: gradeManagement },
+  { name: '学生管理', icon: User, handler: studentManagement },
+  { name: '教学计划', icon: Calendar, handler: teachingPlan }
 ]
 
 // 个人信息
 const userProfile = reactive({
-  studentId: '20230001',
-  name: '张三',
+  teacherId: 'T2023001',
+  name: '王教授',
   gender: 'male',
-  birthdate: '2000-01-15',
-  email: 'zhangsan@example.com',
-  phone: '13800138000',
-  college: '计算机科学与技术学院',
-  class: '计算机科学与技术1班',
-  avatarUrl: 'https://picsum.photos/id/1005/200/200'
+  birthdate: '1980-05-20',
+  email: 'wang@example.com',
+  phone: '13900139000',
+  department: '计算机科学与技术学院',
+  title: '副教授',
+  courses: ['数据结构', '算法分析', '人工智能导论'],
+  office: '科技楼B501',
+  avatarUrl: 'https://picsum.photos/id/1012/200/200'
 })
 
 // 卡片悬停状态
@@ -202,6 +224,7 @@ const beforeAvatarUpload = (file) => {
 </script>
 
 <style scoped lang="scss">
+/* 样式部分保持不变 */
 :root {
   --bg-color: #ffffff;
   --card-bg: rgba(255, 255, 255, 0.98);

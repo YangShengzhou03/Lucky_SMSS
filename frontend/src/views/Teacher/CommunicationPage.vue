@@ -1,10 +1,10 @@
 <template>
     <div class="edu-communication-container">
-        <div class="edu-main-content modern-card">
+        <div class="edu-main-content">
             <!-- 联系人列表区域 -->
             <div class="edu-contact-list">
                 <div class="edu-search-box">
-                    <el-input v-model="searchQuery" placeholder="搜索对话" clearable prefix-icon="Search">
+                    <el-input v-model="searchQuery" placeholder="搜索对话" clearable>
                         <template #prefix>
                             <el-icon>
                                 <Search />
@@ -15,9 +15,8 @@
 
                 <div class="edu-contact-items">
                     <div v-for="(chat, index) in filteredChats" :key="index"
-                        :class="['edu-contact-item base-card', { 'active': currentChatIndex === index }]"
-                        @click="selectChat(index)"
-                        @mousemove="handleMouseMove($event, $el)">
+                        :class="['edu-contact-item', { 'active': currentChatIndex === index }]"
+                        @click="selectChat(index)">
                         <el-avatar size="40" :src="chat.avatar" :alt="chat.name"></el-avatar>
                         <div class="edu-contact-info">
                             <div class="edu-contact-header">
@@ -31,7 +30,7 @@
             </div>
 
             <!-- 聊天内容区域 -->
-            <div class="edu-chat-container" @mousemove="handleMouseMove($event, $el)">
+            <div class="edu-chat-container">
                 <div class="edu-chat-header">
                     <h2>{{ currentChat ? currentChat.name : '选择一个对话' }}</h2>
                     <div class="edu-chat-actions">
@@ -43,61 +42,63 @@
                     </div>
                 </div>
 
-                <div class="edu-messages" ref="messageContainer">
-                    <div v-if="!currentChat" class="edu-empty-chat">
-                        <el-empty description="请选择一个对话开始交流"></el-empty>
-                    </div>
-
-                    <div v-else>
-                        <!-- 系统消息 -->
-                        <div class="edu-system-message" v-if="currentChat.systemMessage">
-                            <p>{{ currentChat.systemMessage }}</p>
+                <div class="edu-chat-content-wrapper">
+                    <div class="edu-messages" ref="messageContainer">
+                        <div v-if="!currentChat" class="edu-empty-chat">
+                            <el-empty description="请选择一个对话开始交流"></el-empty>
                         </div>
 
-                        <!-- 消息区域 -->
-                        <div v-for="(message, msgIndex) in currentChat.messages" :key="msgIndex"
-                            :class="['edu-message', message.type === 'user' ? 'edu-user-message' : 'edu-bot-message']">
-                            <el-avatar v-if="message.type === 'bot'" size="36"
-                                src="https://picsum.photos/id/237/200/200" alt="师生头像"></el-avatar>
-
-                            <div class="edu-message-content">
-                                <div class="edu-message-bubble" v-html="formatMessage(message.content)"></div>
-                                <span class="edu-message-time">{{ message.time }}</span>
+                        <div v-else>
+                            <!-- 系统消息 -->
+                            <div class="edu-system-message" v-if="currentChat.systemMessage">
+                                <p>{{ currentChat.systemMessage }}</p>
                             </div>
 
-                            <el-avatar v-if="message.type === 'user'" size="36"
-                                src="https://picsum.photos/id/64/200/200" alt="用户头像"></el-avatar>
+                            <!-- 消息区域 -->
+                            <div v-for="(message, msgIndex) in currentChat.messages" :key="msgIndex"
+                                :class="['edu-message', message.type === 'user' ? 'edu-user-message' : 'edu-bot-message']">
+                                <el-avatar v-if="message.type === 'bot'" size="36"
+                                    src="https://picsum.photos/id/237/200/200" alt="师生头像"></el-avatar>
+
+                                <div class="edu-message-content">
+                                    <div class="edu-message-bubble" v-html="formatMessage(message.content)"></div>
+                                    <span class="edu-message-time">{{ message.time }}</span>
+                                </div>
+
+                                <el-avatar v-if="message.type === 'user'" size="36"
+                                    src="https://picsum.photos/id/64/200/200" alt="用户头像"></el-avatar>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- 消息输入区域 -->
-                <div class="edu-input-area" v-if="currentChat">
-                    <el-input v-model="newMessage" type="textarea" :autosize="{ minRows: 2, maxRows: 4 }"
-                        placeholder="输入消息..." @keyup.enter.exact.prevent="sendMessage" class="edu-message-input">
-                        <template #append>
-                            <el-button :disabled="!newMessage.trim()" type="primary" @click="sendMessage" class="btn-submit">
-                                发送
-                            </el-button>
-                        </template>
-                    </el-input>
-
-                    <div class="edu-input-actions">
-                        <el-button type="text" icon="Picture" class="operation-btn">
-                            <el-icon>
-                                <Picture />
-                            </el-icon>
-                        </el-button>
-                        <el-button type="text" icon="VideoCamera" class="operation-btn">
-                            <el-icon>
-                                <VideoCamera />
-                            </el-icon>
-                        </el-button>
-                        <el-button type="text" icon="File" class="operation-btn">
-                            <el-icon>
-                                <File />
-                            </el-icon>
-                        </el-button>
+                    <!-- 消息输入区域 -->
+                    <div class="edu-input-area" v-if="currentChat">
+                        <div class="edu-message-input-wrapper">
+                            <el-input v-model="newMessage" type="textarea" :rows="3" placeholder="输入消息..."
+                                @keyup.enter.exact.prevent="sendMessage" resize="none">
+                            </el-input>
+                            <div class="edu-input-actions">
+                                <el-button type="text" icon="Picture" class="operation-btn">
+                                    <el-icon>
+                                        <Picture />
+                                    </el-icon>
+                                </el-button>
+                                <el-button type="text" icon="VideoCamera" class="operation-btn">
+                                    <el-icon>
+                                        <VideoCamera />
+                                    </el-icon>
+                                </el-button>
+                                <el-button type="text" icon="File" class="operation-btn">
+                                    <el-icon>
+                                        <File />
+                                    </el-icon>
+                                </el-button>
+                                <el-button :disabled="!newMessage.trim()" type="primary" @click="sendMessage"
+                                    class="btn-submit">
+                                    发送
+                                </el-button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -106,7 +107,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick, computed } from 'vue'
+import { ref, onMounted, nextTick, computed, watch } from 'vue'
 import {
     Search,
     More,
@@ -180,7 +181,9 @@ const currentChat = computed(() => {
 
 const selectChat = (index) => {
     currentChatIndex.value = index
-    scrollToBottom()
+    nextTick(() => {
+        scrollToBottom()
+    })
 }
 
 const formatMessage = (content) => {
@@ -201,7 +204,10 @@ const sendMessage = () => {
         message.content.substring(0, 30) + '...' : message.content
     currentChat.value.time = message.time
     newMessage.value = ''
-    scrollToBottom()
+
+    nextTick(() => {
+        scrollToBottom()
+    })
 
     if (currentChat.value.id === 1) {
         setTimeout(() => {
@@ -226,7 +232,9 @@ const sendMessage = () => {
                 randomReply.substring(0, 30) + '...' : randomReply
             currentChat.value.time = botMessage.time
 
-            scrollToBottom()
+            nextTick(() => {
+                scrollToBottom()
+            })
         }, 800)
     }
 }
@@ -238,20 +246,15 @@ const formatTime = (date) => {
 }
 
 const scrollToBottom = () => {
-    nextTick(() => {
-        if (messageContainer.value) {
-            messageContainer.value.scrollTop = messageContainer.value.scrollHeight
-        }
-    })
+    if (messageContainer.value) {
+        messageContainer.value.scrollTop = messageContainer.value.scrollHeight
+    }
 }
 
-const handleMouseMove = (e, el) => {
-    const rect = el.getBoundingClientRect()
-    const x = e.clientX - rect.left
-    const y = e.clientY - rect.top
-    el.style.setProperty('--mouse-x', `${x}px`)
-    el.style.setProperty('--mouse-y', `${y}px`)
-}
+// 监听消息变化自动滚动到底部
+watch(() => currentChat.value?.messages.length, () => {
+    scrollToBottom()
+})
 
 onMounted(() => {
     scrollToBottom()
@@ -260,150 +263,42 @@ onMounted(() => {
 
 <style scoped lang="scss">
 :root {
-  --text-primary: #303133;
-  --text-secondary: #606266;
-  --text-tertiary: #909399;
-  --text-highlight: #409eff;
-  --border-color: #ebeef5;
-  --card-bg: white;
-  --card-hover-bg: #f5f7fa;
-  --trend-up: #10b981;
-  --trend-down: #ef4444;
-  --shadow-light: 0 4px 12px rgba(0, 0, 0, 0.05);
-  --shadow-medium: 0 6px 16px rgba(0, 0, 0, 0.08);
+    --text-primary: #303133;
+    --text-secondary: #606266;
+    --text-tertiary: #909399;
+    --text-highlight: #409eff;
+    --border-color: #ebeef5;
+    --card-bg: white;
+    --card-hover-bg: #f5f7fa;
+    --shadow-light: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --input-area-height: auto;
 }
 
 .dark {
-  --text-primary: #ffffff;
-  --text-secondary: rgba(255, 255, 255, 0.7);
-  --text-tertiary: rgba(255, 255, 255, 0.5);
-  --text-highlight: #64748b;
-  --border-color: rgba(255, 255, 255, 0.1);
-  --card-bg: rgba(30, 41, 59, 0.8);
-  --card-hover-bg: rgba(51, 65, 85, 0.8);
-  --trend-up: #22c55e;
-  --trend-down: #ef4444;
-  --shadow-light: 0 4px 12px rgba(0, 0, 0, 0.15);
-  --shadow-medium: 0 6px 16px rgba(0, 0, 0, 0.2);
-}
-
-.base-card {
-  position: relative;
-  border-radius: 16px;
-  padding: 24px;
-  transition: all 0.3s ease;
-  overflow: hidden;
-  z-index: 1;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y),
-        rgba(99, 102, 241, 0.05) 0%,
-        transparent 80%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    z-index: -1;
-    pointer-events: none;
-  }
-
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-medium);
-  }
-
-  &:hover::before {
-    opacity: 1;
-  }
-
-  .dark & {
-    &::before {
-      background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y),
-          rgba(99, 102, 241, 0.08) 0%,
-          transparent 80%);
-    }
-  }
-}
-
-.modern-card {
-  position: relative;
-  border-radius: 16px;
-  padding: 0;
-  transition: all 0.3s ease;
-  overflow: hidden;
-  z-index: 1;
-  background: var(--card-bg);
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-light);
-
-  .card-content {
-    position: relative;
-    z-index: 2;
-  }
-
-  .dark & {
-    background: var(--card-bg);
-    border-color: var(--border-color);
-  }
-
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-medium);
-    border-color: rgba(199, 210, 254, 0.8);
-  }
-
-  .dark &:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-medium);
-    border-color: rgba(99, 102, 241, 0.5);
-  }
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y),
-        rgba(99, 102, 241, 0.08) 0%,
-        transparent 70%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    z-index: -1;
-    pointer-events: none;
-  }
-
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-medium);
-
-    &::before {
-      opacity: 1;
-    }
-  }
+    --text-primary: #ffffff;
+    --text-secondary: rgba(255, 255, 255, 0.7);
+    --text-tertiary: rgba(255, 255, 255, 0.5);
+    --text-highlight: #66b1ff;
+    --border-color: rgba(255, 255, 255, 0.1);
+    --card-bg: rgba(30, 41, 59, 0.9);
+    --card-hover-bg: rgba(51, 65, 85, 0.8);
 }
 
 .edu-communication-container {
     display: flex;
     flex-direction: column;
-    overflow: hidden;
-    background: transparent;
-    padding: 15px;
-    height: 100%;
-    min-height: 600px;
+    height: 76vh;
+    background-color: var(--card-hover-bg);
 }
 
 .edu-main-content {
     display: flex;
     flex: 1;
+    height: calc(76vh - 60px);
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    box-shadow: var(--shadow-light);
     overflow: hidden;
-    border-radius: 16px;
-    height: 100%;
 }
 
 .edu-contact-list {
@@ -412,33 +307,41 @@ onMounted(() => {
     display: flex;
     flex-direction: column;
     background-color: var(--card-bg);
+    height: 100%;
+    overflow: hidden;
 
     .edu-search-box {
         padding: 16px;
         border-bottom: 1px solid var(--border-color);
 
         .el-input {
-            border-radius: 18px;
+            :deep(.el-input__wrapper) {
+                border-radius: 18px;
+                padding-left: 12px;
+            }
         }
     }
 
     .edu-contact-items {
         flex: 1;
         overflow-y: auto;
-        padding: 0 8px;
+        padding: 8px;
 
         .edu-contact-item {
             display: flex;
             padding: 12px;
             cursor: pointer;
             transition: all 0.2s ease;
-            margin: 4px 8px;
+            border-radius: 8px;
+            margin-bottom: 4px;
 
             &:hover {
-                transform: translateY(-2px);
+                background-color: var(--card-hover-bg);
             }
 
             &.active {
+                background-color: rgba(64, 158, 255, 0.1);
+
                 .edu-contact-name {
                     color: var(--text-highlight);
                     font-weight: 600;
@@ -487,10 +390,12 @@ onMounted(() => {
     flex: 1;
     display: flex;
     flex-direction: column;
-    background-color: var(--card-bg);
+    height: 100%;
+    overflow: hidden;
 }
 
 .edu-chat-header {
+    flex-shrink: 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -502,16 +407,27 @@ onMounted(() => {
         font-size: 18px;
         font-weight: 600;
         color: var(--text-primary);
+        margin: 0;
     }
+}
+
+.edu-chat-content-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
 }
 
 .edu-messages {
     flex: 1;
     overflow-y: auto;
     padding: 20px;
-    background-color: var(--card-hover-bg);
     display: flex;
     flex-direction: column;
+    scroll-behavior: smooth;
+    min-height: 0;
+    /* 修复flex滚动问题 */
 
     .edu-empty-chat {
         height: 100%;
@@ -536,7 +452,7 @@ onMounted(() => {
 
     .edu-message {
         display: flex;
-        margin-bottom: 24px;
+        margin-bottom: 16px;
         align-items: flex-start;
 
         .edu-message-content {
@@ -604,66 +520,103 @@ onMounted(() => {
 }
 
 .edu-input-area {
-    padding: 16px 24px;
+    flex-shrink: 0;
+    padding: 16px;
     border-top: 1px solid var(--border-color);
     background-color: var(--card-bg);
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
 
-    .edu-message-input {
-        .el-textarea__inner {
-            border-radius: 8px;
-            padding: 12px 16px;
-        }
+    .edu-message-input-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
 
-        .el-input-group__append {
-            background-color: var(--text-highlight);
-            border: none;
-            border-radius: 0 8px 8px 0;
-
-            .el-button {
-                color: white;
+        .el-textarea {
+            :deep(.el-textarea__inner) {
+                border-radius: 8px;
+                padding: 12px;
+                resize: none;
+                min-height: 80px;
+                max-height: 150px;
+                transition: height 0.2s ease;
             }
         }
-    }
 
-    .edu-input-actions {
-        display: flex;
-        margin-top: 12px;
+        .edu-input-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
 
-        .el-button {
-            color: var(--text-secondary);
-            margin-right: 16px;
+            .el-button {
+                padding: 8px;
+            }
 
-            &:hover {
-                color: var(--text-highlight);
+            .btn-submit {
+                margin-left: auto;
             }
         }
     }
 }
 
 .operation-btn {
-  color: var(--text-highlight);
+    color: var(--text-secondary);
 
-  &:hover {
-    color: #66b1ff;
-  }
-}
-
-.view-details-btn {
-  color: var(--text-highlight);
-
-  &:hover {
-    color: #66b1ff;
-  }
+    &:hover {
+        color: var(--text-highlight);
+    }
 }
 
 .btn-submit {
-  background-color: var(--text-highlight);
-  border-color: var(--text-highlight);
-  color: white;
+    background-color: var(--text-highlight);
+    border-color: var(--text-highlight);
+    color: white;
+    padding: 8px 16px !important;
 
-  &:hover {
-    background-color: #66b1ff;
-    border-color: #66b1ff;
-  }
+    &:hover {
+        background-color: #66b1ff;
+        border-color: #66b1ff;
+    }
+
+    &:disabled {
+        opacity: 0.6;
+    }
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.dark {
+    ::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.3);
+    }
+
+    .edu-input-area {
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+    }
 }
 </style>

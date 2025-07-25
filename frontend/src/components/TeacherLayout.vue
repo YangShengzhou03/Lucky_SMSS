@@ -754,7 +754,7 @@ onUnmounted(() => {
 }
 
 .router-view-container {
-  min-height: calc(100% - 40px);
+  min-height: 100%;
   background: var(--white);
   border-radius: var(--border-radius-lg);
   box-shadow: var(--shadow-sm);

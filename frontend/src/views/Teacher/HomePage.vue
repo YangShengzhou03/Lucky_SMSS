@@ -620,7 +620,7 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   padding: 0 15px;
-  max-width: 1400px;
+  max-width: 100%;
   margin: 0 auto;
   --mouse-x: 0;
   --mouse-y: 0;

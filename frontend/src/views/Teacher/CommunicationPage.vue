@@ -159,6 +159,7 @@
             <el-button type="text" icon="Picture" @click="triggerFileInput('image')" />
             <el-button type="text" icon="VideoCamera" @click="triggerFileInput('video')" />
             <el-button type="text" icon="Document" @click="triggerFileInput('file')" />
+            <el-button type="text" icon="Sunny" @click="toggleDarkMode" />
             <input type="file" ref="fileInput" style="display: none" @change="handleFileUpload" />
           </div>
 
@@ -174,118 +175,48 @@
       </div>
     </div>
 
-    <!-- 现代化设计的新建对话对话框 -->
-    <el-dialog v-model="showNewChatDialog" title="新建对话" width="480px" append-to-body
+    <!-- 现代化设计的添加联系人对话框 -->
+    <el-dialog v-model="showNewChatDialog" title="添加联系人" width="480px" append-to-body
       class="custom-dialog new-chat-dialog" :before-close="handleCloseNewChatDialog" :close-on-click-modal="false">
       <template #title>
         <div class="dialog-title flex items-center">
-          <el-icon class="text-primary-color mr-2">
-            <ChatRound />
-          </el-icon>
-          <span class="font-medium text-lg">新建对话</span>
+          <span class="font-medium text-lg">添加联系人</span>
         </div>
       </template>
 
       <div class="dialog-content p-4">
-        <el-input v-model="newChatSearch" placeholder="搜索联系人" :prefix-icon="Search" class="search-input mb-4"
+        <el-input v-model="newChatSearch" placeholder="输入要对话的联系人" :prefix-icon="Search" class="search-input mb-4"
           @input="onSearchInput" clearable @clear="clearSearch" />
 
         <!-- 无搜索状态 -->
         <div v-if="!searchPerformed" class="no-search-hint flex flex-col items-center justify-center py-16">
-          <div class="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center mb-4">
-            <el-icon class="text-primary-color text-2xl">
-              <Search />
-            </el-icon>
-          </div>
-          <h3 class="text-lg font-medium text-gray-800 mb-2">查找联系人</h3>
-          <p class="text-gray-500 text-center max-w-xs">输入联系人姓名、部门或标签进行搜索</p>
-          <div class="mt-6 flex justify-center space-x-2">
-            <el-tag effect="plain" size="small">
-              <el-icon class="mr-1">
-                <User />
-              </el-icon>同事
-            </el-tag>
-            <el-tag effect="plain" size="small">
-              <el-icon class="mr-1">
-                <School />
-              </el-icon>学生
-            </el-tag>
-            <el-tag effect="plain" size="small">
-              <el-icon class="mr-1">
-                <OfficeBuilding />
-              </el-icon>部门
-            </el-tag>
-          </div>
+          <!-- <p class="text-gray-500 text-center max-w-xs">输入联系人即可搜索</p> -->
         </div>
 
         <!-- 搜索结果区域 -->
         <div v-else class="contact-list max-h-[400px] overflow-y-auto">
-          <!-- 最近联系人 -->
-          <div v-if="recentContacts.length > 0" class="mb-6">
-            <h3 class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2 px-3">最近联系</h3>
-            <div v-for="contact in recentContacts" :key="contact.id"
-              class="contact-card flex items-center p-3 rounded-lg transition-all duration-200 hover:bg-gray-50 cursor-pointer"
-              @click="createNewChat(contact)">
-              <el-avatar :size="48" :src="contact.avatar" :alt="contact.name" class="mr-3" />
-              <div class="flex-1">
-                <div class="flex justify-between items-center">
-                  <h3 class="font-medium text-gray-800">{{ contact.name }}</h3>
-                  <span class="text-xs text-gray-500">
-                    <span class="inline-block w-2 h-2 rounded-full mr-1"
-                      :class="{ 'bg-green-500': contact.online, 'bg-gray-300': !contact.online }"></span>
-                    {{ contact.online ? '在线' : '离线' }}
-                  </span>
-                </div>
-                <p class="text-xs text-gray-500 mt-1">
-                  <el-icon class="mr-1">
-                    <Time />
-                  </el-icon>
-                  {{ formatRelativeTime(contact.lastMessageTime) }}
-                </p>
-              </div>
-              <el-badge :value="contact.unreadCount" :max="99" :hidden="!contact.unreadCount" type="primary" />
-            </div>
-          </div>
-
-          <!-- 搜索结果 -->
           <div v-if="filteredContacts.length > 0">
-            <h3 class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2 px-3">搜索结果</h3>
-            <div v-for="contact in filteredContacts" :key="contact.id"
-              class="contact-card flex items-center p-3 rounded-lg transition-all duration-200 hover:bg-gray-50 cursor-pointer"
+            <!-- 单个联系人卡片 -->
+            <div v-for="contact in filteredContacts" :key="contact.id" class="contact-card custom-contact-card"
               @click="createNewChat(contact)">
+              <!-- 头像 -->
               <el-avatar :size="48" :src="contact.avatar" :alt="contact.name" class="mr-3" />
-              <div class="flex-1">
-                <div class="flex justify-between items-center">
-                  <h3 class="font-medium text-gray-800">
-                    <span v-html="highlightMatch(contact.name, newChatSearch)"></span>
-                  </h3>
-                  <span class="text-xs text-gray-500">
-                    <span class="inline-block w-2 h-2 rounded-full mr-1"
-                      :class="{ 'bg-green-500': contact.online, 'bg-gray-300': !contact.online }"></span>
-                    {{ contact.online ? '在线' : '离线' }}
-                  </span>
-                </div>
-                <p class="text-xs text-gray-500 mt-1">
-                  <el-icon class="mr-1">
-                    <OfficeBuilding />
-                  </el-icon>
-                  {{ contact.department || '无部门信息' }}
+              <!-- 名称 + 描述容器 -->
+              <div class="contact-info">
+                <h3 class="contact-name">
+                  <!-- 高亮匹配的名称 -->
+                  <span v-html="highlightMatch(contact.name, newChatSearch)"></span>
+                </h3>
+                <!-- 描述信息（状态 + 部门，可按需调整） -->
+                <p class="contact-desc">
+                  {{ contact.online ? '在线' : '离线' }} | {{ contact.department }}
                 </p>
               </div>
-              <el-button type="primary" size="small" class="ml-2 px-3 py-1 rounded-full"
-                @click.stop="createNewChat(contact)">
-                开始
-              </el-button>
             </div>
           </div>
 
           <!-- 无搜索结果 -->
           <div v-else-if="newChatSearch.trim()" class="empty-result flex flex-col items-center justify-center py-10">
-            <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-              <el-icon class="text-gray-400 text-2xl">
-                <Search />
-              </el-icon>
-            </div>
             <h3 class="text-lg font-medium text-gray-800 mb-2">未找到联系人</h3>
             <p class="text-gray-500 text-center max-w-xs">尝试使用不同的关键词或添加新联系人</p>
             <el-button type="text" size="small" class="mt-4 text-primary-color" @click="clearSearch">
@@ -317,7 +248,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted, nextTick, watchEffect } from 'vue'
 import {
   Search,
   Picture,
@@ -330,10 +261,6 @@ import {
   Delete,
   BellFilled,
   ChatRound,
-  User,
-  School,
-  OfficeBuilding,
-  Time,
   RefreshRight,
   Close
 } from '@element-plus/icons-vue'
@@ -342,6 +269,10 @@ import { useClipboard } from '@vueuse/core'
 
 const { copy } = useClipboard()
 
+// 状态管理
+const darkMode = ref(false)
+
+// 数据
 const contacts = ref([
   { id: 1, name: '张教授', avatar: 'https://randomuser.me/api/portraits/men/32.jpg', online: true, department: '计算机学院' },
   { id: 2, name: '李老师', avatar: 'https://randomuser.me/api/portraits/women/44.jpg', online: false, lastOnline: new Date(Date.now() - 3600000), department: '数学系' },
@@ -465,6 +396,7 @@ const previewImageUrl = ref('')
 const showNewChatDialog = ref(false)
 const messagesContainer = ref(null)
 
+// 计算属性
 const filteredChats = computed(() => {
   if (!searchQuery.value.trim()) return chatHistory.value
   return chatHistory.value.filter(chat =>
@@ -477,18 +409,6 @@ const filteredContacts = computed(() => {
   return contacts.value.filter(contact =>
     contact.name.toLowerCase().includes(newChatSearch.value.toLowerCase())
   )
-})
-
-const recentContacts = computed(() => {
-  return chatHistory.value.map(chat => ({
-    id: chat.id,
-    name: chat.name,
-    avatar: chat.avatar,
-    online: chat.online,
-    lastMessageTime: chat.lastMessageTime,
-    unreadCount: chat.unreadCount,
-    department: chat.department
-  }))
 })
 
 const currentChat = computed(() => {
@@ -519,11 +439,31 @@ const messageGroups = computed(() => {
   return groups
 })
 
+// 生命周期钩子
 onMounted(() => {
+  // 检查本地存储中的主题偏好
+  const savedTheme = localStorage.getItem('theme')
+  if (savedTheme) {
+    darkMode.value = savedTheme === 'dark'
+  }
+
   window.addEventListener('resize', handleResize)
+
+  // 初始化平滑滚动
+  if (messagesContainer.value) {
+    messagesContainer.value.style.scrollBehavior = 'smooth'
+  }
+
   return () => window.removeEventListener('resize', handleResize)
 })
 
+// 监听暗黑模式变化
+watchEffect(() => {
+  document.documentElement.classList.toggle('dark', darkMode.value)
+  localStorage.setItem('theme', darkMode.value ? 'dark' : 'light')
+})
+
+// 方法
 const selectChat = (index) => {
   currentChatIndex.value = index
   if (currentChat.value?.unreadCount > 0) {
@@ -584,6 +524,9 @@ const sendMessage = async () => {
     let fileSize = null
 
     if (fileToUpload.value) {
+      // 显示文件上传进度
+      showUploadProgress()
+
       await new Promise(resolve => setTimeout(resolve, 800))
 
       if (uploadType.value === 'image') {
@@ -650,6 +593,16 @@ const sendMessage = async () => {
   } finally {
     sending.value = false
   }
+}
+
+// 显示文件上传进度
+const showUploadProgress = () => {
+  // 这里可以实现更复杂的上传进度显示逻辑
+  ElMessage({
+    message: '正在上传文件...',
+    type: 'info',
+    duration: 1000
+  })
 }
 
 const updateChatPreview = (chat, message) => {
@@ -822,6 +775,11 @@ const highlightMatch = (text, search) => {
   const regex = new RegExp(`(${search})`, 'gi')
   return text.replace(regex, '<span class="text-primary-color font-medium">$1</span>')
 }
+
+// 切换暗黑模式
+const toggleDarkMode = () => {
+  darkMode.value = !darkMode.value
+}
 </script>
 
 <style scoped lang="scss">
@@ -905,6 +863,21 @@ const highlightMatch = (text, search) => {
       flex: 1;
       overflow-y: auto;
       padding: 8px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+
+      &::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      &::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background-color: rgba(156, 163, 175, 0.5);
+        border-radius: 3px;
+      }
 
       .chat-item {
         display: flex;
@@ -1082,6 +1055,21 @@ const highlightMatch = (text, search) => {
         width: 100%;
         box-sizing: border-box;
         min-height: 0;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+
+        &::-webkit-scrollbar {
+          width: 6px;
+        }
+
+        &::-webkit-scrollbar-track {
+          background: transparent;
+        }
+
+        &::-webkit-scrollbar-thumb {
+          background-color: rgba(156, 163, 175, 0.5);
+          border-radius: 3px;
+        }
       }
 
       .message-group {
@@ -1119,6 +1107,9 @@ const highlightMatch = (text, search) => {
         display: flex;
         margin-bottom: 16px;
         align-items: flex-start;
+        opacity: 0;
+        transform: translateY(10px);
+        animation: fadeIn 0.3s ease forwards;
 
         &.user {
           flex-direction: row-reverse;
@@ -1496,6 +1487,80 @@ const highlightMatch = (text, search) => {
         }
       }
     }
+  }
+}
+
+/* 自定义联系人卡片样式 */
+.custom-contact-card {
+  display: flex;
+  align-items: center;
+  /* 头像与文字垂直居中 */
+  padding: 12px 16px;
+  /* 内边距，增加呼吸感 */
+  border-radius: 8px;
+  /* 圆角，让卡片更柔和 */
+  cursor: pointer;
+  /* 鼠标悬停手势，提示可点击 */
+  transition: all 0.2s ease;
+  /* 过渡动画，增强交互反馈 */
+  background-color: #1f2b3d;
+  /* 深色背景，贴近目标样式 */
+  color: #fff;
+  /* 文字颜色 */
+  margin-bottom: 8px;
+  /* 与下一个卡片拉开间距 */
+}
+
+/* 名称与描述的容器 */
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  /* 让名称、描述垂直排列 */
+  justify-content: center;
+  /* 垂直居中 */
+}
+
+/* 联系人名称 */
+.contact-name {
+  font-size: 16px;
+  /* 字号稍大，突出名称 */
+  font-weight: 500;
+  /* 字体加粗 */
+  margin: 0 0 4px 0;
+  /* 与描述信息拉开间距 */
+}
+
+/* 描述信息（状态 + 部门） */
+.contact-desc {
+  font-size: 14px;
+  /* 字号稍小，作为补充信息 */
+  color: #c0c0c0;
+  /* 浅灰色，弱化层级 */
+  margin: 0;
+  /* 清除默认边距 */
+}
+
+/* 鼠标悬停效果 */
+.custom-contact-card:hover {
+  background-color: #2c3e57;
+  /* 背景加深，增强交互反馈 */
+}
+
+// 动画效果
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
   }
 }
 </style>

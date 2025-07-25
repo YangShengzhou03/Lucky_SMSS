@@ -30,9 +30,7 @@
                   <Document />
                 </el-icon> 文件
               </template>
-              <template v-else>
-                {{ chat.preview }}
-              </template>
+              <template v-else>{{ chat.preview }}</template>
             </p>
           </div>
           <el-badge :value="chat.unreadCount" :max="99" :hidden="!chat.unreadCount" type="primary" />
@@ -175,7 +173,6 @@
       </div>
     </div>
 
-    <!-- 现代化设计的添加联系人对话框 -->
     <el-dialog v-model="showNewChatDialog" title="添加联系人" width="480px" append-to-body
       class="custom-dialog new-chat-dialog" :before-close="handleCloseNewChatDialog" :close-on-click-modal="false">
       <template #title>
@@ -188,26 +185,17 @@
         <el-input v-model="newChatSearch" placeholder="输入要对话的联系人" :prefix-icon="Search" class="search-input mb-4"
           @input="onSearchInput" clearable @clear="clearSearch" />
 
-        <!-- 无搜索状态 -->
-        <div v-if="!searchPerformed" class="no-search-hint flex flex-col items-center justify-center py-16">
-          <!-- <p class="text-gray-500 text-center max-w-xs">输入联系人即可搜索</p> -->
-        </div>
+        <div v-if="!searchPerformed" class="no-search-hint flex flex-col items-center justify-center py-16" />
 
-        <!-- 搜索结果区域 -->
         <div v-else class="contact-list max-h-[400px] overflow-y-auto">
           <div v-if="filteredContacts.length > 0">
-            <!-- 单个联系人卡片 -->
             <div v-for="contact in filteredContacts" :key="contact.id" class="contact-card custom-contact-card"
               @click="createNewChat(contact)">
-              <!-- 头像 -->
               <el-avatar :size="48" :src="contact.avatar" :alt="contact.name" class="mr-3" />
-              <!-- 名称 + 描述容器 -->
               <div class="contact-info">
                 <h3 class="contact-name">
-                  <!-- 高亮匹配的名称 -->
                   <span v-html="highlightMatch(contact.name, newChatSearch)"></span>
                 </h3>
-                <!-- 描述信息（状态 + 部门，可按需调整） -->
                 <p class="contact-desc">
                   {{ contact.online ? '在线' : '离线' }} | {{ contact.department }}
                 </p>
@@ -215,7 +203,6 @@
             </div>
           </div>
 
-          <!-- 无搜索结果 -->
           <div v-else-if="newChatSearch.trim()" class="empty-result flex flex-col items-center justify-center py-10">
             <h3 class="text-lg font-medium text-gray-800 mb-2">未找到联系人</h3>
             <p class="text-gray-500 text-center max-w-xs">尝试使用不同的关键词或添加新联系人</p>
@@ -248,7 +235,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick, watchEffect } from 'vue'
+import { ref, computed, nextTick } from 'vue'
 import {
   Search,
   Picture,
@@ -269,10 +256,6 @@ import { useClipboard } from '@vueuse/core'
 
 const { copy } = useClipboard()
 
-// 状态管理
-const darkMode = ref(false)
-
-// 数据
 const contacts = ref([
   { id: 1, name: '张教授', avatar: 'https://randomuser.me/api/portraits/men/32.jpg', online: true, department: '计算机学院' },
   { id: 2, name: '李老师', avatar: 'https://randomuser.me/api/portraits/women/44.jpg', online: false, lastOnline: new Date(Date.now() - 3600000), department: '数学系' },
@@ -396,7 +379,6 @@ const previewImageUrl = ref('')
 const showNewChatDialog = ref(false)
 const messagesContainer = ref(null)
 
-// 计算属性
 const filteredChats = computed(() => {
   if (!searchQuery.value.trim()) return chatHistory.value
   return chatHistory.value.filter(chat =>
@@ -439,31 +421,6 @@ const messageGroups = computed(() => {
   return groups
 })
 
-// 生命周期钩子
-onMounted(() => {
-  // 检查本地存储中的主题偏好
-  const savedTheme = localStorage.getItem('theme')
-  if (savedTheme) {
-    darkMode.value = savedTheme === 'dark'
-  }
-
-  window.addEventListener('resize', handleResize)
-
-  // 初始化平滑滚动
-  if (messagesContainer.value) {
-    messagesContainer.value.style.scrollBehavior = 'smooth'
-  }
-
-  return () => window.removeEventListener('resize', handleResize)
-})
-
-// 监听暗黑模式变化
-watchEffect(() => {
-  document.documentElement.classList.toggle('dark', darkMode.value)
-  localStorage.setItem('theme', darkMode.value ? 'dark' : 'light')
-})
-
-// 方法
 const selectChat = (index) => {
   currentChatIndex.value = index
   if (currentChat.value?.unreadCount > 0) {
@@ -524,9 +481,7 @@ const sendMessage = async () => {
     let fileSize = null
 
     if (fileToUpload.value) {
-      // 显示文件上传进度
       showUploadProgress()
-
       await new Promise(resolve => setTimeout(resolve, 800))
 
       if (uploadType.value === 'image') {
@@ -595,9 +550,7 @@ const sendMessage = async () => {
   }
 }
 
-// 显示文件上传进度
 const showUploadProgress = () => {
-  // 这里可以实现更复杂的上传进度显示逻辑
   ElMessage({
     message: '正在上传文件...',
     type: 'info',
@@ -748,13 +701,6 @@ const createNewChat = (contact) => {
   newChatSearch.value = ''
 }
 
-const handleResize = () => {
-  if (currentChat.value) {
-    nextTick(() => {
-      scrollToBottom()
-    })
-  }
-}
 
 const handleCloseNewChatDialog = (done) => {
   done()
@@ -774,11 +720,6 @@ const highlightMatch = (text, search) => {
   if (!search.trim()) return text
   const regex = new RegExp(`(${search})`, 'gi')
   return text.replace(regex, '<span class="text-primary-color font-medium">$1</span>')
-}
-
-// 切换暗黑模式
-const toggleDarkMode = () => {
-  darkMode.value = !darkMode.value
 }
 </script>
 
@@ -1490,63 +1431,40 @@ const toggleDarkMode = () => {
   }
 }
 
-/* 自定义联系人卡片样式 */
 .custom-contact-card {
   display: flex;
   align-items: center;
-  /* 头像与文字垂直居中 */
   padding: 12px 16px;
-  /* 内边距，增加呼吸感 */
   border-radius: 8px;
-  /* 圆角，让卡片更柔和 */
   cursor: pointer;
-  /* 鼠标悬停手势，提示可点击 */
   transition: all 0.2s ease;
-  /* 过渡动画，增强交互反馈 */
   background-color: #1f2b3d;
-  /* 深色背景，贴近目标样式 */
   color: #fff;
-  /* 文字颜色 */
   margin-bottom: 8px;
-  /* 与下一个卡片拉开间距 */
 }
 
-/* 名称与描述的容器 */
 .contact-info {
   display: flex;
   flex-direction: column;
-  /* 让名称、描述垂直排列 */
   justify-content: center;
-  /* 垂直居中 */
 }
 
-/* 联系人名称 */
 .contact-name {
   font-size: 16px;
-  /* 字号稍大，突出名称 */
   font-weight: 500;
-  /* 字体加粗 */
   margin: 0 0 4px 0;
-  /* 与描述信息拉开间距 */
 }
 
-/* 描述信息（状态 + 部门） */
 .contact-desc {
   font-size: 14px;
-  /* 字号稍小，作为补充信息 */
   color: #c0c0c0;
-  /* 浅灰色，弱化层级 */
   margin: 0;
-  /* 清除默认边距 */
 }
 
-/* 鼠标悬停效果 */
 .custom-contact-card:hover {
   background-color: #2c3e57;
-  /* 背景加深，增强交互反馈 */
 }
 
-// 动画效果
 @keyframes fadeIn {
   to {
     opacity: 1;

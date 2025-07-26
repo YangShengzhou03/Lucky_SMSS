@@ -18,7 +18,7 @@
           </div>
           <div class="welcome-content">
             <h2>欢迎回来，<span class="username">{{ teacher?.name || '--' }}</span> 老师</h2>
-            <p class="subtitle">工号：{{ teacher?.id || '--' }} | {{ teacher?.department || '--' }}</p>
+            <p class="subtitle">教师编号：{{ teacher?.id || '--' }} | {{ teacher?.department || '--' }}</p>
           </div>
           <div class="welcome-stats">
             <div class="stat-item">

@@ -34,7 +34,7 @@
             <version>3.0.4</version> <!-- 与Spring Boot 3.x兼容的版本 -->
         </dependency>
 
-        <!-- MySQL驱动 - 生产环境建议替换为HikariCP连接池 -->
+        <!-- MySQL驱动 - MyBatis需要用 -->
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>

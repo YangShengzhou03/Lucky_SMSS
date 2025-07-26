@@ -1,10 +1,10 @@
--- 创建学校管理系统数据库
+-- 创建Lucky_SMS数据库和数据表
 CREATE DATABASE IF NOT EXISTS Lucky_SMS;
 -- 切换到该数据库
 USE Lucky_SMS;
 
 /*
-基础字典表（无/低依赖）
+基础字典表（低依赖）
 这部分表存储系统的基础数据，其他表会引用这些数据
 */
 
@@ -25,7 +25,7 @@ CREATE TABLE users (
     last_password_change_time TIMESTAMP COMMENT '密码最后修改时间',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
-) COMMENT = '用户表-存储系统用户的基础信息';
+) COMMENT = '用户表-存储用户的基础信息';
 
 -- 角色表：定义系统中的不同角色
 CREATE TABLE roles (
@@ -34,7 +34,7 @@ CREATE TABLE roles (
     description VARCHAR(255) COMMENT '角色描述',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
-) COMMENT = '角色表-定义系统中的不同角色及其权限范围';
+) COMMENT = '角色表-定义系统中的不同角色及权限范围';
 
 -- 权限表：定义系统中的各种操作权限
 CREATE TABLE permissions (

@@ -1,49 +1,50 @@
--- 创建数据库
+-- 创建学校管理系统数据库
 CREATE DATABASE IF NOT EXISTS Lucky_SMS;
--- 切换到数据库
+-- 切换到该数据库
 USE Lucky_SMS;
 
--- ----------------------------
--- 基础字典表（无/低依赖）
--- ----------------------------
+/*
+基础字典表（无/低依赖）
+这部分表存储系统的基础数据，其他表会引用这些数据
+*/
 
 -- 用户表：存储系统所有用户的基础信息，包括学生、教师和管理人员
 CREATE TABLE users (
     user_id INT PRIMARY KEY AUTO_INCREMENT COMMENT '用户ID（主键）',
-    username VARCHAR(50) NOT NULL UNIQUE COMMENT '用户名，全局唯一', -- 增加UNIQUE约束
-    password_hash VARCHAR(255) NOT NULL COMMENT '加密后的用户密码',
-    email VARCHAR(100) UNIQUE NOT NULL COMMENT '电子邮箱，用于登录和通知',
-    phone VARCHAR(20) UNIQUE COMMENT '手机号码，可选字段',
+    username VARCHAR(50) NOT NULL UNIQUE COMMENT '用户名（全局唯一）',
+    password_hash VARCHAR(255) NOT NULL COMMENT '加密后的密码',
+    email VARCHAR(100) UNIQUE NOT NULL COMMENT '电子邮箱（用于登录和通知）',
+    phone VARCHAR(20) UNIQUE COMMENT '手机号码（可选）',
     gender ENUM('M', 'F', 'O') DEFAULT 'O' COMMENT '性别（M-男，F-女，O-其他）',
     birth_date DATE COMMENT '出生日期',
-    avatar_url VARCHAR(255) COMMENT '头像的URL地址',
-    external_id VARCHAR(50) UNIQUE COMMENT '外部系统ID，用于与第三方系统集成',
+    avatar_url VARCHAR(255) COMMENT '头像URL',
+    external_id VARCHAR(50) UNIQUE COMMENT '外部系统ID（用于集成第三方系统）',
     status ENUM('ACTIVE', 'INACTIVE') DEFAULT 'ACTIVE' COMMENT '用户状态（启用/禁用）',
     last_login_time TIMESTAMP COMMENT '最后登录时间',
-    last_login_ip VARCHAR(50) COMMENT '最后登录IP地址',
+    last_login_ip VARCHAR(50) COMMENT '最后登录IP',
     last_password_change_time TIMESTAMP COMMENT '密码最后修改时间',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '用户创建时间',
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '用户信息更新时间'
-);
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
+) COMMENT = '用户表-存储系统用户的基础信息';
 
 -- 角色表：定义系统中的不同角色
 CREATE TABLE roles (
     role_id INT PRIMARY KEY AUTO_INCREMENT COMMENT '角色ID（主键）',
-    role_name VARCHAR(50) UNIQUE NOT NULL COMMENT '角色名称，全局唯一',
-    description VARCHAR(255) COMMENT '角色描述信息',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '角色创建时间',
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '角色信息更新时间'
-);
+    role_name VARCHAR(50) UNIQUE NOT NULL COMMENT '角色名称（全局唯一）',
+    description VARCHAR(255) COMMENT '角色描述',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
+) COMMENT = '角色表-定义系统中的不同角色及其权限范围';
 
 -- 权限表：定义系统中的各种操作权限
 CREATE TABLE permissions (
     permission_id INT PRIMARY KEY AUTO_INCREMENT COMMENT '权限ID（主键）',
-    permission_name VARCHAR(50) UNIQUE NOT NULL COMMENT '权限名称，全局唯一',
-    description VARCHAR(255) COMMENT '权限描述信息',
+    permission_name VARCHAR(50) UNIQUE NOT NULL COMMENT '权限名称（全局唯一）',
+    description VARCHAR(255) COMMENT '权限描述',
     module VARCHAR(50) COMMENT '所属功能模块',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '权限创建时间',
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '权限信息更新时间'
-);
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
+) COMMENT = '权限表-定义系统操作权限';
 
 -- 角色-权限关联表（多对多）：定义角色与权限的映射关系
 CREATE TABLE role_permissions (
@@ -52,84 +53,84 @@ CREATE TABLE role_permissions (
     PRIMARY KEY (role_id, permission_id),
     FOREIGN KEY (role_id) REFERENCES roles(role_id) ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (permission_id) REFERENCES permissions(permission_id) ON DELETE CASCADE ON UPDATE CASCADE
-);
+) COMMENT = '角色权限关联表-定义角色与权限的映射关系';
 
 -- 学生状态表：定义学生的各种状态
 CREATE TABLE student_statuses (
     status_id INT PRIMARY KEY AUTO_INCREMENT COMMENT '状态ID（主键）',
-    status_name VARCHAR(50) UNIQUE NOT NULL COMMENT '状态名称，全局唯一',
-    description VARCHAR(255) COMMENT '状态描述信息',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '状态创建时间',
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '状态信息更新时间'
-);
+    status_name VARCHAR(50) UNIQUE NOT NULL COMMENT '状态名称（全局唯一）',
+    description VARCHAR(255) COMMENT '状态描述',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
+) COMMENT = '学生状态表-定义学生状态（在读、毕业、休学等）';
 
 -- 教师状态表：定义教师的各种状态
 CREATE TABLE teacher_statuses (
     status_id INT PRIMARY KEY AUTO_INCREMENT COMMENT '状态ID（主键）',
-    status_name VARCHAR(50) UNIQUE NOT NULL COMMENT '状态名称，全局唯一',
-    description VARCHAR(255) COMMENT '状态描述信息',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '状态创建时间',
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '状态信息更新时间'
-);
+    status_name VARCHAR(50) UNIQUE NOT NULL COMMENT '状态名称（全局唯一）',
+    description VARCHAR(255) COMMENT '状态描述',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
+) COMMENT = '教师状态表-定义教师状态（在职、休假、退休等）';
 
 -- 职称表：定义教师的职称信息
 CREATE TABLE teacher_titles (
     title_id INT PRIMARY KEY AUTO_INCREMENT COMMENT '职称ID（主键）',
-    title_name VARCHAR(50) UNIQUE NOT NULL COMMENT '职称名称，全局唯一',
+    title_name VARCHAR(50) UNIQUE NOT NULL COMMENT '职称名称（全局唯一）',
     title_level TINYINT NOT NULL COMMENT '职称级别（1-初级，2-中级，3-高级）',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '职称创建时间',
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '职称信息更新时间'
-);
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
+) COMMENT = '教师职称表-定义教师职称及级别';
 
 -- 成绩审核状态表：定义成绩的审核状态
 CREATE TABLE grade_review_statuses (
     status_id INT PRIMARY KEY AUTO_INCREMENT COMMENT '状态ID（主键）',
-    status_name VARCHAR(50) UNIQUE NOT NULL COMMENT '状态名称，全局唯一',
-    description VARCHAR(255) COMMENT '状态描述信息',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '状态创建时间',
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '状态信息更新时间'
-);
+    status_name VARCHAR(50) UNIQUE NOT NULL COMMENT '状态名称（全局唯一）',
+    description VARCHAR(255) COMMENT '状态描述',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
+) COMMENT = '成绩审核状态表-定义成绩审核状态（待审核、已通过、已拒绝）';
 
 -- 图书借阅状态表：定义图书的借阅状态
 CREATE TABLE book_borrow_statuses (
     status_id INT PRIMARY KEY AUTO_INCREMENT COMMENT '状态ID（主键）',
-    status_name VARCHAR(50) UNIQUE NOT NULL COMMENT '状态名称，全局唯一',
-    description VARCHAR(255) COMMENT '状态描述信息',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '状态创建时间',
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '状态信息更新时间'
-);
+    status_name VARCHAR(50) UNIQUE NOT NULL COMMENT '状态名称（全局唯一）',
+    description VARCHAR(255) COMMENT '状态描述',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
+) COMMENT = '图书借阅状态表-定义图书借阅状态（已借出、已归还、已逾期等）';
 
 -- 图书分类表（级联操作）：定义图书的分类结构，支持多级分类
 CREATE TABLE book_categories (
     category_id INT PRIMARY KEY AUTO_INCREMENT COMMENT '分类ID（主键）',
-    category_name VARCHAR(50) UNIQUE NOT NULL COMMENT '分类名称，全局唯一',
+    category_name VARCHAR(50) UNIQUE NOT NULL COMMENT '分类名称（全局唯一）',
     parent_id INT COMMENT '父分类ID（外键），NULL表示顶级分类',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '分类创建时间',
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '分类信息更新时间',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     FOREIGN KEY (parent_id) REFERENCES book_categories(category_id) ON DELETE SET NULL
-);
+) COMMENT = '图书分类表-定义图书分类层级结构';
 
 -- 学院表：定义学校的各个学院
 CREATE TABLE departments (
     department_id INT PRIMARY KEY AUTO_INCREMENT COMMENT '学院ID（主键）',
-    department_name VARCHAR(50) UNIQUE NOT NULL COMMENT '学院名称，全局唯一',
-    department_code VARCHAR(10) UNIQUE NOT NULL COMMENT '学院代码，全局唯一',
+    department_name VARCHAR(50) UNIQUE NOT NULL COMMENT '学院名称（全局唯一）',
+    department_code VARCHAR(10) UNIQUE NOT NULL COMMENT '学院代码（全局唯一）',
     dean_id INT COMMENT '院长ID（外键，关联用户表）',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '学院创建时间',
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '学院信息更新时间',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     FOREIGN KEY (dean_id) REFERENCES users(user_id) ON UPDATE SET NULL ON DELETE SET NULL
-);
+) COMMENT = '学院表-定义学校学院及负责人';
 
 -- 专业表（级联操作）：定义各个学院下的专业
 CREATE TABLE majors (
     major_id INT PRIMARY KEY AUTO_INCREMENT COMMENT '专业ID（主键）',
     major_name VARCHAR(50) NOT NULL COMMENT '专业名称',
     department_id INT NOT NULL COMMENT '所属学院ID（外键）',
-    major_code VARCHAR(10) UNIQUE NOT NULL COMMENT '专业代码，全局唯一',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '专业创建时间',
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '专业信息更新时间',
+    major_code VARCHAR(10) UNIQUE NOT NULL COMMENT '专业代码（全局唯一）',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     FOREIGN KEY (department_id) REFERENCES departments(department_id) ON DELETE CASCADE ON UPDATE CASCADE
-);
+) COMMENT = '专业表-定义学院下的专业';
 
 -- 教师表（级联操作）：存储教师的详细信息
 CREATE TABLE teachers (
@@ -139,14 +140,14 @@ CREATE TABLE teachers (
     title_id INT NOT NULL COMMENT '职称ID（外键）',
     hire_date DATE NOT NULL COMMENT '入职日期',
     office_location VARCHAR(50) COMMENT '办公室位置',
-    teacher_no VARCHAR(20) UNIQUE NOT NULL COMMENT '教师编号，全局唯一',
+    teacher_no VARCHAR(20) UNIQUE NOT NULL COMMENT '教师编号（全局唯一）',
     status_id INT NOT NULL DEFAULT 1 COMMENT '教师状态（外键）',
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
     FOREIGN KEY (department_id) REFERENCES departments(department_id) ON UPDATE CASCADE,
     FOREIGN KEY (title_id) REFERENCES teacher_titles(title_id) ON UPDATE CASCADE,
     FOREIGN KEY (status_id) REFERENCES teacher_statuses(status_id) ON UPDATE CASCADE,
     INDEX idx_teacher_no (teacher_no)
-);
+) COMMENT = '教师表-存储教师详细信息';
 
 -- 学生表（级联操作）：存储学生的详细信息
 CREATE TABLE students (
@@ -157,7 +158,7 @@ CREATE TABLE students (
     class_name VARCHAR(50) NOT NULL COMMENT '班级名称',
     enrollment_year YEAR NOT NULL COMMENT '入学年份',
     education_years TINYINT NOT NULL DEFAULT 4 COMMENT '学制（年）',
-    student_no VARCHAR(20) UNIQUE NOT NULL COMMENT '学号，全局唯一',
+    student_no VARCHAR(20) UNIQUE NOT NULL COMMENT '学号（全局唯一）',
     status_id INT NOT NULL DEFAULT 1 COMMENT '学生状态（外键）',
     gpa DECIMAL(3,2) DEFAULT 0.00 COMMENT '平均绩点',
     class_rank INT DEFAULT 0 COMMENT '班级排名',
@@ -170,12 +171,12 @@ CREATE TABLE students (
     FOREIGN KEY (status_id) REFERENCES student_statuses(status_id) ON UPDATE CASCADE,
     INDEX idx_student_no (student_no),
     INDEX idx_enrollment_year (enrollment_year)
-);
+) COMMENT = '学生表-存储学生详细信息';
 
 -- 课程表（补充级联操作）：存储课程的基本信息
 CREATE TABLE courses (
     course_id INT PRIMARY KEY AUTO_INCREMENT COMMENT '课程ID（主键）',
-    course_code VARCHAR(20) UNIQUE NOT NULL COMMENT '课程代码，全局唯一',
+    course_code VARCHAR(20) UNIQUE NOT NULL COMMENT '课程代码（全局唯一）',
     course_name VARCHAR(100) NOT NULL COMMENT '课程名称',
     course_description TEXT COMMENT '课程描述',
     department_id INT NOT NULL COMMENT '所属学院ID（外键）',
@@ -189,7 +190,7 @@ CREATE TABLE courses (
     FOREIGN KEY (department_id) REFERENCES departments(department_id) ON UPDATE CASCADE,
     FOREIGN KEY (created_by) REFERENCES teachers(teacher_id) ON UPDATE CASCADE,
     INDEX idx_course_name (course_name)
-);
+) COMMENT = '课程表-存储课程基本信息';
 
 -- 学期表：定义学校的各个学期
 CREATE TABLE semesters (
@@ -200,7 +201,7 @@ CREATE TABLE semesters (
     end_date DATE NOT NULL COMMENT '结束日期',
     is_current TINYINT(1) DEFAULT 0 COMMENT '是否当前学期',
     UNIQUE KEY unique_semester (academic_year, semester_name)
-);
+) COMMENT = '学期表-定义学校学期';
 
 -- 教师授课表：记录教师在各学期的授课信息
 CREATE TABLE teaching_assignments (
@@ -210,7 +211,7 @@ CREATE TABLE teaching_assignments (
     semester_id INT NOT NULL COMMENT '学期ID（外键）',
     classroom VARCHAR(20) COMMENT '教室',
     schedule VARCHAR(100) COMMENT '上课时间安排',
-    max_students SMALLINT NOT NULL COMMENT '最大选课人数（SMALLINT，支持0-32767）',
+    max_students SMALLINT NOT NULL COMMENT '最大选课人数',
     current_students SMALLINT DEFAULT 0 COMMENT '当前选课人数',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
@@ -219,7 +220,7 @@ CREATE TABLE teaching_assignments (
     FOREIGN KEY (semester_id) REFERENCES semesters(semester_id) ON UPDATE CASCADE,
     UNIQUE KEY unique_teaching_assignment (teacher_id, course_id, semester_id),
     INDEX idx_teacher_semester (teacher_id, semester_id)
-);
+) COMMENT = '教师授课表-记录教师授课任务';
 
 -- 学生选课表（级联操作）：记录学生的选课信息
 CREATE TABLE course_selections (
@@ -233,7 +234,7 @@ CREATE TABLE course_selections (
     FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE,
     FOREIGN KEY (assignment_id) REFERENCES teaching_assignments(assignment_id) ON DELETE CASCADE,
     UNIQUE KEY unique_course_selection (student_id, assignment_id)
-);
+) COMMENT = '学生选课表-记录学生选课信息';
 
 -- 学生成绩表（级联操作）：记录学生的课程成绩
 CREATE TABLE course_grades (
@@ -259,7 +260,7 @@ CREATE TABLE course_grades (
     FOREIGN KEY (review_status_id) REFERENCES grade_review_statuses(status_id) ON UPDATE CASCADE,
     FOREIGN KEY (reviewer_id) REFERENCES teachers(teacher_id) ON UPDATE SET NULL,
     UNIQUE KEY unique_student_grade (student_id, assignment_id)
-);
+) COMMENT = '学生成绩表-记录学生课程成绩';
 
 -- 考勤记录表（级联操作）：记录学生的考勤信息
 CREATE TABLE attendances (
@@ -276,12 +277,12 @@ CREATE TABLE attendances (
     FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE,
     FOREIGN KEY (recorded_by) REFERENCES teachers(teacher_id) ON UPDATE CASCADE,
     UNIQUE KEY unique_attendance (assignment_id, student_id, date)
-);
+) COMMENT = '考勤记录表-记录学生考勤信息';
 
 -- 图书表（级联操作）：记录图书馆的图书信息
 CREATE TABLE books (
     book_id INT PRIMARY KEY AUTO_INCREMENT COMMENT '图书ID（主键）',
-    isbn VARCHAR(20) UNIQUE NOT NULL COMMENT 'ISBN编号，全局唯一',
+    isbn VARCHAR(20) UNIQUE NOT NULL COMMENT 'ISBN编号（全局唯一）',
     book_title VARCHAR(200) NOT NULL COMMENT '图书标题',
     author VARCHAR(100) NOT NULL COMMENT '作者',
     publisher VARCHAR(100) NOT NULL COMMENT '出版社',
@@ -296,7 +297,7 @@ CREATE TABLE books (
     FOREIGN KEY (category_id) REFERENCES book_categories(category_id) ON UPDATE CASCADE,
     FOREIGN KEY (created_by) REFERENCES users(user_id) ON UPDATE CASCADE,
     INDEX idx_book_title (book_title)
-);
+) COMMENT = '图书表-记录图书馆藏书信息';
 
 -- 图书预约表：记录图书的预约信息（已修复索引问题）
 CREATE TABLE book_reservations (
@@ -310,9 +311,8 @@ CREATE TABLE book_reservations (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
     FOREIGN KEY (book_id) REFERENCES books(book_id) ON DELETE CASCADE,
-    -- 修复：移除WHERE条件，改为包含status的唯一键（确保同一用户对同一本书的同一状态不重复）
     UNIQUE KEY unique_pending_reservation (user_id, book_id, status)
-);
+) COMMENT = '图书预约表-记录图书预约信息';
 
 -- 图书借阅表（级联操作）：记录图书的借阅信息
 CREATE TABLE book_borrowings (
@@ -335,7 +335,7 @@ CREATE TABLE book_borrowings (
     FOREIGN KEY (status_id) REFERENCES book_borrow_statuses(status_id) ON UPDATE CASCADE,
     FOREIGN KEY (created_by) REFERENCES users(user_id) ON UPDATE CASCADE,
     INDEX idx_due_date (due_date)
-);
+) COMMENT = '图书借阅表-记录图书借阅信息';
 
 -- 数据变更日志表（补充级联操作）：记录重要ID变更历史
 CREATE TABLE id_changes (
@@ -348,18 +348,18 @@ CREATE TABLE id_changes (
     changed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '变更时间',
     reason VARCHAR(255) COMMENT '变更原因',
     FOREIGN KEY (changed_by) REFERENCES users(user_id) ON UPDATE CASCADE
-);
+) COMMENT = 'ID变更表-记录重要ID变更历史';
 
 -- 系统配置表：存储系统的各种配置信息
 CREATE TABLE system_config (
     config_id INT PRIMARY KEY AUTO_INCREMENT COMMENT '配置ID（主键）',
-    config_key VARCHAR(50) UNIQUE NOT NULL COMMENT '配置键，全局唯一',
+    config_key VARCHAR(50) UNIQUE NOT NULL COMMENT '配置键（全局唯一）',
     config_value VARCHAR(255) NOT NULL COMMENT '配置值',
     config_type ENUM('STRING', 'NUMBER', 'BOOLEAN', 'JSON') NOT NULL DEFAULT 'STRING' COMMENT '配置类型',
     description VARCHAR(255) COMMENT '配置描述',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
-);
+) COMMENT = '系统配置表-存储系统配置参数';
 
 -- 课程先修关系表（补充级联操作）：定义课程之间的先修关系
 CREATE TABLE course_prerequisites (
@@ -368,11 +368,12 @@ CREATE TABLE course_prerequisites (
     PRIMARY KEY (course_id, prerequisite_course_id),
     FOREIGN KEY (course_id) REFERENCES courses(course_id) ON DELETE CASCADE,
     FOREIGN KEY (prerequisite_course_id) REFERENCES courses(course_id) ON DELETE CASCADE
-);
+) COMMENT = '课程先修关系表-定义课程先修关系';
 
--- ----------------------------
--- 业务逻辑（存储过程与触发器）
--- ----------------------------
+/*
+业务逻辑（存储过程与触发器）
+这部分实现了系统的核心业务逻辑
+*/
 
 -- 存储过程：更新班级排名
 DELIMITER $$
@@ -388,7 +389,7 @@ BEGIN
     JOIN (
         SELECT 
             student_id,
-            ROW_NUMBER() OVER (ORDER BY gpa DESC, total_credits DESC) AS new_rank
+            ROW_NUMBER() OVER (PARTITION BY s.class_name ORDER BY s.gpa DESC, s.total_credits DESC) AS new_rank
         FROM students
         WHERE class_name = class_name_val AND status_id = 1  -- 仅在读学生
     ) AS ranked ON s.student_id = ranked.student_id
@@ -562,9 +563,10 @@ BEGIN
 END$$
 DELIMITER ;
 
--- ----------------------------
--- 视图定义（修正保留关键字问题）
--- ----------------------------
+/*
+视图定义（修正保留关键字问题）
+这部分定义了一些常用的统计视图
+*/
 
 -- 班级排名视图：提供班级内学生的排名信息（将rank改为class_rank避免关键字冲突）
 CREATE OR REPLACE VIEW class_ranking AS

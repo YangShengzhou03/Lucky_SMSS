@@ -157,7 +157,6 @@
             <el-button type="text" icon="Picture" @click="triggerFileInput('image')" />
             <el-button type="text" icon="VideoCamera" @click="triggerFileInput('video')" />
             <el-button type="text" icon="Document" @click="triggerFileInput('file')" />
-            <el-button type="text" icon="Sunny" @click="toggleDarkMode" />
             <input type="file" ref="fileInput" style="display: none" @change="handleFileUpload" />
           </div>
 
@@ -205,8 +204,8 @@
 
           <div v-else-if="newChatSearch.trim()" class="empty-result flex flex-col items-center justify-center py-10">
             <h3 class="text-lg font-medium text-gray-800 mb-2">未找到联系人</h3>
-            <p class="text-gray-500 text-center max-w-xs">尝试使用不同的关键词或添加新联系人</p>
-            <el-button type="text" size="small" class="mt-4 text-primary-color" @click="clearSearch">
+            <p class="text-gray-500 text-center max-w-xs mb-4">尝试使用不同的关键词或添加新联系人</p>
+            <el-button type="primary" size="small" @click="clearSearch">
               <el-icon class="mr-1">
                 <RefreshRight />
               </el-icon>
@@ -700,7 +699,6 @@ const createNewChat = (contact) => {
   showNewChatDialog.value = false
   newChatSearch.value = ''
 }
-
 
 const handleCloseNewChatDialog = (done) => {
   done()
@@ -1428,6 +1426,10 @@ const highlightMatch = (text, search) => {
   }
 }
 
+.font-medium {
+  color: #000000;
+}
+
 .custom-contact-card {
   display: flex;
   align-items: center;
@@ -1441,7 +1443,6 @@ const highlightMatch = (text, search) => {
   border: 1px solid var(--border-color);
   position: relative;
   overflow: hidden;
-
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 
   .contact-avatar {

@@ -88,16 +88,16 @@ Lucky_SMSS 是一款基于 **Vue 3** 和 **Spring Boot 3** 构建的**开源学�
 *图1：系统首页界面*
 
 ### 系统功能
-![系统功能界面](preview/index-function.png)
+![学生端图书系统](preview/stu-library.png.png)
 *图2：管理员后台界面，展示系统数据概览与功能入口*
 
 ### 登录界面
 ![登录界面](preview/login.png)
 *图3：登录界面*
 
-### 注册页面
-![注册页面](preview/register.png)
-*图4：注册界面*
+### 教师首页
+![教师首页](preview/tea-index.png)
+*图4：教师首页*
 
 ## 💻 安装部署
 

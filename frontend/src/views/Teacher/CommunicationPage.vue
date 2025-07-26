@@ -869,6 +869,10 @@ const highlightMatch = (text, search) => {
           }
         }
 
+        .el-badge {
+          margin-left: 6px;
+        }
+
         .el-badge :deep(.el-badge__content) {
           top: 0;
           right: 0;

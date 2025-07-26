@@ -203,14 +203,10 @@
           </div>
 
           <div v-else-if="newChatSearch.trim()" class="empty-result flex flex-col items-center justify-center py-10">
-            <h3 class="text-lg font-medium text-gray-800 mb-2">未找到联系人</h3>
-            <p class="text-gray-500 text-center max-w-xs mb-4">尝试使用不同的关键词或添加新联系人</p>
-            <el-button type="primary" size="small" @click="clearSearch">
-              <el-icon class="mr-1">
-                <RefreshRight />
-              </el-icon>
-              重新搜索
-            </el-button>
+            <h3 style="text-align: center; margin: 0 auto 8px; width: 100%;" class="text-lg font-medium text-gray-800">
+              未找到联系人</h3>
+            <p style="text-align: center; margin: 0 auto; width: 100%;" class="text-gray-500 max-w-xs mb-4">
+              尝试使用不同的关键词或添加新联系人</p>
           </div>
         </div>
       </div>
@@ -247,7 +243,6 @@ import {
   Delete,
   BellFilled,
   ChatRound,
-  RefreshRight,
   Close
 } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'

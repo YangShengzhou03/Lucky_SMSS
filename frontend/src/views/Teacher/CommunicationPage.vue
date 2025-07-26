@@ -726,9 +726,8 @@ const highlightMatch = (text, search) => {
 <style scoped lang="scss">
 .modern-chat-app {
   display: flex;
-  height: 100%;
-  min-height: 500px;
   height: 80vh;
+  min-height: 500px;
   width: 100%;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
   box-sizing: border-box;
@@ -1128,7 +1127,7 @@ const highlightMatch = (text, search) => {
                 flex: 1;
 
                 .file-name {
-                  font-weight: 5;
+                  font-weight: 500;
                   margin-bottom: 4px;
                 }
 
@@ -1334,13 +1333,11 @@ const highlightMatch = (text, search) => {
     }
 
     .messages {
-      .message-bubble {
-        &.bot {
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+      .message-bubble.bot {
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 
-          :deep(a.message-link) {
-            color: #60a5fa;
-          }
+        :deep(a.message-link) {
+          color: #60a5fa;
         }
       }
     }
@@ -1434,35 +1431,98 @@ const highlightMatch = (text, search) => {
 .custom-contact-card {
   display: flex;
   align-items: center;
-  padding: 12px 16px;
-  border-radius: 8px;
+  padding: 16px;
+  border-radius: 10px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  background-color: #1f2b3d;
-  color: #fff;
-  margin-bottom: 8px;
+  transition: all 0.3s ease;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  margin: 8px auto;
+  border: 1px solid var(--border-color);
+  position: relative;
+  overflow: hidden;
+
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+  .contact-avatar {
+    margin-right: 16px;
+    flex-shrink: 0;
+  }
+
+  .contact-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex: 1;
+  }
+
+  .contact-name {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 4px 4px;
+    color: var(--text-primary);
+    transition: color 0.2s;
+  }
+
+  .contact-desc {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin: 0px 0px 0px 4px;
+    transition: color 0.2s;
+  }
+
+  .contact-actions {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    color: var(--text-secondary);
+
+    .el-button {
+      padding: 4px;
+
+      &:hover {
+        color: var(--primary-color);
+      }
+    }
+  }
+
+  // 悬停状态
+  &:hover {
+    background-color: var(--bg-secondary);
+    border-color: rgba(59, 130, 246, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+
+    .contact-actions {
+      opacity: 1;
+    }
+  }
+
+  // 激活状态
+  &.active {
+    background-color: rgba(59, 130, 246, 0.1);
+    border-color: var(--primary-color);
+
+    .contact-name {
+      color: var(--primary-color);
+    }
+  }
 }
 
-.contact-info {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
+// 深色模式样式
+.dark .custom-contact-card {
+  background-color: var(--bg-primary);
+  border-color: var(--border-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
-.contact-name {
-  font-size: 16px;
-  font-weight: 500;
-  margin: 0 0 4px 0;
-}
+  &:hover {
+    background-color: rgba(59, 130, 246, 0.1);
+    border-color: var(--primary-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
 
-.contact-desc {
-  font-size: 14px;
-  color: #c0c0c0;
-  margin: 0;
-}
-
-.custom-contact-card:hover {
-  background-color: #2c3e57;
+  &.active {
+    background-color: rgba(59, 130, 246, 0.2);
+  }
 }
 
 @keyframes fadeIn {

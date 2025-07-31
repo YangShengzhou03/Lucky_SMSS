@@ -110,9 +110,9 @@
           <div class="footer-section">
             <h3>快速链接</h3>
             <ul>
-              <li @click="scrollToSection('home')">首页</li>
-              <li @click="scrollToSection('features')">功能</li>
-              <li @click="scrollToSection('pricing')">价格</li>
+              <li @click="scrollToSection('home')">Lucky-SMS</li>
+              <li @click="scrollToSection('features')">功能服务</li>
+              <li @click="scrollToSection('pricing')">价格方案</li>
             </ul>
           </div>
           <div class="footer-section">
@@ -164,7 +164,7 @@
           </div>
         </div>
         <div class="footer-bottom">
-          <p>&copy; 2025 Lucky SMS. 版权所有</p>
+          <p>&copy; 2025 Yangshengzhou. All Rights Reserved.</p>
         </div>
       </div>
     </footer>

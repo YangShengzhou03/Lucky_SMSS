@@ -21,5 +21,4 @@ public class User {
     private LocalDateTime lastPasswordChangeTime; // 最后密码修改时间
     private LocalDateTime createdAt;     // 创建时间，默认当前时间
     private LocalDateTime updatedAt;     // 更新时间，默认当前时间
-    private String role;                 // 登录用户的角色
 }

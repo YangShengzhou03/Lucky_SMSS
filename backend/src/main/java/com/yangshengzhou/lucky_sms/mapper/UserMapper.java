@@ -1,11 +1,11 @@
 package com.yangshengzhou.lucky_sms.mapper;
 
-import com.yangshengzhou.lucky_sms.entity.User;
+import com.yangshengzhou.lucky_sms.vo.LoginVO;
 import org.apache.ibatis.annotations.Mapper;
 import java.util.Map;
 
 @Mapper
 public interface UserMapper {
-    // 登录查询，返回用户实体（查不到则返回null）
-    User login(Map<String, Object> params);
+    // 直接返回LoginVO（包含角色信息），不再返回User实体
+    LoginVO login(Map<String, Object> params);
 }

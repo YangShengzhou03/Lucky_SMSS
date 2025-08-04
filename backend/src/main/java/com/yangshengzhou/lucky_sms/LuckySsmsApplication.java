@@ -1,4 +1,4 @@
-package com.yangshengzhou.luckyssms;
+package com.yangshengzhou.lucky_sms;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

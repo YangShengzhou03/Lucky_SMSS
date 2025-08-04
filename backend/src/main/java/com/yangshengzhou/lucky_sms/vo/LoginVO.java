@@ -1,0 +1,12 @@
+package com.yangshengzhou.lucky_sms.vo;
+
+import lombok.Data;
+
+@Data
+public class LoginVO {
+    private Integer uid;         // 用户ID
+    private String username;     // 用户名
+    private String phone;        // 手机号（可脱敏，如138****5678）
+    private String role;         // 角色
+    private String token;        // 认证令牌（后续接口需要携带）
+}

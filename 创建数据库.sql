@@ -33,6 +33,15 @@ CREATE TABLE roles (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
 ) COMMENT = '角色表-定义系统中的不同角色及权限范围';
 
+-- 用户 - 角色关联表（多对多）
+CREATE TABLE user_roles (
+    user_id INT NOT NULL COMMENT '用户ID（外键）',
+    role_id INT NOT NULL COMMENT '角色ID（外键）',
+    PRIMARY KEY (user_id, role_id),
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (role_id) REFERENCES roles(role_id) ON UPDATE CASCADE
+) COMMENT = '用户角色关联表-定义用户拥有的角色';
+
 -- 权限表：定义系统中的各种操作权限
 CREATE TABLE permissions (
     permission_id INT PRIMARY KEY AUTO_INCREMENT COMMENT '权限ID（主键）',

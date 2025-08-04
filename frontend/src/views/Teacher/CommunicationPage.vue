@@ -4,8 +4,21 @@
       <div class="sidebar-header">
         <h2>消息</h2>
         <div class="header-actions">
-          <el-button type="text" icon="Plus" circle @click="showNewChatDialog = true" />
-          <el-button type="text" icon="User" circle @click="showCreateGroupDialog = true" />
+          <el-dropdown trigger="click" @command="handlePlusMenuCommand">
+            <el-button type="text" icon="Plus" circle />
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item command="addContact">
+                  <el-icon><User /></el-icon>
+                  添加好友
+                </el-dropdown-item>
+                <el-dropdown-item command="createGroup">
+                  <el-icon><UserFilled /></el-icon>
+                  创建群组
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
         </div>
       </div>
 
@@ -71,8 +84,24 @@
           <el-icon><ChatRound /></el-icon>
           <h3>选择一个对话开始聊天</h3>
           <p>或创建一个新的对话</p>
-          <el-button type="primary" @click="showNewChatDialog = true">新建对话</el-button>
-          <el-button type="primary" @click="showCreateGroupDialog = true" class="ml-2">创建群组</el-button>
+          <el-dropdown trigger="click" @command="handlePlusMenuCommand">
+            <el-button type="primary">
+              <el-icon><Plus /></el-icon>
+              新建对话
+            </el-button>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item command="addContact">
+                  <el-icon><User /></el-icon>
+                  添加好友
+                </el-dropdown-item>
+                <el-dropdown-item command="createGroup">
+                  <el-icon><UserFilled /></el-icon>
+                  创建群组
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
         </div>
       </div>
 
@@ -658,6 +687,7 @@ import {
   BellFilled,
   ChatRound,
   User,
+  UserFilled,
   Check,
   Plus,
   Download,
@@ -1190,6 +1220,14 @@ const muteChat = () => {
   ElMessage.success('对话已静音')
 }
 
+const handlePlusMenuCommand = (command) => {
+  if (command === 'addContact') {
+    showNewChatDialog.value = true
+  } else if (command === 'createGroup') {
+    showCreateGroupDialog.value = true
+  }
+}
+
 const createNewChat = (contact) => {
   const existingChat = chatHistory.value.find(chat => chat.id === contact.id && !chat.isGroup)
 
@@ -1658,6 +1696,32 @@ onMounted(() => {
           background: #f1f5f9;
         }
       }
+
+      // 下拉菜单样式
+      :deep(.el-dropdown-menu) {
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        border: 1px solid var(--border-color);
+        padding: 4px;
+
+        .el-dropdown-item {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 16px;
+          border-radius: 6px;
+          transition: all 0.2s;
+
+          .el-icon {
+            font-size: 16px;
+          }
+
+          &:hover {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--primary-color);
+          }
+        }
+      }
     }
 
     .search-box {
@@ -1819,6 +1883,32 @@ onMounted(() => {
 
         .el-button {
           margin: 0 4px;
+        }
+
+        // 空状态下的下拉菜单样式
+        :deep(.el-dropdown-menu) {
+          border-radius: 8px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          border: 1px solid var(--border-color);
+          padding: 4px;
+
+          .el-dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            border-radius: 6px;
+            transition: all 0.2s;
+
+            .el-icon {
+              font-size: 16px;
+            }
+
+            &:hover {
+              background: rgba(59, 130, 246, 0.1);
+              color: var(--primary-color);
+            }
+          }
         }
       }
     }
@@ -2465,6 +2555,21 @@ onMounted(() => {
 
         &:hover {
           background: rgba(59, 130, 246, 0.1);
+        }
+      }
+    }
+
+    // 深色模式下的下拉菜单样式
+    :deep(.el-dropdown-menu) {
+      background: var(--bg-primary);
+      border-color: var(--border-color);
+
+      .el-dropdown-item {
+        color: var(--text-primary);
+
+        &:hover {
+          background: rgba(59, 130, 246, 0.1);
+          color: var(--primary-color);
         }
       }
     }

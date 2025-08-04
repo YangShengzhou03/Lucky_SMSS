@@ -3233,36 +3233,36 @@ onMounted(() => {
         }
       }
 
-      .avatar-upload-area {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 24px;
+              .avatar-upload-area {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          padding: 16px;
 
-        .upload-avatar {
-          margin-bottom: 16px;
-          transition: all 0.2s;
+          .upload-avatar {
+            margin-bottom: 12px;
+            transition: all 0.2s;
 
-          &:hover {
-            transform: scale(1.05);
+            &:hover {
+              transform: scale(1.05);
+            }
+          }
+
+          .upload-tip {
+            text-align: center;
+
+            p {
+              margin: 0 0 4px;
+              font-size: 13px;
+              color: var(--text-primary);
+            }
+
+            .upload-hint {
+              font-size: 11px;
+              color: var(--text-secondary);
+            }
           }
         }
-
-        .upload-tip {
-          text-align: center;
-
-          p {
-            margin: 0 0 4px;
-            font-size: 14px;
-            color: var(--text-primary);
-          }
-
-          .upload-hint {
-            font-size: 12px;
-            color: var(--text-secondary);
-          }
-        }
-      }
     }
   }
 

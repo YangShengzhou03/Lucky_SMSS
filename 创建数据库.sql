@@ -768,6 +768,64 @@ BEGIN
 END$$
 DELIMITER ;
 
+-- 用户聊天会话存储过程（替代原视图，解决变量问题）
+DELIMITER $$
+CREATE PROCEDURE get_user_im_conversations(IN current_user_id INT)
+BEGIN
+    SELECT 
+        c.conversation_id,
+        c.conversation_type,
+        -- 单聊显示对方用户名，群聊显示群名称
+        CASE 
+            WHEN c.conversation_type = 'PERSONAL' THEN 
+                IF(u1.user_id = current_user_id, u2.username, u1.username)
+            ELSE 
+                g.group_name 
+        END AS conversation_name,
+        -- 单聊显示对方头像，群聊显示群头像
+        CASE 
+            WHEN c.conversation_type = 'PERSONAL' THEN 
+                IF(u1.user_id = current_user_id, u2.avatar_url, u1.avatar_url)
+            ELSE 
+                g.avatar_url 
+        END AS conversation_avatar,
+        -- 对方用户ID（仅单聊）
+        CASE 
+            WHEN c.conversation_type = 'PERSONAL' THEN 
+                IF(u1.user_id = current_user_id, u2.user_id, u1.user_id)
+            ELSE 
+                NULL 
+        END AS other_user_id,
+        c.group_id,
+        c.last_message_id,
+        m.content AS last_message_content,
+        m.send_time AS last_message_time,
+        m.sender_id AS last_message_sender,
+        -- 未读消息数量
+        (SELECT COUNT(*) FROM im_message_read_status 
+         WHERE conversation_id = c.conversation_id 
+           AND user_id = current_user_id 
+           AND is_read = 0) AS unread_count,
+        c.updated_at AS last_active_time
+    FROM 
+        im_conversations c
+    LEFT JOIN 
+        im_groups g ON c.group_id = g.group_id
+    LEFT JOIN 
+        users u1 ON c.user_small_id = u1.user_id
+    LEFT JOIN 
+        users u2 ON c.user_large_id = u2.user_id
+    LEFT JOIN 
+        im_messages m ON c.last_message_id = m.message_id
+    WHERE 
+        -- 筛选当前用户参与的会话
+        (c.conversation_type = 'GROUP' AND EXISTS (
+            SELECT 1 FROM im_group_members gm WHERE gm.group_id = c.group_id AND gm.user_id = current_user_id AND gm.is_quit = 0
+        )) OR
+        (c.conversation_type = 'PERSONAL' AND (current_user_id = c.user_small_id OR current_user_id = c.user_large_id));
+END$$
+DELIMITER ;
+
 
 /*
 视图定义
@@ -873,60 +931,6 @@ LEFT JOIN
     teaching_assignments ta ON t.teacher_id = ta.teacher_id
 GROUP BY 
     t.teacher_id, t.teacher_no, u.username, d.department_name, tt.title_name;
-
--- 用户聊天会话视图（整合单聊和群聊会话信息）
-CREATE OR REPLACE VIEW user_im_conversations AS
-SELECT 
-    c.conversation_id,
-    c.conversation_type,
-    -- 单聊显示对方用户名，群聊显示群名称
-    CASE 
-        WHEN c.conversation_type = 'PERSONAL' THEN 
-            IF(u1.user_id = @current_user_id, u2.username, u1.username)
-        ELSE 
-            g.group_name 
-    END AS conversation_name,
-    -- 单聊显示对方头像，群聊显示群头像
-    CASE 
-        WHEN c.conversation_type = 'PERSONAL' THEN 
-            IF(u1.user_id = @current_user_id, u2.avatar_url, u1.avatar_url)
-        ELSE 
-            g.avatar_url 
-    END AS conversation_avatar,
-    -- 对方用户ID（仅单聊）
-    CASE 
-        WHEN c.conversation_type = 'PERSONAL' THEN 
-            IF(u1.user_id = @current_user_id, u2.user_id, u1.user_id)
-        ELSE 
-            NULL 
-    END AS other_user_id,
-    c.group_id,
-    c.last_message_id,
-    m.content AS last_message_content,
-    m.send_time AS last_message_time,
-    m.sender_id AS last_message_sender,
-    -- 未读消息数量
-    (SELECT COUNT(*) FROM im_message_read_status 
-     WHERE conversation_id = c.conversation_id 
-       AND user_id = @current_user_id 
-       AND is_read = 0) AS unread_count,
-    c.updated_at AS last_active_time
-FROM 
-    im_conversations c
-LEFT JOIN 
-    im_groups g ON c.group_id = g.group_id
-LEFT JOIN 
-    users u1 ON c.user_small_id = u1.user_id
-LEFT JOIN 
-    users u2 ON c.user_large_id = u2.user_id
-LEFT JOIN 
-    im_messages m ON c.last_message_id = m.message_id
-WHERE 
-    -- 筛选当前用户参与的会话
-    (c.conversation_type = 'GROUP' AND EXISTS (
-        SELECT 1 FROM im_group_members gm WHERE gm.group_id = c.group_id AND gm.user_id = @current_user_id AND gm.is_quit = 0
-    )) OR
-    (c.conversation_type = 'PERSONAL' AND (@current_user_id = c.user_small_id OR @current_user_id = c.user_large_id));
 
 -- 群成员列表视图
 CREATE OR REPLACE VIEW im_group_member_list AS

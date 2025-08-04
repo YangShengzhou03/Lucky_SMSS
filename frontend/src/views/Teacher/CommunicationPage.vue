@@ -5,41 +5,62 @@
         <h2>消息</h2>
         <div class="header-actions">
           <el-button type="text" icon="Plus" circle @click="showNewChatDialog = true" />
-          <el-button type="text" icon="Users" circle @click="showCreateGroupDialog = true" />
+          <el-button type="text" icon="User" circle @click="showCreateGroupDialog = true" />
         </div>
       </div>
 
       <div class="search-box">
-        <el-input v-model="searchQuery" placeholder="搜索对话" clearable :prefix-icon="Search" />
+        <el-input 
+          v-model="searchQuery" 
+          placeholder="搜索对话" 
+          clearable 
+          :prefix-icon="Search" 
+          @input="handleSearchInput"
+        />
       </div>
 
-      <div class="chat-list">
-        <div v-for="(chat, index) in filteredChats" :key="chat.id"
-          :class="['chat-item', { active: currentChatIndex === index }]" @click="selectChat(index)">
-          <el-avatar :size="48" :src="chat.avatar" :alt="chat.name">
-            <template v-if="chat.isGroup && !chat.avatar">
-              <el-icon><Users /></el-icon>
-            </template>
-          </el-avatar>
-          <div class="chat-info">
-            <div class="chat-header">
-              <h3>
-                {{ chat.name }}
-                <span v-if="chat.isGroup" class="group-badge">群</span>
-              </h3>
-              <span>{{ formatRelativeTime(chat.lastMessageTime) }}</span>
+      <div class="chat-list" ref="chatListRef">
+        <div v-if="filteredChats.length > 0" class="virtual-scroller">
+          <div
+            v-for="(chat, index) in filteredChats"
+            :key="index"
+            :class="['chat-item', { active: currentChatIndex === index }]"
+            @click="selectChat(index)"
+          >
+            <el-avatar :size="48" :src="chat.avatar" :alt="chat.name">
+              <template v-if="chat.isGroup && !chat.avatar">
+                <el-icon><User /></el-icon>
+              </template>
+            </el-avatar>
+            <div class="chat-info">
+              <div class="chat-header">
+                <h3>
+                  {{ chat.name }}
+                  <span v-if="chat.isGroup" class="group-badge">群</span>
+                </h3>
+                <span>{{ formatRelativeTime(chat.lastMessageTime) }}</span>
+              </div>
+              <p class="last-message">
+                <template v-if="chat.lastMessageType === 'image'">
+                  <el-icon><Picture /></el-icon> 图片
+                </template>
+                <template v-if="chat.lastMessageType === 'file'">
+                  <el-icon><Document /></el-icon> 文件
+                </template>
+                <template v-else>{{ chat.preview }}</template>
+              </p>
             </div>
-            <p class="last-message">
-              <template v-if="chat.lastMessageType === 'image'">
-                <el-icon><Picture /></el-icon> 图片
-              </template>
-              <template v-if="chat.lastMessageType === 'file'">
-                <el-icon><Document /></el-icon> 文件
-              </template>
-              <template v-else>{{ chat.preview }}</template>
-            </p>
+            <el-badge 
+              :value="chat.unreadCount" 
+              :max="99" 
+              :hidden="!chat.unreadCount" 
+              type="primary" 
+            />
           </div>
-          <el-badge :value="chat.unreadCount" :max="99" :hidden="!chat.unreadCount" type="primary" />
+        </div>
+        
+        <div v-if="filteredChats.length === 0 && searchQuery" class="empty-search">
+          <el-empty description="未找到相关对话" />
         </div>
       </div>
     </div>
@@ -60,7 +81,7 @@
           <div class="header-left">
             <el-avatar :size="40" :src="currentChat.avatar" :alt="currentChat.name">
               <template v-if="currentChat.isGroup && !currentChat.avatar">
-                <el-icon><Users /></el-icon>
+                <el-icon><User /></el-icon>
               </template>
             </el-avatar>
             <div class="user-info">
@@ -92,7 +113,7 @@
                     <el-icon><BellFilled /></el-icon> 静音
                   </el-dropdown-item>
                   <el-dropdown-item v-if="currentChat.isGroup" @click="showGroupMembersDialog = true">
-                    <el-icon><Users /></el-icon> 群成员管理
+                    <el-icon><User /></el-icon> 群成员管理
                   </el-dropdown-item>
                 </el-dropdown-menu>
               </template>
@@ -102,55 +123,70 @@
 
         <div class="messages-container">
           <div class="messages" ref="messagesContainer">
-            <div class="message-group" v-for="(group, index) in messageGroups" :key="index">
-              <div class="date-divider">
-                <span>{{ formatMessageDate(group.date) }}</span>
-              </div>
-
-              <div v-for="message in group.messages" :key="message.id" :class="['message', message.type]">
-                <el-avatar v-if="message.type === 'bot'" :size="36" :src="getSenderAvatar(message)" />
-
-                <div class="message-content">
-                  <div v-if="currentChat.isGroup && message.type === 'bot'" class="sender-name">
-                    {{ getSenderName(message) }}
-                  </div>
-                  <div class="message-bubble">
-                    <img v-if="message.contentType === 'image'" :src="message.content"
-                      @click="previewImage(message.content)" />
-                    <div v-else-if="message.contentType === 'file'" class="file-message">
-                      <el-icon><Document /></el-icon>
-                      <div class="file-info">
-                        <div class="file-name">{{ getFileName(message.content) }}</div>
-                        <div class="file-size">{{ message.fileSize }}</div>
-                      </div>
-                      <el-button type="primary" text @click="downloadFile(message.content)">下载</el-button>
-                    </div>
-                    <div v-else v-html="formatMessage(message.content)"></div>
-                  </div>
-
-                  <div class="message-meta">
-                    <span>{{ formatMessageTime(message.time) }}</span>
-                    <el-icon v-if="message.type === 'user'" :class="['status-icon', message.status]">
-                      <template v-if="message.status === 'sending'"><Loading /></template>
-                      <template v-else-if="message.status === 'sent'"><CircleCheck /></template>
-                      <template v-else-if="message.status === 'read'"><Select /></template>
-                      <template v-else-if="message.status === 'failed'"><CircleClose /></template>
-                    </el-icon>
-                  </div>
+            <div v-if="isLoadingMessages" class="loading-messages">
+              <el-icon class="is-loading"><Loading /></el-icon>
+              <span>加载消息中...</span>
+            </div>
+            
+            <template v-else>
+              <div class="message-group" v-for="(group, index) in messageGroups" :key="index">
+                <div class="date-divider">
+                  <span>{{ formatMessageDate(group.date) }}</span>
                 </div>
 
-                <el-dropdown v-if="message.type === 'user'" trigger="click"
-                  @command="handleMessageCommand($event, message)">
-                  <el-button type="text" icon="MoreFilled" class="message-actions" />
-                  <template #dropdown>
-                    <el-dropdown-menu>
-                      <el-dropdown-item command="copy">复制</el-dropdown-item>
-                      <el-dropdown-item command="recall" :disabled="message.status === 'sending'">撤回</el-dropdown-item>
-                    </el-dropdown-menu>
-                  </template>
-                </el-dropdown>
+                <div v-for="message in group.messages" :key="message.id" :class="['message', message.type]">
+                  <el-avatar v-if="message.type === 'bot'" :size="36" :src="getSenderAvatar(message)" />
+
+                  <div class="message-content">
+                    <div v-if="currentChat.isGroup && message.type === 'bot'" class="sender-name">
+                      {{ getSenderName(message) }}
+                    </div>
+                    <div class="message-bubble">
+                      <img 
+                        v-if="message.contentType === 'image'" 
+                        :src="message.content" 
+                        @click="previewImage(message.content)"
+                        loading="lazy"
+                      />
+                      <div v-else-if="message.contentType === 'file'" class="file-message">
+                        <el-icon><Document /></el-icon>
+                        <div class="file-info">
+                          <div class="file-name">{{ getFileName(message.content) }}</div>
+                          <div class="file-size">{{ message.fileSize }}</div>
+                        </div>
+                        <el-button type="primary" text @click="downloadFile(message.content)">下载</el-button>
+                      </div>
+                      <div v-else v-html="formatMessage(message.content)"></div>
+                    </div>
+
+                    <div class="message-meta">
+                      <span>{{ formatMessageTime(message.time) }}</span>
+                      <el-icon v-if="message.type === 'user'" :class="['status-icon', message.status]">
+                        <template v-if="message.status === 'sending'"><Loading /></template>
+                        <template v-if="message.status === 'sent'"><CircleCheck /></template>
+                        <template v-if="message.status === 'read'"><Select /></template>
+                        <template v-if="message.status === 'failed'"><CircleClose /></template>
+                      </el-icon>
+                    </div>
+                  </div>
+
+                  <el-dropdown v-if="message.type === 'user'" trigger="click" @command="handleMessageCommand($event, message)">
+                    <el-button type="text" icon="MoreFilled" class="message-actions" />
+                    <template #dropdown>
+                      <el-dropdown-menu>
+                        <el-dropdown-item command="copy">复制</el-dropdown-item>
+                        <el-dropdown-item command="recall" :disabled="message.status === 'sending'">撤回</el-dropdown-item>
+                      </el-dropdown-menu>
+                    </template>
+                  </el-dropdown>
+                </div>
               </div>
-            </div>
+              
+              <div v-if="isLoadingMoreMessages" class="loading-more">
+                <el-icon class="is-loading"><Loading /></el-icon>
+                <span>加载更多消息...</span>
+              </div>
+            </template>
           </div>
         </div>
 
@@ -159,15 +195,32 @@
             <el-button type="text" icon="Picture" @click="triggerFileInput('image')" />
             <el-button type="text" icon="VideoCamera" @click="triggerFileInput('video')" />
             <el-button type="text" icon="Document" @click="triggerFileInput('file')" />
+            <el-button type="text" icon="Emoji" @click="showEmojiPicker = !showEmojiPicker" />
             <input type="file" ref="fileInput" style="display: none" @change="handleFileUpload" />
           </div>
 
           <div class="input-wrapper">
-            <el-input v-model="newMessage" type="textarea" :rows="2" :maxlength="500" placeholder="输入消息..."
-              resize="none" @keyup.enter.exact.prevent="sendMessage" class="embedded-input" />
+            <el-input 
+              v-model="newMessage" 
+              type="textarea" 
+              :rows="2" 
+              :maxlength="500" 
+              placeholder="输入消息..."
+              resize="none" 
+              @keydown.enter.exact.prevent="sendMessage"
+              @keydown.shift.enter.prevent="addNewLine"
+              class="embedded-input"
+            />
             <div class="send-button-container">
-              <el-button class="send-button" type="primary" :icon="Promotion" circle
-                :disabled="!newMessage.trim() && !fileToUpload" @click="sendMessage" :loading="sending" />
+              <el-button 
+                class="send-button" 
+                type="primary" 
+                :icon="Promotion" 
+                circle
+                :disabled="!canSendMessage" 
+                @click="sendMessage" 
+                :loading="sending" 
+              />
             </div>
           </div>
         </div>
@@ -175,8 +228,15 @@
     </div>
 
     <!-- 添加联系人对话框 -->
-    <el-dialog v-model="showNewChatDialog" title="添加联系人" width="480px" append-to-body
-      class="custom-dialog new-chat-dialog" :before-close="handleCloseNewChatDialog" :close-on-click-modal="false">
+    <el-dialog 
+      v-model="showNewChatDialog" 
+      title="添加联系人" 
+      width="480px" 
+      append-to-body
+      class="custom-dialog new-chat-dialog" 
+      :before-close="handleCloseNewChatDialog" 
+      :close-on-click-modal="false"
+    >
       <template #title>
         <div class="dialog-title flex items-center">
           <span class="font-medium text-lg">添加联系人</span>
@@ -184,15 +244,25 @@
       </template>
 
       <div class="dialog-content p-4">
-        <el-input v-model="newChatSearch" placeholder="输入要对话的联系人" :prefix-icon="Search" class="search-input mb-4"
-          @input="onSearchInput" clearable @clear="clearSearch" />
+        <el-input 
+          v-model="newChatSearch" 
+          placeholder="输入要对话的联系人" 
+          :prefix-icon="Search" 
+          class="search-input mb-4"
+          @input="onSearchInput" 
+          clearable 
+          @clear="clearSearch" 
+          :loading="isSearchingContacts"
+        />
 
-        <div v-if="!searchPerformed" class="no-search-hint flex flex-col items-center justify-center py-16" />
+        <div v-if="!searchPerformed" class="no-search-hint flex flex-col items-center justify-center py-16">
+          <el-icon><Search /></el-icon>
+          <p>搜索联系人以开始对话</p>
+        </div>
 
         <div v-else class="contact-list max-h-[400px] overflow-y-auto">
           <div v-if="filteredContacts.length > 0">
-            <div v-for="contact in filteredContacts" :key="contact.id" class="contact-card custom-contact-card"
-              @click="createNewChat(contact)">
+            <div v-for="contact in filteredContacts" :key="contact.id" class="contact-card custom-contact-card" @click="createNewChat(contact)">
               <el-avatar :size="48" :src="contact.avatar" :alt="contact.name" class="mr-3" />
               <div class="contact-info">
                 <h3 class="contact-name">
@@ -224,8 +294,14 @@
     </el-dialog>
 
     <!-- 创建群组对话框 -->
-    <el-dialog v-model="showCreateGroupDialog" title="创建群组" width="550px" append-to-body
-      class="custom-dialog create-group-dialog" :close-on-click-modal="false">
+    <el-dialog 
+      v-model="showCreateGroupDialog" 
+      title="创建群组" 
+      width="550px" 
+      append-to-body
+      class="custom-dialog create-group-dialog" 
+      :close-on-click-modal="false"
+    >
       <template #title>
         <div class="dialog-title flex items-center">
           <span class="font-medium text-lg">创建群组</span>
@@ -235,12 +311,12 @@
       <div class="dialog-content p-4">
         <el-form :model="groupForm" ref="groupFormRef" label-width="80px" class="group-form">
           <el-form-item label="群名称" prop="name" :rules="[{ required: true, message: '请输入群名称', trigger: 'blur' }]">
-            <el-input v-model="groupForm.name" placeholder="请输入群组名称" />
+            <el-input v-model="groupForm.name" placeholder="请输入群组名称" maxlength="30" show-word-limit />
           </el-form-item>
           
           <el-form-item label="群描述">
             <el-input v-model="groupForm.description" type="textarea" :rows="2"
-              placeholder="请输入群组描述（可选）" />
+              placeholder="请输入群组描述（可选）" maxlength="200" show-word-limit />
           </el-form-item>
 
           <el-form-item label="群头像">
@@ -248,11 +324,12 @@
               class="avatar-uploader"
               action="#"
               :show-file-list="false"
-              :on-change="handleAvatarChange"
+              :http-request="handleAvatarUpload"
               :before-upload="beforeAvatarUpload">
               <el-avatar :size="100" :src="groupForm.avatar" class="upload-avatar">
-                <plus v-if="!groupForm.avatar" />
+                <el-icon><Plus /></el-icon>
               </el-avatar>
+              <div class="avatar-upload-tip">点击上传群头像</div>
             </el-upload>
           </el-form-item>
 
@@ -268,13 +345,13 @@
               :prefix-icon="Search" 
               class="mb-3"
               clearable
-              @input="filterGroupMembers"
+              @input="debouncedFilterGroupMembers"
             />
             <div class="group-members-list max-h-[200px] overflow-y-auto mt-2">
               <div v-for="member in filteredGroupMembers" :key="member.id" 
                 class="group-member-item"
                 :class="{ 'selected': isMemberSelected(member.id) }"
-                @click="toggleMemberMemberSelection(member.id)">
+                @click="toggleMemberSelection(member.id)">
                 <el-avatar :size="36" :src="member.avatar" class="mr-2" />
                 <span>{{ member.name }}</span>
                 <el-icon v-if="isMemberSelected(member.id)" class="selected-icon"><Check /></el-icon>
@@ -290,7 +367,7 @@
           <el-button @click="cancelCreateGroup" class="px-4 py-2 rounded-md hover:bg-gray-50 transition-colors">
             <el-icon class="mr-1"><Close /></el-icon>取消
           </el-button>
-          <el-button type="primary" @click="createGroup" class="ml-2">
+          <el-button type="primary" @click="createGroup" :loading="isCreatingGroup" class="ml-2">
             创建群组
           </el-button>
         </div>
@@ -298,10 +375,15 @@
     </el-dialog>
 
     <!-- 群成员管理对话框 -->
-    <el-dialog v-model="showGroupMembersDialog" title="群成员管理" width="500px" append-to-body
-      class="custom-dialog group-members-dialog">
+    <el-dialog 
+      v-model="showGroupMembersDialog" 
+      title="群成员管理" 
+      width="500px" 
+      append-to-body
+      class="custom-dialog group-members-dialog"
+    >
       <template #title>
-        <div class="dialog-title-title flex items-center">
+        <div class="dialog-title flex items-center">
           <span class="font-medium text-lg">群成员 ({{ currentChat?.members.length || 0 }})</span>
         </div>
       </template>
@@ -317,7 +399,7 @@
                 <span v-else-if="member.role === 'ADMIN'" class="admin-badge">管理员</span>
               </div>
               <div class="member-status">
-                {{ member.online ? '在线' : `上次在线 ${ formatRelativeTime(member.lastOnline) }` }}
+                {{ member.online ? '在线' : `上次在线 ${formatRelativeTime(member.lastOnline)}` }}
               </div>
             </div>
             <el-dropdown v-if="canManageMember(member)" @command="handleMemberCommand($event, member)">
@@ -339,7 +421,7 @@
       </div>
 
       <template #footer>
-        <div class="dialog-footer-footer flex justify-end px-4 py-3 border-t border-gray-100">
+        <div class="dialog-footer flex justify-end px-4 py-3 border-t border-gray-100">
           <el-button @click="showGroupMembersDialog = false" class="px-4 py-2 rounded-md hover:bg-gray-50 transition-colors">
             关闭
           </el-button>
@@ -348,8 +430,13 @@
     </el-dialog>
 
     <!-- 添加群成员对话框 -->
-    <el-dialog v-model="showAddMembersDialog" title="添加群成员" width="500px" append-to-body
-      class="custom-dialog add-members-dialog">
+    <el-dialog 
+      v-model="showAddMembersDialog" 
+      title="添加群成员" 
+      width="500px" 
+      append-to-body
+      class="custom-dialog add-members-dialog"
+    >
       <template #title>
         <div class="dialog-title flex items-center">
           <span class="font-medium text-lg">添加群成员</span>
@@ -363,7 +450,7 @@
           :prefix-icon="Search" 
           class="mb-3"
           clearable
-          @input="filterAddMembers"
+          @input="debouncedFilterAddMembers"
         />
         <div class="group-members-list max-h-[400px] overflow-y-auto mt-2">
           <div v-for="member in filteredAddMembers" :key="member.id" 
@@ -381,25 +468,33 @@
       </div>
 
       <template #footer>
-        <div class="dialog-footer flex justify justify-end px-4 py-3 border-t border-gray-100">
+        <div class="dialog-footer flex justify-end px-4 py-3 border-t border-gray-100">
           <el-button @click="showAddMembersDialog = false" class="px-4 py-2 rounded-md hover:bg-gray-50 transition-colors">
             取消
           </el-button>
-          <el-button type="primary" @click="confirmAddMembers" class="ml-2">
+          <el-button type="primary" @click="confirmAddMembers" :loading="isAddingMembers" class="ml-2">
             确认添加
           </el-button>
         </div>
       </template>
     </el-dialog>
 
-    <el-dialog v-model="imagePreviewVisible" title="图片预览" width="80%">
-      <img :src="previewImageUrl" class="preview-image" />
+    <!-- 图片预览对话框 -->
+    <el-dialog v-model="imagePreviewVisible" title="图片预览" width="80%" class="image-preview-dialog">
+      <div class="image-preview-container">
+        <img :src="previewImageUrl" class="preview-image" />
+        <div class="image-preview-actions">
+          <el-button @click="downloadImage(previewImageUrl)" type="primary">
+            <el-icon><Download /></el-icon> 下载图片
+          </el-button>
+        </div>
+      </div>
     </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, nextTick, reactive, onMounted } from 'vue'
+import { ref, computed, nextTick, reactive, onMounted, watch } from 'vue'
 import {
   Search,
   Picture,
@@ -413,16 +508,18 @@ import {
   BellFilled,
   ChatRound,
   Close,
-  Users,
+  User,
   Check,
-  Plus
+  Plus,
+  Download
 } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useClipboard } from '@vueuse/core'
+import { debounce } from 'lodash-es'
 
 const { copy } = useClipboard()
 
-// 当前用户信息 - 实际应用中通常应从登录状态获取
+// 当前用户信息
 const currentUser = ref({
   id: 100,
   name: '我',
@@ -436,7 +533,7 @@ const contacts = ref([
   { id: 3, name: '王老师', avatar: 'https://randomuser.me/api/portraits/men/45.jpg', online: true, department: '计算机学院' },
   { id: 4, name: '赵老师', avatar: 'https://randomuser.me/api/portraits/women/68.jpg', online: true, department: '外语系' },
   { id: 5, name: '教务处', avatar: 'https://randomuser.me/api/portraits/women/68.jpg', online: false, lastOnline: new Date(Date.now() - 86400000), department: '行政部门' },
-  { id: 6, name: '学生事务事务事务办公室', avatar: 'https://randomuser.me/api/portraits/lego/3.jpg', online: true, department: '行政部门' },
+  { id: 6, name: '学生事务办公室', avatar: 'https://randomuser.me/api/portraits/lego/3.jpg', online: true, department: '行政部门' },
 ])
 
 // 聊天历史
@@ -570,6 +667,13 @@ const imagePreviewVisible = ref(false)
 const previewImageUrl = ref('')
 const showNewChatDialog = ref(false)
 const messagesContainer = ref(null)
+const chatListRef = ref(null)
+const showEmojiPicker = ref(false)
+const isSearchingContacts = ref(false)
+const isLoadingMessages = ref(false)
+const isLoadingMoreMessages = ref(false)
+const isCreatingGroup = ref(false)
+const isAddingMembers = ref(false)
 
 // 群组相关状态
 const showCreateGroupDialog = ref(false)
@@ -631,16 +735,42 @@ const messageGroups = computed(() => {
   return groups
 })
 
+const canSendMessage = computed(() => {
+  return (newMessage.value.trim() || fileToUpload.value) && !sending.value
+})
+
 // 聊天功能方法
 const selectChat = (index) => {
   currentChatIndex.value = index
   if (currentChat.value?.unreadCount > 0) {
     currentChat.value.unreadCount = 0
   }
-  nextTick(() => {
-    scrollToBottom()
-  })
+  loadChatMessages()
 }
+
+const loadChatMessages = async () => {
+  if (!currentChat.value) return
+  
+  isLoadingMessages.value = true
+  
+  try {
+    // 模拟加载消息的延迟
+    await new Promise(resolve => setTimeout(resolve, 300))
+    
+    nextTick(() => {
+      scrollToBottom()
+    })
+  } catch (error) {
+    console.error('加载消息失败:', error)
+    ElMessage.error('加载消息失败')
+  } finally {
+    isLoadingMessages.value = false
+  }
+}
+
+const handleSearchInput = debounce(() => {
+  // 搜索聊天列表
+}, 300)
 
 const formatMessage = (content) => {
   if (!content) return ''
@@ -682,7 +812,7 @@ const formatMessageDate = (dateString) => {
 }
 
 const sendMessage = async () => {
-  if ((!newMessage.value.trim() && !fileToUpload.value) || !currentChat.value) return
+  if (!canSendMessage.value || !currentChat.value) return
 
   sending.value = true
 
@@ -764,11 +894,20 @@ const sendMessage = async () => {
   }
 }
 
+const addNewLine = () => {
+  newMessage.value += '\n'
+}
+
+// const insertEmoji = (emoji) => {
+//   newMessage.value += emoji
+//   showEmojiPicker.value = false
+// }
+
 const showUploadProgress = () => {
   ElMessage({
     message: '正在上传文件...',
     type: 'info',
-    duration: 1000
+    duration: 100,
   })
 }
 
@@ -822,6 +961,12 @@ const handleFileUpload = (event) => {
 
 const downloadFile = (url) => {
   ElMessage.success('开始下载文件: ' + getFileName(url))
+  // 实际应用中这里应该实现真实的下载逻辑
+}
+
+const downloadImage = () => {
+  ElMessage.success('开始下载图片')
+  // 实际应用中这里应该实现真实的下载逻辑
 }
 
 const getFileName = (url) => {
@@ -921,9 +1066,15 @@ const handleCloseNewChatDialog = (done) => {
   newChatSearch.value = ''
 }
 
-const onSearchInput = () => {
+const onSearchInput = debounce(() => {
+  isSearchingContacts.value = true
   searchPerformed.value = newChatSearch.value.trim() !== ''
-}
+  
+  // 模拟搜索延迟
+  setTimeout(() => {
+    isSearchingContacts.value = false
+  }, 300)
+}, 300)
 
 const clearSearch = () => {
   newChatSearch.value = ''
@@ -933,10 +1084,16 @@ const clearSearch = () => {
 const highlightMatch = (text, search) => {
   if (!search.trim()) return text
   const regex = new RegExp(`(${search})`, 'gi')
-  return text.replace(regex, '<span class="text-primary-color font-medium">$1</span>')
+  return text.replace(regex, url => {
+    return `<a href="${url}" target="_blank" class="message-link">${url}</a>`
+  })
 }
 
 // 群组功能方法
+const debouncedFilterGroupMembers = debounce(() => {
+  filterGroupMembers()
+}, 300)
+
 const filterGroupMembers = () => {
   if (!groupMemberSearch.value.trim()) {
     filteredGroupMembers.value = [...contacts.value]
@@ -947,18 +1104,32 @@ const filterGroupMembers = () => {
   }
 }
 
+const debouncedFilterAddMembers = debounce(() => {
+  filterAddMembers()
+}, 300)
+
+const filterAddMembers = () => {
+  if (!addMemberSearch.value.trim()) {
+    filteredAddMembers.value = [...contacts.value]
+  } else {
+    filteredAddMembers.value = contacts.value.filter(contact =>
+      contact.name.toLowerCase().includes(addMemberSearch.value.toLowerCase())
+    )
+  }
+}
+
 const isMemberSelected = (memberId) => {
   return groupForm.members.includes(memberId)
 }
 
-// const toggleMemberSelection = (memberId) => {
-//   const index = groupForm.members.indexOf(memberId)
-//   if (index > -1) {
-//     groupForm.members.splice(index, 1)
-//   } else {
-//     groupForm.members.push(memberId)
-//   }
-// }
+const toggleMemberSelection = (memberId) => {
+  const index = groupForm.members.indexOf(memberId)
+  if (index > -1) {
+    groupForm.members.splice(index, 1)
+  } else {
+    groupForm.members.push(memberId)
+  }
+}
 
 const validateMembers = (rule, value, callback) => {
   if (value.length === 0) {
@@ -968,12 +1139,12 @@ const validateMembers = (rule, value, callback) => {
   }
 }
 
-const handleAvatarChange = (rawFile) => {
+const handleAvatarUpload = async ({ file }) => {
   const reader = new FileReader()
   reader.onload = (e) => {
     groupForm.avatar = e.target.result
   }
-  reader.readAsDataURL(rawFile.raw)
+  reader.readAsDataURL(file)
 }
 
 const beforeAvatarUpload = (rawFile) => {
@@ -989,74 +1160,82 @@ const beforeAvatarUpload = (rawFile) => {
   return isJPG && isLt2M
 }
 
-const createGroup = () => {
-  groupFormRef.value.validate((valid) => {
-    if (valid) {
-      // 创建群成员列表，包含当前用户并设置为群主
-      const members = [
+const createGroup = async () => {
+  const valid = await groupFormRef.value.validate()
+  if (!valid) return
+  
+  isCreatingGroup.value = true
+  
+  try {
+    // 创建群成员列表，包含当前用户并设置为群主
+    const members = [
+      {
+        ...currentUser.value,
+        role: 'ADMIN',
+        isAdmin: true,
+        online: true
+      }
+    ]
+    
+    // 添加选中的群成员
+    groupForm.members.forEach(memberId => {
+      const contact = contacts.value.find(c => c.id === memberId)
+      if (contact) {
+        members.push({
+          ...contact,
+          role: 'MEMBER',
+          isAdmin: false
+        })
+      }
+    })
+
+    // 生成新群ID
+    const newGroupId = Date.now()
+    
+    // 创建新群
+    const newGroupChat = {
+      id: newGroupId,
+      name: groupForm.name,
+      avatar: groupForm.avatar,
+      description: groupForm.description,
+      lastMessageTime: new Date(),
+      lastMessageType: 'text',
+      preview: `群聊"${groupForm.name}"已创建`,
+      unreadCount: 0,
+      online: true,
+      isGroup: true,
+      members,
+      messages: [
         {
-          ...currentUser.value,
-          role: 'ADMIN',
-          isAdmin: true,
-          online: true
+          id: Date.now(),
+          type: 'system',
+          contentType: 'text',
+          content: `群聊"${groupForm.name}"已创建，${currentUser.value.name}成为群主`,
+          time: new Date(),
+          status: 'read'
         }
       ]
-      
-      // 添加选中的群成员
-      groupForm.members.forEach(memberId => {
-        const contact = contacts.value.find(c => c.id === memberId)
-        if (contact) {
-          members.push({
-            ...contact,
-            role: 'MEMBER',
-            isAdmin: false
-          })
-        }
-      })
-
-      // 生成新群ID
-      const newGroupId = Date.now()
-      
-      // 创建新群
-      const newGroupChat = {
-        id: newGroupId,
-        name: groupForm.name,
-        avatar: groupForm.avatar,
-        description: groupForm.description,
-        lastMessageTime: new Date(),
-        lastMessageType: 'text',
-        preview: `群聊"${groupForm.name}"已创建`,
-        unreadCount: 0,
-        online: true,
-        isGroup: true,
-        members,
-        messages: [
-          {
-            id: Date.now(),
-            type: 'system',
-            contentType: 'text',
-            content: `群聊"${groupForm.name}"已创建，${currentUser.value.name}成为群主`,
-            time: new Date(),
-            status: 'read'
-          }
-        ]
-      }
-
-      // 添加到聊天历史
-      chatHistory.value.unshift(newGroupChat)
-      currentChatIndex.value = 0
-      
-      // 关闭对话框并重置表单
-      showCreateGroupDialog.value = false
-      groupForm.name = ''
-      groupForm.description = ''
-      groupForm.avatar = ''
-      groupForm.members = []
-      groupMemberSearch.value = ''
-      
-      ElMessage.success(`群聊"${newGroupChat.name}"创建成功`)
     }
-  })
+
+    // 添加到聊天历史
+    chatHistory.value.unshift(newGroupChat)
+    currentChatIndex.value = 0
+    
+    // 关闭对话框并重置表单
+    showCreateGroupDialog.value = false
+    groupForm.name = ''
+    groupForm.description = ''
+    groupForm.avatar = ''
+    groupForm.members = []
+    groupMemberSearch.value = ''
+    
+    ElMessage.success(`群聊"${newGroupChat.name}"创建成功`)
+  } catch (error) {
+    console.error('创建群组失败:', error)
+    ElMessage.error('创建群组失败')
+  } finally {
+    isCreatingGroup.value = false
+  }
 }
 
 const cancelCreateGroup = () => {
@@ -1195,16 +1374,6 @@ const toggleAdminRole = (memberId) => {
 }
 
 // 添加群成员相关
-const filterAddMembers = () => {
-  if (!addMemberSearch.value.trim()) {
-    filteredAddMembers.value = [...contacts.value]
-  } else {
-    filteredAddMembers.value = contacts.value.filter(contact =>
-      contact.name.toLowerCase().includes(addMemberSearch.value.toLowerCase())
-    )
-  }
-}
-
 const isMemberInGroup = (memberId) => {
   return currentChat.value?.members.some(m => m.id === memberId) || 
          membersToAdd.value.some(m => m.id === memberId)
@@ -1223,38 +1392,53 @@ const addMemberToGroup = (member) => {
   }
 }
 
-const confirmAddMembers = () => {
+const confirmAddMembers = async () => {
   if (membersToAdd.value.length === 0) {
     showAddMembersDialog.value = false
     return
   }
   
-  if (currentChat.value) {
-    // 添加成员到群
-    currentChat.value.members.push(...membersToAdd.value)
-    
-    // 添加系统消息
-    const memberNames = membersToAdd.value.map(m => m.name).join('、')
-    currentChat.value.messages.push({
-      id: Date.now(),
-      type: 'system',
-      contentType: 'text',
-      content: `${memberNames}已加入群聊`,
-      time: new Date(),
-      status: 'read'
-    })
-    
-    updateChatPreview(currentChat.value, currentChat.value.messages[currentChat.value.messages.length - 1])
-    ElMessage.success(`成功添加${membersToAdd.value.length}名成员`)
-    
-    // 重置状态
-    membersToAdd.value = []
-    showAddMembersDialog.value = false
-    addMemberSearch.value = ''
+  isAddingMembers.value = true
+  
+  try {
+    if (currentChat.value) {
+      // 添加成员到群
+      currentChat.value.members.push(...membersToAdd.value)
+      
+      // 添加系统消息
+      const memberNames = membersToAdd.value.map(m => m.name).join('、')
+      currentChat.value.messages.push({
+        id: Date.now(),
+        type: 'system',
+        contentType: 'text',
+        content: `${memberNames}已加入群聊`,
+        time: new Date(),
+        status: 'read'
+      })
+      
+      updateChatPreview(currentChat.value, currentChat.value.messages[currentChat.value.messages.length - 1])
+      ElMessage.success(`成功添加${membersToAdd.value.length}名成员`)
+      
+      // 重置状态
+      membersToAdd.value = []
+      showAddMembersDialog.value = false
+      addMemberSearch.value = ''
+    }
+  } catch (error) {
+    console.error('添加群成员失败:', error)
+    ElMessage.error('添加群成员失败')
+  } finally {
+    isAddingMembers.value = false
   }
 }
 
-// 组件挂载时滚动到底部
+// 监听当前聊天变化
+watch(currentChat, (newChat) => {
+  if (newChat) {
+    loadChatMessages()
+  }
+}, { immediate: true })
+
 onMounted(() => {
   nextTick(() => {
     scrollToBottom()
@@ -1331,7 +1515,7 @@ onMounted(() => {
         background: var(--bg-secondary);
         border-radius: 18px;
         box-shadow: none;
-        border: 1px solid var(--border-color);
+        border: 10 solid var(--border-color);
 
         &:hover {
           border-color: #cbd5e1;
@@ -1361,6 +1545,10 @@ onMounted(() => {
       &::-webkit-scrollbar-thumb {
         background-color: rgba(156, 163, 175, 0.5);
         border-radius: 3px;
+      }
+
+      .virtual-scroller {
+        height: 100%;
       }
 
       .chat-item {
@@ -1431,6 +1619,13 @@ onMounted(() => {
           top: 0;
           right: 0;
         }
+      }
+
+      .empty-search {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
       }
     }
   }
@@ -1567,6 +1762,19 @@ onMounted(() => {
         &::-webkit-scrollbar-thumb {
           background-color: rgba(156, 163, 175, 0.5);
           border-radius: 3px;
+        }
+
+        .loading-messages,
+        .loading-more {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 20px;
+          color: var(--text-secondary);
+          
+          .el-icon {
+            margin-right: 8px;
+          }
         }
       }
 
@@ -1911,6 +2119,7 @@ onMounted(() => {
     .avatar-uploader {
       display: flex;
       align-items: center;
+      flex-direction: column;
       
       .upload-avatar {
         cursor: pointer;
@@ -1919,6 +2128,12 @@ onMounted(() => {
         &:hover {
           transform: scale(1.05);
         }
+      }
+      
+      .avatar-upload-tip {
+        margin-top: 8px;
+        font-size: 12px;
+        color: var(--text-secondary);
       }
     }
   }
@@ -1978,6 +2193,25 @@ onMounted(() => {
         &:hover {
           color: var(--primary-color);
         }
+      }
+    }
+  }
+
+  .image-preview-dialog {
+    .image-preview-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      
+      .preview-image {
+        max-width: 100%;
+        max-height: 70vh;
+        margin-bottom: 20px;
+      }
+      
+      .image-preview-actions {
+        display: flex;
+        justify-content: center;
       }
     }
   }

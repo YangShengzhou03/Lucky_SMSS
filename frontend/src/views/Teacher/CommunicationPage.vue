@@ -231,63 +231,161 @@
     <el-dialog 
       v-model="showNewChatDialog" 
       title="添加联系人" 
-      width="480px" 
+      width="520px" 
       append-to-body
       class="custom-dialog new-chat-dialog" 
       :before-close="handleCloseNewChatDialog" 
       :close-on-click-modal="false"
     >
       <template #title>
-        <div class="dialog-title flex items-center">
-          <span class="font-medium text-lg">添加联系人</span>
+        <div class="dialog-title">
+          <span class="dialog-title-text">添加联系人</span>
         </div>
       </template>
 
-      <div class="dialog-content p-4">
-        <el-input 
-          v-model="newChatSearch" 
-          placeholder="输入要对话的联系人" 
-          :prefix-icon="Search" 
-          class="search-input mb-4"
-          @input="onSearchInput" 
-          clearable 
-          @clear="clearSearch" 
-          :loading="isSearchingContacts"
-        />
-
-        <div v-if="!searchPerformed" class="no-search-hint flex flex-col items-center justify-center py-16">
-          <el-icon><Search /></el-icon>
-          <p>搜索联系人以开始对话</p>
+      <div class="dialog-content">
+        <!-- 选项卡切换 -->
+        <div class="dialog-tabs">
+          <div 
+            class="tab-item"
+            :class="{ active: activeTab === 'search' }"
+            @click="activeTab = 'search'"
+          >
+            <el-icon><Search /></el-icon>
+            <span>搜索添加</span>
+          </div>
+          <div 
+            class="tab-item"
+            :class="{ active: activeTab === 'qr' }"
+            @click="activeTab = 'qr'"
+          >
+            <el-icon><QrCode /></el-icon>
+            <span>扫码添加</span>
+          </div>
+          <div 
+            class="tab-item"
+            :class="{ active: activeTab === 'contacts' }"
+            @click="activeTab = 'contacts'"
+          >
+            <el-icon><User /></el-icon>
+            <span>手机联系人</span>
+          </div>
         </div>
 
-        <div v-else class="contact-list max-h-[400px] overflow-y-auto">
-          <div v-if="filteredContacts.length > 0">
-            <div v-for="contact in filteredContacts" :key="contact.id" class="contact-card custom-contact-card" @click="createNewChat(contact)">
-              <el-avatar :size="48" :src="contact.avatar" :alt="contact.name" class="mr-3" />
-              <div class="contact-info">
-                <h3 class="contact-name">
-                  <span v-html="highlightMatch(contact.name, newChatSearch)"></span>
-                </h3>
-                <p class="contact-desc">
-                  {{ contact.online ? '在线' : '离线' }} | {{ contact.department }}
-                </p>
-              </div>
+        <!-- 搜索添加选项卡 -->
+        <div v-if="activeTab === 'search'" class="tab-content">
+          <div class="search-section">
+            <div class="search-input-wrapper">
+              <el-input 
+                v-model="newChatSearch" 
+                placeholder="输入姓名、手机号或邮箱搜索" 
+                :prefix-icon="Search" 
+                class="modern-search-input"
+                @input="onSearchInput" 
+                clearable 
+                @clear="clearSearch" 
+                :loading="isSearchingContacts"
+              />
             </div>
           </div>
 
-          <div v-else-if="newChatSearch.trim()" class="empty-result flex flex-col items-center justify-center py-10">
-            <h3 style="text-align: center" class="text-lg font-medium text-gray-800">未找到联系人</h3>
-            <p style="text-align: center" class="text-gray-500 max-w-xs mb-4">
-              尝试使用不同的关键词或添加新联系人
-            </p>
+          <div class="contact-list-section">
+            <div v-if="!searchPerformed" class="empty-state">
+              <div class="empty-icon">
+                <el-icon><Search /></el-icon>
+              </div>
+              <h3 class="empty-title">搜索联系人</h3>
+              <p class="empty-desc">输入姓名、手机号或邮箱开始搜索</p>
+              <el-button type="primary" text class="create-contact-btn">
+                <el-icon><Plus /></el-icon>
+                创建新联系人
+              </el-button>
+            </div>
+
+            <div v-else-if="isSearchingContacts" class="loading-state">
+              <div class="skeleton-list">
+                <div v-for="i in 3" :key="i" class="skeleton-item">
+                  <div class="skeleton-avatar"></div>
+                  <div class="skeleton-content">
+                    <div class="skeleton-name"></div>
+                    <div class="skeleton-desc"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div v-else-if="filteredContacts.length > 0" class="contact-list">
+              <div v-for="contact in filteredContacts" :key="contact.id" class="modern-contact-card" @click="createNewChat(contact)">
+                <div class="contact-avatar">
+                  <el-avatar :size="48" :src="contact.avatar" :alt="contact.name" />
+                  <div class="online-indicator" :class="{ online: contact.online }"></div>
+                </div>
+                <div class="contact-info">
+                  <div class="contact-header">
+                    <h3 class="contact-name">
+                      <span v-html="highlightMatch(contact.name, newChatSearch)"></span>
+                    </h3>
+                    <el-button 
+                      type="primary" 
+                      size="small" 
+                      class="add-contact-btn"
+                      @click.stop="createNewChat(contact)"
+                    >
+                      添加
+                    </el-button>
+                  </div>
+                  <div class="contact-details">
+                    <span class="online-status" :class="{ online: contact.online }">
+                      {{ contact.online ? '在线' : '离线' }}
+                    </span>
+                    <span class="department">{{ contact.department }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div v-else-if="newChatSearch.trim()" class="empty-result">
+              <div class="empty-icon">
+                <el-icon><User /></el-icon>
+              </div>
+              <h3 class="empty-title">未找到联系人</h3>
+              <p class="empty-desc">尝试使用不同的关键词或添加新联系人</p>
+              <el-button type="primary" text class="create-contact-btn">
+                <el-icon><Plus /></el-icon>
+                创建新联系人
+              </el-button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 扫码添加选项卡 -->
+        <div v-if="activeTab === 'qr'" class="tab-content">
+          <div class="qr-section">
+            <div class="qr-container">
+              <div class="qr-placeholder">
+                <el-icon><QrCode /></el-icon>
+                <p>二维码功能开发中</p>
+              </div>
+            </div>
+            <p class="qr-tip">扫描对方的二维码名片快速添加</p>
+          </div>
+        </div>
+
+        <!-- 手机联系人选项卡 -->
+        <div v-if="activeTab === 'contacts'" class="tab-content">
+          <div class="contacts-section">
+            <div class="contacts-placeholder">
+              <el-icon><Phone /></el-icon>
+              <p>手机联系人功能开发中</p>
+            </div>
           </div>
         </div>
       </div>
 
       <template #footer>
-        <div class="dialog-footer flex justify-end px-4 py-3 border-t border-gray-100">
-          <el-button @click="showNewChatDialog = false" class="px-4 py-2 rounded-md hover:bg-gray-50 transition-colors">
-            <el-icon class="mr-1"><Close /></el-icon>取消
+        <div class="dialog-footer">
+          <el-button @click="showNewChatDialog = false" class="cancel-btn">
+            取消
           </el-button>
         </div>
       </template>
@@ -297,77 +395,129 @@
     <el-dialog 
       v-model="showCreateGroupDialog" 
       title="创建群组" 
-      width="550px" 
+      width="520px" 
       append-to-body
       class="custom-dialog create-group-dialog" 
       :close-on-click-modal="false"
     >
       <template #title>
-        <div class="dialog-title flex items-center">
-          <span class="font-medium text-lg">创建群组</span>
+        <div class="dialog-title">
+          <span class="dialog-title-text">创建群组</span>
         </div>
       </template>
 
-      <div class="dialog-content p-4">
-        <el-form :model="groupForm" ref="groupFormRef" label-width="80px" class="group-form">
-          <el-form-item label="群名称" prop="name" :rules="[{ required: true, message: '请输入群名称', trigger: 'blur' }]">
-            <el-input v-model="groupForm.name" placeholder="请输入群组名称" maxlength="30" show-word-limit />
-          </el-form-item>
-          
-          <el-form-item label="群描述">
-            <el-input v-model="groupForm.description" type="textarea" :rows="2"
-              placeholder="请输入群组描述（可选）" maxlength="200" show-word-limit />
-          </el-form-item>
-
-          <el-form-item label="群头像">
-            <el-upload
-              class="avatar-uploader"
-              action="#"
-              :show-file-list="false"
-              :http-request="handleAvatarUpload"
-              :before-upload="beforeAvatarUpload">
-              <el-avatar :size="100" :src="groupForm.avatar" class="upload-avatar">
-                <el-icon><Plus /></el-icon>
-              </el-avatar>
-              <div class="avatar-upload-tip">点击上传群头像</div>
-            </el-upload>
-          </el-form-item>
-
-          <el-form-item label="群成员" prop="members" :rules="[{ 
-            required: true, 
-            message: '请至少选择一位群成员', 
-            trigger: 'change',
-            validator: validateMembers
-          }]">
-            <el-input 
-              v-model="groupMemberSearch" 
-              placeholder="搜索联系人" 
-              :prefix-icon="Search" 
-              class="mb-3"
-              clearable
-              @input="debouncedFilterGroupMembers"
-            />
-            <div class="group-members-list max-h-[200px] overflow-y-auto mt-2">
-              <div v-for="member in filteredGroupMembers" :key="member.id" 
-                class="group-member-item"
-                :class="{ 'selected': isMemberSelected(member.id) }"
-                @click="toggleMemberSelection(member.id)">
-                <el-avatar :size="36" :src="member.avatar" class="mr-2" />
-                <span>{{ member.name }}</span>
-                <el-icon v-if="isMemberSelected(member.id)" class="selected-icon"><Check /></el-icon>
+      <div class="dialog-content">
+        <el-form :model="groupForm" ref="groupFormRef" class="modern-group-form">
+          <div class="form-section">
+            <div class="form-item">
+              <label class="form-label">群名称</label>
+              <div class="input-wrapper">
+                <el-input 
+                  v-model="groupForm.name" 
+                  placeholder="请输入群组名称（3-20字）" 
+                  maxlength="20" 
+                  show-word-limit
+                  class="modern-input"
+                />
+                <div class="input-tip">群名称不能为空</div>
               </div>
             </div>
-            <p class="text-xs text-gray-500 mt-2">已选择 {{ groupForm.members.length }} 人</p>
-          </el-form-item>
+            
+            <div class="form-item">
+              <label class="form-label">群描述</label>
+              <div class="input-wrapper">
+                <el-input 
+                  v-model="groupForm.description" 
+                  type="textarea" 
+                  :rows="3"
+                  placeholder="请输入群组描述（可选）" 
+                  maxlength="200" 
+                  show-word-limit
+                  class="modern-textarea"
+                />
+              </div>
+            </div>
+
+            <div class="form-item">
+              <label class="form-label">群头像</label>
+              <div class="avatar-upload-section">
+                <el-upload
+                  class="modern-avatar-uploader"
+                  action="#"
+                  :show-file-list="false"
+                  :http-request="handleAvatarUpload"
+                  :before-upload="beforeAvatarUpload"
+                  drag
+                >
+                  <div class="avatar-upload-area">
+                    <el-avatar :size="80" :src="groupForm.avatar" class="upload-avatar">
+                      <el-icon><Plus /></el-icon>
+                    </el-avatar>
+                    <div class="upload-tip">
+                      <p>点击或拖拽上传群头像</p>
+                      <p class="upload-hint">支持 JPG、PNG 格式，大小不超过 2MB</p>
+                    </div>
+                  </div>
+                </el-upload>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="form-item">
+              <label class="form-label">群成员</label>
+              <div class="members-section">
+                <div class="members-search">
+                  <el-input 
+                    v-model="groupMemberSearch" 
+                    placeholder="搜索联系人" 
+                    :prefix-icon="Search" 
+                    class="modern-search-input"
+                    clearable
+                    @input="debouncedFilterGroupMembers"
+                  />
+                </div>
+                <div class="members-list">
+                  <div v-for="member in filteredGroupMembers" :key="member.id" 
+                    class="modern-member-item"
+                    :class="{ 'selected': isMemberSelected(member.id) }"
+                    @click="toggleMemberSelection(member.id)"
+                  >
+                    <div class="member-avatar">
+                      <el-avatar :size="40" :src="member.avatar" />
+                      <div class="online-indicator" :class="{ online: member.online }"></div>
+                    </div>
+                    <div class="member-info">
+                      <span class="member-name">{{ member.name }}</span>
+                      <span class="member-desc">{{ member.department }}</span>
+                    </div>
+                    <div class="member-action">
+                      <el-icon v-if="isMemberSelected(member.id)" class="selected-icon"><Check /></el-icon>
+                    </div>
+                  </div>
+                </div>
+                <div class="members-summary">
+                  <span class="selected-count">已选择 {{ groupForm.members.length }} 人</span>
+                  <span class="min-requirement" v-if="groupForm.members.length === 0">至少选择一位群成员</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </el-form>
       </div>
 
       <template #footer>
-        <div class="dialog-footer flex justify-end px-4 py-3 border-t border-gray-100">
-          <el-button @click="cancelCreateGroup" class="px-4 py-2 rounded-md hover:bg-gray-50 transition-colors">
-            <el-icon class="mr-1"><Close /></el-icon>取消
+        <div class="dialog-footer">
+          <el-button @click="cancelCreateGroup" class="cancel-btn">
+            取消
           </el-button>
-          <el-button type="primary" @click="createGroup" :loading="isCreatingGroup" class="ml-2">
+          <el-button 
+            type="primary" 
+            @click="createGroup" 
+            :loading="isCreatingGroup" 
+            :disabled="!canCreateGroup"
+            class="create-btn"
+          >
             创建群组
           </el-button>
         </div>
@@ -507,11 +657,12 @@ import {
   Delete,
   BellFilled,
   ChatRound,
-  Close,
   User,
   Check,
   Plus,
-  Download
+  Download,
+  QrCode,
+  Phone
 } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useClipboard } from '@vueuse/core'
@@ -675,6 +826,9 @@ const isLoadingMoreMessages = ref(false)
 const isCreatingGroup = ref(false)
 const isAddingMembers = ref(false)
 
+// 添加联系人相关状态
+const activeTab = ref('search')
+
 // 群组相关状态
 const showCreateGroupDialog = ref(false)
 const showGroupMembersDialog = ref(false)
@@ -737,6 +891,10 @@ const messageGroups = computed(() => {
 
 const canSendMessage = computed(() => {
   return (newMessage.value.trim() || fileToUpload.value) && !sending.value
+})
+
+const canCreateGroup = computed(() => {
+  return groupForm.name.trim() && groupForm.members.length > 0
 })
 
 // 聊天功能方法
@@ -1064,6 +1222,7 @@ const createNewChat = (contact) => {
 const handleCloseNewChatDialog = (done) => {
   done()
   newChatSearch.value = ''
+  activeTab.value = 'search'
 }
 
 const onSearchInput = debounce(() => {
@@ -1131,13 +1290,7 @@ const toggleMemberSelection = (memberId) => {
   }
 }
 
-const validateMembers = (rule, value, callback) => {
-  if (value.length === 0) {
-    callback(new Error('请至少选择一位群成员'))
-  } else {
-    callback()
-  }
-}
+
 
 const handleAvatarUpload = async ({ file }) => {
   const reader = new FileReader()
@@ -2478,6 +2631,708 @@ onMounted(() => {
 
   to {
     transform: rotate(360deg);
+  }
+}
+
+// 现代化对话框样式
+.custom-dialog {
+  :deep(.el-dialog) {
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    border: none;
+    overflow: hidden;
+  }
+
+  :deep(.el-dialog__header) {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-primary);
+  }
+
+  :deep(.el-dialog__body) {
+    padding: 0;
+    background: var(--bg-primary);
+  }
+
+  :deep(.el-dialog__footer) {
+    padding: 16px 24px 20px;
+    border-top: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+  }
+}
+
+.dialog-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .dialog-title-text {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+}
+
+.dialog-content {
+  padding: 0;
+  max-height: 60vh;
+  overflow-y: auto;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(156, 163, 175, 0.5);
+    border-radius: 3px;
+  }
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+
+  .cancel-btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.2s;
+
+    &:hover {
+      transform: scale(1.03);
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+
+  .create-btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.2s;
+
+    &:hover:not(:disabled) {
+      transform: scale(1.03);
+    }
+
+    &:active:not(:disabled) {
+      transform: scale(0.95);
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+}
+
+// 选项卡样式
+.dialog-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-primary);
+
+  .tab-item {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px 24px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text-secondary);
+    font-weight: 500;
+    position: relative;
+
+    .el-icon {
+      font-size: 18px;
+    }
+
+    &:hover {
+      color: var(--primary-color);
+      background: rgba(59, 130, 246, 0.05);
+    }
+
+    &.active {
+      color: var(--primary-color);
+      font-weight: 600;
+
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: var(--primary-color);
+        border-radius: 1px;
+      }
+    }
+  }
+}
+
+.tab-content {
+  padding: 24px;
+}
+
+// 搜索区域样式
+.search-section {
+  margin-bottom: 24px;
+
+  .search-input-wrapper {
+    .modern-search-input {
+      :deep(.el-input__wrapper) {
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        background: var(--bg-secondary);
+        transition: all 0.2s;
+        box-shadow: none;
+
+        &:hover {
+          border-color: #cbd5e1;
+        }
+
+        &.is-focus {
+          border-color: var(--primary-color);
+          box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.2);
+        }
+      }
+
+      :deep(.el-input__inner) {
+        padding: 12px 16px;
+        font-size: 14px;
+      }
+    }
+  }
+}
+
+// 空状态样式
+.empty-state,
+.empty-result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+
+  .empty-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--bg-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+
+    .el-icon {
+      font-size: 28px;
+      color: var(--text-secondary);
+    }
+  }
+
+  .empty-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 8px;
+  }
+
+  .empty-desc {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin: 0 0 20px;
+    max-width: 280px;
+  }
+
+  .create-contact-btn {
+    font-weight: 500;
+    transition: all 0.2s;
+
+    &:hover {
+      transform: scale(1.03);
+    }
+  }
+}
+
+// 加载状态样式
+.loading-state {
+  padding: 24px;
+
+  .skeleton-list {
+    .skeleton-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 0;
+      margin-bottom: 12px;
+
+      .skeleton-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+        background-size: 200% 100%;
+        animation: skeleton-loading 1.5s infinite;
+        margin-right: 12px;
+      }
+
+      .skeleton-content {
+        flex: 1;
+
+        .skeleton-name {
+          width: 120px;
+          height: 16px;
+          background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+          background-size: 200% 100%;
+          animation: skeleton-loading 1.5s infinite;
+          border-radius: 4px;
+          margin-bottom: 8px;
+        }
+
+        .skeleton-desc {
+          width: 80px;
+          height: 12px;
+          background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+          background-size: 200% 100%;
+          animation: skeleton-loading 1.5s infinite;
+          border-radius: 4px;
+        }
+      }
+    }
+  }
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+// 现代化联系人卡片样式
+.contact-list {
+  .modern-contact-card {
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    margin-bottom: 8px;
+
+    &:hover {
+      background: var(--bg-secondary);
+      border-color: rgba(59, 130, 246, 0.3);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .contact-avatar {
+      position: relative;
+      margin-right: 16px;
+
+      .online-indicator {
+        position: absolute;
+        bottom: 2px;
+        right: 2px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #9ca3af;
+        border: 2px solid var(--bg-primary);
+
+        &.online {
+          background: #10b981;
+        }
+      }
+    }
+
+    .contact-info {
+      flex: 1;
+
+      .contact-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 4px;
+
+        .contact-name {
+          font-size: 16px;
+          font-weight: 600;
+          color: var(--text-primary);
+          margin: 0;
+        }
+
+        .add-contact-btn {
+          padding: 6px 12px;
+          border-radius: 6px;
+          font-size: 12px;
+          font-weight: 500;
+          transition: all 0.2s;
+
+          &:hover {
+            transform: scale(1.05);
+          }
+        }
+      }
+
+      .contact-details {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        .online-status {
+          font-size: 12px;
+          color: var(--text-secondary);
+
+          &.online {
+            color: #10b981;
+          }
+        }
+
+        .department {
+          font-size: 12px;
+          color: var(--text-secondary);
+        }
+      }
+    }
+  }
+}
+
+// 二维码和联系人占位符样式
+.qr-section,
+.contacts-section {
+  padding: 48px 24px;
+  text-align: center;
+
+  .qr-container,
+  .contacts-placeholder {
+    .qr-placeholder,
+    .contacts-placeholder {
+      width: 120px;
+      height: 120px;
+      border-radius: 12px;
+      background: var(--bg-secondary);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+
+      .el-icon {
+        font-size: 32px;
+        color: var(--text-secondary);
+        margin-bottom: 8px;
+      }
+
+      p {
+        font-size: 14px;
+        color: var(--text-secondary);
+        margin: 0;
+      }
+    }
+  }
+
+  .qr-tip {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin: 0;
+  }
+}
+
+// 现代化群组表单样式
+.modern-group-form {
+  .form-section {
+    padding: 24px;
+    border-bottom: 1px solid var(--border-color);
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  .form-item {
+    margin-bottom: 24px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .input-wrapper {
+      .modern-input,
+      .modern-textarea {
+        :deep(.el-input__wrapper) {
+          border-radius: 8px;
+          border: 1px solid var(--border-color);
+          background: var(--bg-secondary);
+          transition: all 0.2s;
+          box-shadow: none;
+
+          &:hover {
+            border-color: #cbd5e1;
+          }
+
+          &.is-focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.2);
+          }
+        }
+
+        :deep(.el-input__inner),
+        :deep(.el-textarea__inner) {
+          padding: 12px 16px;
+          font-size: 14px;
+        }
+      }
+
+      .input-tip {
+        font-size: 12px;
+        color: #f53f3f;
+        margin-top: 4px;
+      }
+    }
+  }
+
+  .avatar-upload-section {
+    .modern-avatar-uploader {
+      :deep(.el-upload-dragger) {
+        border: 2px dashed var(--border-color);
+        border-radius: 12px;
+        background: var(--bg-secondary);
+        transition: all 0.2s;
+
+        &:hover {
+          border-color: var(--primary-color);
+          background: rgba(59, 130, 246, 0.05);
+        }
+      }
+
+      .avatar-upload-area {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 24px;
+
+        .upload-avatar {
+          margin-bottom: 16px;
+          transition: all 0.2s;
+
+          &:hover {
+            transform: scale(1.05);
+          }
+        }
+
+        .upload-tip {
+          text-align: center;
+
+          p {
+            margin: 0 0 4px;
+            font-size: 14px;
+            color: var(--text-primary);
+          }
+
+          .upload-hint {
+            font-size: 12px;
+            color: var(--text-secondary);
+          }
+        }
+      }
+    }
+  }
+
+  .members-section {
+    .members-search {
+      margin-bottom: 16px;
+
+      .modern-search-input {
+        :deep(.el-input__wrapper) {
+          border-radius: 8px;
+          border: 1px solid var(--border-color);
+          background: var(--bg-secondary);
+          transition: all 0.2s;
+          box-shadow: none;
+
+          &:hover {
+            border-color: #cbd5e1;
+          }
+
+          &.is-focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.2);
+          }
+        }
+      }
+    }
+
+    .members-list {
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background: var(--bg-secondary);
+
+      &::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      &::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background-color: rgba(156, 163, 175, 0.5);
+        border-radius: 3px;
+      }
+
+      .modern-member-item {
+        display: flex;
+        align-items: center;
+        padding: 12px 16px;
+        cursor: pointer;
+        transition: all 0.2s;
+        border-bottom: 1px solid var(--border-color);
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        &:hover {
+          background: rgba(59, 130, 246, 0.05);
+        }
+
+        &.selected {
+          background: rgba(59, 130, 246, 0.1);
+          border-left: 3px solid var(--primary-color);
+        }
+
+        .member-avatar {
+          position: relative;
+          margin-right: 12px;
+
+          .online-indicator {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #9ca3af;
+            border: 2px solid var(--bg-secondary);
+
+            &.online {
+              background: #10b981;
+            }
+          }
+        }
+
+        .member-info {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+
+          .member-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 2px;
+          }
+
+          .member-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+          }
+        }
+
+        .member-action {
+          .selected-icon {
+            color: var(--primary-color);
+            font-size: 16px;
+          }
+        }
+      }
+    }
+
+    .members-summary {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 12px;
+      padding: 8px 0;
+
+      .selected-count {
+        font-size: 12px;
+        color: var(--text-secondary);
+      }
+
+      .min-requirement {
+        font-size: 12px;
+        color: #f53f3f;
+      }
+    }
+  }
+}
+
+// 深色模式适配
+.dark {
+  .custom-dialog {
+    :deep(.el-dialog) {
+      background: var(--bg-primary);
+      border-color: var(--border-color);
+    }
+  }
+
+  .dialog-tabs {
+    .tab-item {
+      &:hover {
+        background: rgba(59, 130, 246, 0.1);
+      }
+    }
+  }
+
+  .modern-contact-card {
+    &:hover {
+      background: rgba(59, 130, 246, 0.1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+  }
+
+  .modern-member-item {
+    &:hover {
+      background: rgba(59, 130, 246, 0.1);
+    }
+
+    &.selected {
+      background: rgba(59, 130, 246, 0.2);
+    }
+  }
+
+  .skeleton-item {
+    .skeleton-avatar,
+    .skeleton-name,
+    .skeleton-desc {
+      background: linear-gradient(90deg, #374151 25%, #4b5563 50%, #374151 75%);
+    }
   }
 }
 </style>

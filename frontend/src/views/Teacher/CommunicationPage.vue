@@ -130,9 +130,9 @@
           <div class="header-actions">
             <el-button type="text" icon="Phone" circle v-if="!currentChat.isGroup" />
             <el-button type="text" icon="VideoCamera" circle v-if="!currentChat.isGroup" />
-            <el-button type="text" icon="UserPlus" circle v-if="currentChat.isGroup" @click="showAddMembersDialog = true" />
+            <el-button type="text" icon="User" circle v-if="currentChat.isGroup" @click="showAddMembersDialog = true" />
             <el-dropdown>
-              <el-button type="text" icon="MoreFilled" circle />
+              <el-button type="text" icon="More" circle />
               <template #dropdown>
                 <el-dropdown-menu>
                   <el-dropdown-item @click="clearChatHistory">
@@ -200,7 +200,7 @@
                   </div>
 
                   <el-dropdown v-if="message.type === 'user'" trigger="click" @command="handleMessageCommand($event, message)">
-                    <el-button type="text" icon="MoreFilled" class="message-actions" />
+                    <el-button type="text" icon="More" class="message-actions" />
                     <template #dropdown>
                       <el-dropdown-menu>
                         <el-dropdown-item command="copy">复制</el-dropdown-item>
@@ -557,51 +557,97 @@
     <el-dialog 
       v-model="showGroupMembersDialog" 
       title="群成员管理" 
-      width="500px" 
+      width="520px" 
       append-to-body
-      class="custom-dialog group-members-dialog"
+      class="custom-dialog group-members-dialog" 
+      :close-on-click-modal="false"
     >
       <template #title>
-        <div class="dialog-title flex items-center">
-          <span class="font-medium text-lg">群成员 ({{ currentChat?.members.length || 0 }})</span>
+        <div class="dialog-title">
+          <span class="dialog-title-text">群成员管理</span>
         </div>
       </template>
 
-      <div class="dialog-content p-4">
-        <div class="group-members-list max-h-[400px] overflow-y-auto">
-          <div v-for="member in currentChat?.members || []" :key="member.id" class="group-member-item">
-            <el-avatar :size="36" :src="member.avatar" class="mr-2" />
-            <div class="member-info">
-              <div class="member-name">
-                {{ member.name }}
-                <span v-if="member.isAdmin" class="admin-badge">群主</span>
-                <span v-else-if="member.role === 'ADMIN'" class="admin-badge">管理员</span>
+      <div class="dialog-content">
+        <div class="members-management-section">
+          <div class="members-header">
+            <div class="header-info">
+              <h3 class="members-section-title">群成员列表</h3>
+              <p class="section-desc">管理群成员权限和状态</p>
+            </div>
+            <div class="header-actions">
+                          <el-button 
+              type="primary" 
+              size="small" 
+              @click="showAddMembersDialog = true"
+              class="add-members-btn"
+            >
+              <el-icon><User /></el-icon>
+              添加成员
+            </el-button>
+            </div>
+          </div>
+
+          <div class="members-list-container">
+            <div v-if="currentChat?.members.length === 0" class="empty-members">
+              <div class="empty-icon">
+                <el-icon><User /></el-icon>
               </div>
-              <div class="member-status">
-                {{ member.online ? '在线' : `上次在线 ${formatRelativeTime(member.lastOnline)}` }}
+              <h3 class="empty-title">暂无群成员</h3>
+              <p class="empty-desc">点击上方按钮添加群成员</p>
+            </div>
+            
+            <div v-else class="modern-members-list">
+              <div v-for="member in currentChat?.members || []" :key="member.id" class="modern-member-card">
+                <div class="member-avatar">
+                  <el-avatar :size="48" :src="member.avatar" />
+                  <div class="online-indicator" :class="{ online: member.online }"></div>
+                </div>
+                <div class="member-info">
+                  <div class="member-header">
+                    <h4 class="member-name">
+                      {{ member.name }}
+                      <span v-if="member.isAdmin" class="role-badge owner">群主</span>
+                      <span v-else-if="member.role === 'ADMIN'" class="role-badge admin">管理员</span>
+                      <span v-else class="role-badge member">成员</span>
+                    </h4>
+                    <div class="member-actions">
+                      <el-dropdown v-if="canManageMember(member)" @command="handleMemberCommand($event, member)">
+                        <el-button type="text" icon="More" class="member-action-btn" />
+                        <template #dropdown>
+                          <el-dropdown-menu>
+                            <el-dropdown-item command="remove">
+                              <el-icon><Delete /></el-icon>
+                              移除成员
+                            </el-dropdown-item>
+                            <el-dropdown-item 
+                              command="toggleAdmin" 
+                              v-if="!member.isAdmin && isCurrentUserAdmin()"
+                            >
+                              <el-icon><UserFilled /></el-icon>
+                              {{ member.role === 'ADMIN' ? '取消管理员' : '设为管理员' }}
+                            </el-dropdown-item>
+                          </el-dropdown-menu>
+                        </template>
+                      </el-dropdown>
+                    </div>
+                  </div>
+                  <div class="member-details">
+                    <span class="online-status" :class="{ online: member.online }">
+                      {{ member.online ? '在线' : `上次在线 ${formatRelativeTime(member.lastOnline)}` }}
+                    </span>
+                    <span class="join-time">加入时间：{{ formatRelativeTime(member.joinTime || new Date()) }}</span>
+                  </div>
+                </div>
               </div>
             </div>
-            <el-dropdown v-if="canManageMember(member)" @command="handleMemberCommand($event, member)">
-              <el-button type="text" icon="More" class="member-actions" />
-              <template #dropdown>
-                <el-dropdown-menu>
-                  <el-dropdown-item command="remove">移除</el-dropdown-item>
-                  <el-dropdown-item 
-                    command="toggleAdmin" 
-                    v-if="!member.isAdmin && isCurrentUserAdmin()"
-                  >
-                    {{ member.role === 'ADMIN' ? '取消管理员' : '设为管理员' }}
-                  </el-dropdown-item>
-                </el-dropdown-menu>
-              </template>
-            </el-dropdown>
           </div>
         </div>
       </div>
 
       <template #footer>
-        <div class="dialog-footer flex justify-end px-4 py-3 border-t border-gray-100">
-          <el-button @click="showGroupMembersDialog = false" class="px-4 py-2 rounded-md hover:bg-gray-50 transition-colors">
+        <div class="dialog-footer">
+          <el-button @click="showGroupMembersDialog = false" class="cancel-btn">
             关闭
           </el-button>
         </div>
@@ -612,47 +658,122 @@
     <el-dialog 
       v-model="showAddMembersDialog" 
       title="添加群成员" 
-      width="500px" 
+      width="520px" 
       append-to-body
-      class="custom-dialog add-members-dialog"
+      class="custom-dialog add-members-dialog" 
+      :close-on-click-modal="false"
     >
       <template #title>
-        <div class="dialog-title flex items-center">
-          <span class="font-medium text-lg">添加群成员</span>
+        <div class="dialog-title">
+          <span class="dialog-title-text">添加群成员</span>
+          <span class="add-count-badge" v-if="membersToAdd.length > 0">已选择 {{ membersToAdd.length }} 人</span>
         </div>
       </template>
 
-      <div class="dialog-content p-4">
-        <el-input 
-          v-model="addMemberSearch" 
-          placeholder="搜索联系人" 
-          :prefix-icon="Search" 
-          class="mb-3"
-          clearable
-          @input="debouncedFilterAddMembers"
-        />
-        <div class="group-members-list max-h-[400px] overflow-y-auto mt-2">
-          <div v-for="member in filteredAddMembers" :key="member.id" 
-            class="group-member-item"
-            :class="{ 
-              'selected': isMemberInGroup(member.id),
-              'disabled': isMemberInGroup(member.id)
-            }"
-            @click="!isMemberInGroup(member.id) && addMemberToGroup(member)">
-            <el-avatar :size="36" :src="member.avatar" class="mr-2" />
-            <span>{{ member.name }}</span>
-            <el-icon v-if="isMemberInGroup(member.id)" class="selected-icon"><Check /></el-icon>
+      <div class="dialog-content">
+        <div class="add-members-section">
+          <div class="search-section">
+            <div class="search-input-wrapper">
+              <el-input 
+                v-model="addMemberSearch" 
+                placeholder="搜索联系人" 
+                :prefix-icon="Search" 
+                class="modern-search-input"
+                clearable
+                @input="debouncedFilterAddMembers"
+              />
+            </div>
+          </div>
+
+          <div class="members-selection-container">
+            <div v-if="filteredAddMembers.length === 0 && addMemberSearch.trim()" class="empty-search-result">
+              <div class="empty-icon">
+                <el-icon><User /></el-icon>
+              </div>
+              <h3 class="empty-title">未找到联系人</h3>
+              <p class="empty-desc">尝试使用不同的关键词搜索</p>
+            </div>
+            
+            <div v-else-if="filteredAddMembers.length === 0" class="empty-contacts">
+              <div class="empty-icon">
+                <el-icon><User /></el-icon>
+              </div>
+              <h3 class="empty-title">暂无可用联系人</h3>
+              <p class="empty-desc">所有联系人已在群组中</p>
+            </div>
+            
+            <div v-else class="modern-add-members-list">
+              <div v-for="member in filteredAddMembers" :key="member.id" 
+                class="modern-add-member-card"
+                :class="{ 
+                  'selected': isMemberInGroup(member.id),
+                  'disabled': isMemberInGroup(member.id)
+                }"
+                @click="!isMemberInGroup(member.id) && addMemberToGroup(member)"
+              >
+                <div class="member-avatar">
+                  <el-avatar :size="48" :src="member.avatar" />
+                  <div class="online-indicator" :class="{ online: member.online }"></div>
+                </div>
+                <div class="member-info">
+                  <div class="member-header">
+                    <h4 class="member-name">{{ member.name }}</h4>
+                    <div class="member-action">
+                      <el-icon v-if="isMemberInGroup(member.id)" class="selected-icon"><Check /></el-icon>
+                      <el-icon v-else class="add-icon"><Plus /></el-icon>
+                    </div>
+                  </div>
+                  <div class="member-details">
+                    <span class="online-status" :class="{ online: member.online }">
+                      {{ member.online ? '在线' : '离线' }}
+                    </span>
+                    <span class="department">{{ member.department }}</span>
+                  </div>
+                </div>
+                <div class="selection-overlay" v-if="isMemberInGroup(member.id)">
+                  <span class="already-in-group">已在群组中</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div v-if="membersToAdd.length > 0" class="selected-members-preview">
+            <div class="preview-header">
+              <h4 class="preview-title">已选择的成员</h4>
+              <el-button type="text" @click="membersToAdd = []" class="clear-selection-btn">
+                清空选择
+              </el-button>
+            </div>
+            <div class="selected-members-list">
+              <div v-for="member in membersToAdd" :key="member.id" class="selected-member-tag">
+                <el-avatar :size="24" :src="member.avatar" />
+                <span class="member-name">{{ member.name }}</span>
+                <el-button 
+                  type="text" 
+                  icon="Delete" 
+                  size="small" 
+                  @click="removeFromSelection(member.id)"
+                  class="remove-btn"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       <template #footer>
-        <div class="dialog-footer flex justify-end px-4 py-3 border-t border-gray-100">
-          <el-button @click="showAddMembersDialog = false" class="px-4 py-2 rounded-md hover:bg-gray-50 transition-colors">
+        <div class="dialog-footer">
+          <el-button @click="cancelAddMembers" class="cancel-btn">
             取消
           </el-button>
-          <el-button type="primary" @click="confirmAddMembers" :loading="isAddingMembers" class="ml-2">
-            确认添加
+          <el-button 
+            type="primary" 
+            @click="confirmAddMembers" 
+            :loading="isAddingMembers" 
+            :disabled="membersToAdd.length === 0"
+            class="confirm-btn"
+          >
+            确认添加 ({{ membersToAdd.length }})
           </el-button>
         </div>
       </template>
@@ -1436,6 +1557,19 @@ const cancelCreateGroup = () => {
   groupMemberSearch.value = ''
 }
 
+const cancelAddMembers = () => {
+  showAddMembersDialog.value = false
+  membersToAdd.value = []
+  addMemberSearch.value = ''
+}
+
+const removeFromSelection = (memberId) => {
+  const index = membersToAdd.value.findIndex(m => m.id === memberId)
+  if (index > -1) {
+    membersToAdd.value.splice(index, 1)
+  }
+}
+
 // 群成员管理
 const getSenderName = (message) => {
   if (!currentChat.value?.isGroup) return ''
@@ -1661,7 +1795,7 @@ onMounted(() => {
 
   .sidebar {
     width: 360px;
-    background: var(--bg-primary);
+    background: transparent;
     border-right: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
@@ -3398,6 +3532,509 @@ onMounted(() => {
   }
 }
 
+// 群成员管理对话框样式
+.members-management-section {
+  padding: 24px;
+
+  .members-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+
+          .header-info {
+        .members-section-title {
+          font-size: 16px;
+          font-weight: 600;
+          color: var(--text-primary);
+          margin: 0 0 4px;
+        }
+
+      .section-desc {
+        font-size: 13px;
+        color: var(--text-secondary);
+        margin: 0;
+      }
+    }
+
+    .add-members-btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: 500;
+      transition: all 0.2s;
+
+      &:hover {
+        transform: scale(1.03);
+      }
+    }
+  }
+
+  .members-list-container {
+    max-height: 400px;
+    overflow-y: auto;
+
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background-color: rgba(156, 163, 175, 0.5);
+      border-radius: 3px;
+    }
+
+    .empty-members {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 24px;
+      text-align: center;
+
+      .empty-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: var(--bg-secondary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 16px;
+
+        .el-icon {
+          font-size: 28px;
+          color: var(--text-secondary);
+        }
+      }
+
+      .empty-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0 0 8px;
+      }
+
+      .empty-desc {
+        font-size: 14px;
+        color: var(--text-secondary);
+        margin: 0;
+      }
+    }
+
+    .modern-members-list {
+      .modern-member-card {
+        display: flex;
+        align-items: center;
+        padding: 16px;
+        border-radius: 12px;
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        margin-bottom: 8px;
+        transition: all 0.2s;
+
+        &:hover {
+          background: var(--bg-secondary);
+          border-color: rgba(59, 130, 246, 0.3);
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .member-avatar {
+          position: relative;
+          margin-right: 16px;
+
+          .online-indicator {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #9ca3af;
+            border: 2px solid var(--bg-primary);
+
+            &.online {
+              background: #10b981;
+            }
+          }
+        }
+
+        .member-info {
+          flex: 1;
+
+          .member-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+
+            .member-name {
+              font-size: 16px;
+              font-weight: 600;
+              color: var(--text-primary);
+              margin: 0;
+              display: flex;
+              align-items: center;
+              gap: 8px;
+            }
+
+            .member-actions {
+              .member-action-btn {
+                color: var(--text-secondary);
+                transition: all 0.2s;
+
+                &:hover {
+                  color: var(--primary-color);
+                }
+              }
+            }
+          }
+
+          .member-details {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+
+            .online-status {
+              font-size: 12px;
+              color: var(--text-secondary);
+
+              &.online {
+                color: #10b981;
+              }
+            }
+
+            .join-time {
+              font-size: 12px;
+              color: var(--text-secondary);
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// 角色徽章样式
+.role-badge {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+
+  &.owner {
+    background-color: #fef3c7;
+    color: #d97706;
+  }
+
+  &.admin {
+    background-color: #dbeafe;
+    color: #2563eb;
+  }
+
+  &.member {
+    background-color: #f1f5f9;
+    color: #64748b;
+  }
+}
+
+// 成员数量徽章
+.add-count-badge {
+  font-size: 12px;
+  background-color: rgba(59, 130, 246, 0.1);
+  color: var(--primary-color);
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-weight: 500;
+  margin-left: 8px;
+}
+
+// 添加群成员对话框样式
+.add-members-section {
+  padding: 24px;
+
+  .search-section {
+    margin-bottom: 20px;
+
+    .search-input-wrapper {
+      .modern-search-input {
+        :deep(.el-input__wrapper) {
+          border-radius: 12px;
+          border: 1px solid var(--border-color);
+          background: var(--bg-secondary);
+          transition: all 0.2s;
+          box-shadow: none;
+
+          &:hover {
+            border-color: #cbd5e1;
+          }
+
+          &.is-focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.2);
+          }
+        }
+      }
+    }
+  }
+
+  .members-selection-container {
+    max-height: 300px;
+    overflow-y: auto;
+    margin-bottom: 20px;
+
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background-color: rgba(156, 163, 175, 0.5);
+      border-radius: 3px;
+    }
+
+    .empty-search-result,
+    .empty-contacts {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 24px;
+      text-align: center;
+
+      .empty-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: var(--bg-secondary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 16px;
+
+        .el-icon {
+          font-size: 28px;
+          color: var(--text-secondary);
+        }
+      }
+
+      .empty-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0 0 8px;
+      }
+
+      .empty-desc {
+        font-size: 14px;
+        color: var(--text-secondary);
+        margin: 0;
+      }
+    }
+
+    .modern-add-members-list {
+      .modern-add-member-card {
+        display: flex;
+        align-items: center;
+        padding: 16px;
+        border-radius: 12px;
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        margin-bottom: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+        position: relative;
+
+        &:hover:not(.disabled) {
+          background: var(--bg-secondary);
+          border-color: rgba(59, 130, 246, 0.3);
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        &.selected {
+          background: rgba(59, 130, 246, 0.1);
+          border-color: var(--primary-color);
+        }
+
+        &.disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+
+          &:hover {
+            background: var(--bg-primary);
+            transform: none;
+            box-shadow: none;
+          }
+        }
+
+        .member-avatar {
+          position: relative;
+          margin-right: 16px;
+
+          .online-indicator {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #9ca3af;
+            border: 2px solid var(--bg-primary);
+
+            &.online {
+              background: #10b981;
+            }
+          }
+        }
+
+        .member-info {
+          flex: 1;
+
+          .member-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+
+            .member-name {
+              font-size: 16px;
+              font-weight: 600;
+              color: var(--text-primary);
+              margin: 0;
+            }
+
+            .member-action {
+              .selected-icon {
+                color: var(--primary-color);
+                font-size: 18px;
+              }
+
+              .add-icon {
+                color: var(--text-secondary);
+                font-size: 18px;
+                transition: all 0.2s;
+              }
+            }
+          }
+
+          .member-details {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+
+            .online-status {
+              font-size: 12px;
+              color: var(--text-secondary);
+
+              &.online {
+                color: #10b981;
+              }
+            }
+
+            .department {
+              font-size: 12px;
+              color: var(--text-secondary);
+            }
+          }
+        }
+
+        .selection-overlay {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.05);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 12px;
+
+          .already-in-group {
+            font-size: 12px;
+            color: var(--text-secondary);
+            background: var(--bg-primary);
+            padding: 4px 8px;
+            border-radius: 4px;
+          }
+        }
+      }
+    }
+  }
+
+  .selected-members-preview {
+    border-top: 1px solid var(--border-color);
+    padding-top: 20px;
+
+    .preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+
+      .preview-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0;
+      }
+
+      .clear-selection-btn {
+        font-size: 12px;
+        color: var(--text-secondary);
+        padding: 4px 8px;
+
+        &:hover {
+          color: #f56c6c;
+        }
+      }
+    }
+
+    .selected-members-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+
+      .selected-member-tag {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        background: rgba(59, 130, 246, 0.1);
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        border-radius: 16px;
+        transition: all 0.2s;
+
+        &:hover {
+          background: rgba(59, 130, 246, 0.15);
+        }
+
+        .member-name {
+          font-size: 12px;
+          color: var(--primary-color);
+          font-weight: 500;
+        }
+
+        .remove-btn {
+          padding: 2px;
+          color: var(--text-secondary);
+
+          &:hover {
+            color: #f56c6c;
+          }
+        }
+      }
+    }
+  }
+}
+
 // 深色模式适配
 .dark {
   .custom-dialog {
@@ -3437,6 +4074,47 @@ onMounted(() => {
     .skeleton-name,
     .skeleton-desc {
       background: linear-gradient(90deg, #374151 25%, #4b5563 50%, #374151 75%);
+    }
+  }
+
+  // 深色模式下的角色徽章
+  .role-badge {
+    &.owner {
+      background-color: rgba(217, 119, 6, 0.2);
+      color: #fbbf24;
+    }
+
+    &.admin {
+      background-color: rgba(59, 130, 246, 0.2);
+      color: #60a5fa;
+    }
+
+    &.member {
+      background-color: rgba(100, 116, 139, 0.2);
+      color: #94a3b8;
+    }
+  }
+
+  // 深色模式下的成员卡片
+  .modern-member-card,
+  .modern-add-member-card {
+    &:hover {
+      background: rgba(59, 130, 246, 0.1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    &.selected {
+      background: rgba(59, 130, 246, 0.2);
+    }
+  }
+
+  // 深色模式下的选中成员标签
+  .selected-member-tag {
+    background: rgba(59, 130, 246, 0.2);
+    border-color: rgba(59, 130, 246, 0.3);
+
+    &:hover {
+      background: rgba(59, 130, 246, 0.25);
     }
   }
 }

@@ -21,3 +21,17 @@ mybatis:
   type-aliases-package: com.yangshengzhou.lucky_sms.entity  # 实体类放这个包下面
   configuration:
     map-underscore-to-camel-case: true  # 数据库字段如果下划线的，自动转成实体类的驼峰命名，比如user_name转userName
+
+# Redis配置 - 抢课功能和高并发控制
+redis:
+  host: localhost
+  port: 6379
+  password:  # 默认无密码
+  database: 0
+  timeout: 3000
+  lettuce:
+    pool:
+      max-active: 8
+      max-idle: 8
+      min-idle: 0
+      max-wait: -1ms

@@ -1,19 +1,47 @@
 <div align="center">
-<h1>Lucky_SMSS - 学生信息管理系统</h1>
-</div>
+  <h1>🎯 Lucky_SMSS - 现代化学生信息管理系统</h1>
+  
+  <p>
+    <em>基于 Vue 3 + Spring Boot 3 构建的全栈式教育管理解决方案</em>
+  </p>
 
-<div align="center">
-  <a href="https://github.com/YangShengzhou03/Lucky_SMSS">
-    <img src="https://img.shields.io/github/stars/YangShengzhou03/Lucky_SMSS?style=for-the-badge&logo=github" alt="GitHub Stars">
-  </a>
+  <div>
+    <a href="https://github.com/YangShengzhou03/Lucky_SMSS/stargazers">
+      <img src="https://img.shields.io/github/stars/YangShengzhou03/Lucky_SMSS?style=for-the-badge&logo=github&color=ffd33d&labelColor=000000" alt="GitHub Stars">
+    </a>
+    <a href="https://github.com/YangShengzhou03/Lucky_SMSS/forks">
+      <img src="https://img.shields.io/github/forks/YangShengzhou03/Lucky_SMSS?style=for-the-badge&logo=github&color=green&labelColor=000000" alt="GitHub Forks">
+    </a>
+    <a href="https://opensource.org/licenses/MIT">
+      <img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge&logo=open-source-initiative&color=blue&labelColor=000000" alt="MIT License">
+    </a>
+    <a href="https://github.com/YangShengzhou03/Lucky_SMSS/issues">
+      <img src="https://img.shields.io/github/issues/YangShengzhou03/Lucky_SMSS?style=for-the-badge&logo=github&color=purple&labelColor=000000" alt="GitHub Issues">
+    </a>
+    <a href="https://github.com/YangShengzhou03/Lucky_SMSS/pulls">
+      <img src="https://img.shields.io/github/issues-pr/YangShengzhou03/Lucky_SMSS?style=for-the-badge&logo=github&color=orange&labelColor=000000" alt="GitHub Pull Requests">
+    </a>
+  </div>
 
-  <a href="https://opensource.org/licenses/MIT">
-    <img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge&logo=open-source-initiative" alt="MIT License">
-  </a>
+  <div>
+    <a href="https://spring.io/projects/spring-boot">
+      <img src="https://img.shields.io/badge/Spring%20Boot-3.2.5-green?style=for-the-badge&logo=spring-boot" alt="Spring Boot Version">
+    </a>
+    <a href="https://v3.vuejs.org/">
+      <img src="https://img.shields.io/badge/Vue-3.3.4-brightgreen?style=for-the-badge&logo=vue.js" alt="Vue Version">
+    </a>
+    <a href="https://www.mysql.com/">
+      <img src="https://img.shields.io/badge/MySQL-8.0+-blue?style=for-the-badge&logo=mysql" alt="MySQL Version">
+    </a>
+    <a href="https://redis.io/">
+      <img src="https://img.shields.io/badge/Redis-7.0+-red?style=for-the-badge&logo=redis" alt="Redis Version">
+    </a>
+  </div>
 
-  <a href="https://spring.io/projects/spring-boot">
-    <img src="https://img.shields.io/badge/Spring%20Boot-3.x-green?style=for-the-badge&logo=spring-boot" alt="Spring Boot Version">
-  </a>
+  <br />
+  
+  [![Star History Chart](https://api.star-history.com/svg?repos=YangShengzhou03/Lucky_SMSS&type=Date)](https://star-history.com/#YangShengzhou03/Lucky_SMSS&Date)
+
 </div>
 
 ## 目录
@@ -187,36 +215,167 @@ Lucky_SMSS/
 4. **推送分支**：将本地分支推送到个人远程仓库
 5. **创建 Pull Request**：提交合并请求到原仓库，描述修改内容与目的，等待审核
 
-## ❓ 常见问题
+## ❓ 常见问题 (FAQ)
 
-### 💥 启动后端时出现数据库连接错误
-- **可能原因**：数据库配置参数错误、数据库服务未启动、网络端口被占用、数据库用户权限不足
-- **解决方案**：
-    1. 检查配置文件中的数据库地址、端口、用户名、密码是否正确
-    2. 确认MySQL服务已正常启动，可通过命令行或服务管理工具查看
-    3. 检查防火墙设置，确保数据库端口（默认3306）允许连接
-    4. 验证数据库用户是否拥有指定数据库的读写权限
+<details>
+<summary><b>💥 启动与部署问题</b></summary>
 
-### ⏳ 前端依赖安装缓慢或失败
-- **可能原因**：npm官方镜像源访问速度慢、网络连接不稳定、Node.js版本不兼容
-- **解决方案**：
-    1. 切换国内镜像源：使用淘宝镜像（`npm install --registry=https://registry.npm.taobao.org`）或腾讯云镜像
-    2. 安装nrm工具管理镜像源：`npm install -g nrm`，通过`nrm use taobao`快速切换
-    3. 检查Node.js版本，推荐使用LTS稳定版，避免版本过高或过低
-    4. 网络不稳定时，可尝试多次安装或使用代理
+### 数据库连接失败
+**Q: 启动后端时出现数据库连接错误怎么办？**
+A: 
+- ✅ 检查 `application.yml` 中的数据库配置参数
+- ✅ 确认 MySQL 服务已启动：`sudo systemctl start mysql` (Linux) 或通过服务管理器启动 (Windows)
+- ✅ 验证数据库用户权限：`GRANT ALL PRIVILEGES ON lucky_smss.* TO 'username'@'localhost';`
+- ✅ 检查防火墙设置，确保 3306 端口开放
 
-### 🚫 跨域请求问题
-- **可能原因**：前后端分离架构下，浏览器的同源策略限制不同域名/端口间的请求
-- **解决方案**：
-    1. 后端已默认配置CORS跨域支持，确保配置包含前端访问域名
-    2. 开发环境可通过Vite代理配置，将API请求代理到后端服务地址
-    3. 生产环境建议通过Nginx配置反向代理，统一域名与端口访问
+### 依赖安装问题  
+**Q: 前端依赖安装缓慢或失败？**
+A:
+- 🚀 使用国内镜像源加速：
+  ```bash
+  npm config set registry https://registry.npmmirror.com/
+  npm install
+  ```
+- 📦 或使用 yarn 替代 npm：
+  ```bash
+  npm install -g yarn
+  yarn install
+  ```
 
-## 📞 联系我们
-- 邮箱：3555844679@qq.com
-- GitHub：https://github.com/YangShengzhou03/Lucky_SMSS
+### 跨域问题
+**Q: 遇到跨域请求错误？**
+A:
+- 🌐 开发环境：配置 Vite 代理
+- 🔧 生产环境：使用 Nginx 反向代理
+- ⚙️ 确保后端 CORS 配置正确
+</details>
 
-欢迎反馈使用过程中遇到的问题或功能建议，我们将持续优化系统体验。
+<details>
+<summary><b>🔧 开发与调试问题</b></summary>
+
+### 热重载不工作
+**Q: 前端修改后热重载不生效？**
+A:
+- 检查 Vue Devtools 浏览器插件是否安装
+- 确认 vite.config.js 配置正确
+- 尝试重启开发服务器
+
+### 接口调试
+**Q: 如何快速测试 API 接口？**
+A:
+- 使用 Postman 导入 `postman/Lucky_SMS_API_Collection.json`
+- 或使用 Swagger UI: http://localhost:8080/swagger-ui.html
+</details>
+
+<details>
+<summary><b>🐛 常见错误与解决方案</b></summary>
+
+### JWT 令牌过期
+**症状**: `401 Unauthorized` 错误
+**解决**: 重新登录获取新令牌，或调整令牌过期时间配置
+
+### Redis 连接失败
+**症状**: `RedisConnectionFailureException`
+**解决**: 检查 Redis 服务状态和配置参数
+
+### 文件上传大小限制
+**症状**: `MaxUploadSizeExceededException`
+**解决**: 在配置文件中调整 `spring.servlet.multipart.max-file-size`
+</details>
+
+<details>
+<summary><b>🚀 性能优化建议</b></summary>
+
+### 数据库优化
+- 为常用查询字段添加索引
+- 使用连接池配置优化
+- 定期执行 `ANALYZE TABLE`
+
+### 缓存策略
+- 合理设置 Redis 缓存过期时间
+- 使用二级缓存减少数据库压力
+- 对静态资源启用 CDN 加速
+
+### 前端优化
+- 使用路由懒加载减少初始包大小
+- 组件按需导入
+- 启用 Gzip 压缩
+</details>
+
+## 🤝 社区与支持
+
+### 👥 贡献者
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tr>
+    <td align="center"><a href="https://github.com/YangShengzhou03"><img src="https://avat.githubusercontent.com/u/xxxxxxx?v=4" width="100px;" alt=""/><br /><sub><b>YangShengzhou03</b></sub></a><br />💻 📖 🎨</td>
+  </tr>
+</table>
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+### 📊 项目统计
+
+![GitHub commit activity](https://img.shields.io/github/commit-activity/m/YangShengzhou03/Lucky_SMSS?style=flat-square&logo=github)
+![GitHub last commit](https://img.shields.io/github/last-commit/YangShengzhou03/Lucky_SMSS?style=flat-square&logo=github)
+![GitHub repo size](https://img.shields.io/github/repo-size/YangShengzhou03/Lucky_SMSS?style=flat-square&logo=github)
+
+### 📞 联系我们
+
+- 📧 **邮箱**: 3555844679@qq.com
+- 🐛 **问题反馈**: [GitHub Issues](https://github.com/YangShengzhou03/Lucky_SMSS/issues)
+- 💡 **功能建议**: [GitHub Discussions](https://github.com/YangShengzhou03/Lucky_SMSS/discussions)
+- 📖 **文档改进**: 提交 Pull Request
+- 🤝 **技术交流**: 欢迎加入我们的开发社区
+
+### 🎯 支持项目
+
+如果这个项目对您有帮助，请考虑：
+
+- ⭐ **Star 项目** - 让更多人看到
+- 🐛 **提交 Issue** - 帮助改进项目
+- 💻 **提交 PR** - 贡献代码
+- 📖 **完善文档** - 帮助其他用户
+- 🗣️ **分享项目** - 推荐给需要的朋友
+
+---
+
+**✨ 感谢所有贡献者和用户的支持！**
 
 ## 📜 开源许可
-本项目采用 [MIT License](https://opensource.org/licenses/MIT) 授权，允许自由使用、修改和分发。使用时请遵守许可证条款，保留原作者信息与版权声明。
+
+本项目采用 [MIT License](https://opensource.org/licenses/MIT) 授权。
+
+```
+MIT License
+
+Copyright (c) 2024 YangShengzhou03
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+---
+
+<div align="center">
+  <sub>Built with ❤️ using Vue 3, Spring Boot 3, and lots of coffee ☕</sub>
+</div>
